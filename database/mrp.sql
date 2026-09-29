@@ -245,8 +245,6 @@ CREATE TABLE "promotion_programs" (
   CHECK (end_date >= start_date)
 );
 
--- Fix (normalization): removed start_date/end_date (duplicated with parent
--- promotion_programs, could contradict it)
 CREATE TABLE "product_discounts" (
   "id" BIGSERIAL PRIMARY KEY,
   "promotion_program_id" BIGINT NOT NULL,
@@ -466,9 +464,6 @@ CREATE TRIGGER trg_sm_ro BEFORE UPDATE OR DELETE ON stock_movements
 -- END OF SCHEMA
 -- =====================================================================
 
--- =====================================================================
--- PHAN VA BAT BUOC (A1-A3, B2, B3): rang buoc kho / MRP
--- =====================================================================
 -- ===== PATCH 2: movement phai khop dong chi tiet cua chung tu =====
 ALTER TABLE stock_movements ADD CONSTRAINT fk_sm_receipt_item
   FOREIGN KEY (purchase_receipt_id, material_id) REFERENCES purchase_receipt_items (purchase_receipt_id, material_id);
@@ -546,8 +541,397 @@ END $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_inv_guard BEFORE UPDATE ON inventories FOR EACH ROW EXECUTE FUNCTION fn_inv_guard();
 
 
+-- =====================================================================
+-- FINAL MRP INTEGRITY PATCH
+-- =====================================================================
+-- A. Material issue item must belong to the BOM of its Production Request.
+--    Also prevent the total PENDING + APPROVED requests from exceeding
+--    the BOM requirement for the requested production quantity.
+CREATE FUNCTION fn_validate_material_issue_item() RETURNS trigger AS $$
+DECLARE
+  v_bom_id BIGINT;
+  v_production_qty NUMERIC;
+  v_bom_qty NUMERIC;
+  v_requested_qty NUMERIC;
+BEGIN
+  SELECT pr.bom_id, pr.quantity
+    INTO v_bom_id, v_production_qty
+    FROM material_issue_requests mir
+    JOIN production_requests pr ON pr.id = mir.production_request_id
+   WHERE mir.id = NEW.request_id;
+
+  IF v_bom_id IS NULL THEN
+    RAISE EXCEPTION 'material_issue_request % khong ton tai hoac khong co production_request hop le', NEW.request_id;
+  END IF;
+
+  SELECT bi.quantity
+    INTO v_bom_qty
+    FROM bom_items bi
+   WHERE bi.bom_id = v_bom_id
+     AND bi.material_id = NEW.material_id;
+
+  IF v_bom_qty IS NULL THEN
+    RAISE EXCEPTION 'material % khong nam trong BOM % cua production request cua issue request %',
+      NEW.material_id, v_bom_id, NEW.request_id;
+  END IF;
+
+  SELECT COALESCE(SUM(miri.quantity), 0)
+    INTO v_requested_qty
+    FROM material_issue_request_items miri
+    JOIN material_issue_requests mir ON mir.id = miri.request_id
+   WHERE mir.production_request_id = (
+           SELECT production_request_id
+             FROM material_issue_requests
+            WHERE id = NEW.request_id
+         )
+     AND miri.material_id = NEW.material_id
+     AND mir.status IN ('PENDING', 'APPROVED')
+     AND (TG_OP <> 'UPDATE' OR miri.id <> NEW.id);
+
+  IF v_requested_qty + NEW.quantity > v_bom_qty * v_production_qty THEN
+    RAISE EXCEPTION
+      'tong so luong yeu cau NVL (%) vuot nhu cau BOM (%) cho material % cua production request %',
+      v_requested_qty + NEW.quantity,
+      v_bom_qty * v_production_qty,
+      NEW.material_id,
+      (SELECT production_request_id FROM material_issue_requests WHERE id = NEW.request_id);
+  END IF;
+
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validate_material_issue_item
+BEFORE INSERT OR UPDATE ON material_issue_request_items
+FOR EACH ROW EXECUTE FUNCTION fn_validate_material_issue_item();
+
+-- B. Production quantity is cumulative per Production Request.
+--    Multiple partial production records are allowed, but their total
+--    quantity can never exceed the requested production quantity.
+CREATE FUNCTION fn_validate_production_quantity() RETURNS trigger AS $$
+DECLARE
+  v_requested_qty NUMERIC;
+  v_produced_qty NUMERIC;
+BEGIN
+  SELECT quantity
+    INTO v_requested_qty
+    FROM production_requests
+   WHERE id = NEW.production_request_id
+   FOR UPDATE;
+
+  IF v_requested_qty IS NULL THEN
+    RAISE EXCEPTION 'production_request % khong ton tai', NEW.production_request_id;
+  END IF;
+
+  SELECT COALESCE(SUM(quantity), 0)
+    INTO v_produced_qty
+    FROM productions
+   WHERE production_request_id = NEW.production_request_id
+     AND status <> 'CANCELLED'
+     AND (TG_OP <> 'UPDATE' OR id <> NEW.id);
+
+  IF v_produced_qty + NEW.quantity > v_requested_qty THEN
+    RAISE EXCEPTION
+      'tong so luong san xuat (%) vuot so luong production request (%) cua production request %',
+      v_produced_qty + NEW.quantity,
+      v_requested_qty,
+      NEW.production_request_id;
+  END IF;
+
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validate_production_quantity
+BEFORE INSERT OR UPDATE ON productions
+FOR EACH ROW EXECUTE FUNCTION fn_validate_production_quantity();
+
 -- ===== INDEX BO SUNG (tim kiem/loc cho Admin, join khi bao cao) =====
 CREATE INDEX idx_production_requests_product ON production_requests (product_id);
 CREATE INDEX idx_vouchers_program ON vouchers (promotion_program_id);
 CREATE INDEX idx_orders_voucher ON orders (voucher_id);
 CREATE INDEX idx_orders_status ON orders (status);
+
+
+-- ---------------------------------------------------------------------
+-- 1. Role <-> profile: user_id cua bang profile phai co dung role
+-- ---------------------------------------------------------------------
+ALTER TABLE users ADD CONSTRAINT uq_users_id_role UNIQUE (id, role);
+
+ALTER TABLE customers          ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'CUSTOMER'          CHECK (role = 'CUSTOMER');
+ALTER TABLE staff              ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'STAFF'             CHECK (role = 'STAFF');
+ALTER TABLE warehouse_managers ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'WAREHOUSE_MANAGER' CHECK (role = 'WAREHOUSE_MANAGER');
+ALTER TABLE admins             ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'ADMIN'             CHECK (role = 'ADMIN');
+
+ALTER TABLE customers          ADD CONSTRAINT fk_customers_user_role FOREIGN KEY (user_id, role) REFERENCES users (id, role);
+ALTER TABLE staff              ADD CONSTRAINT fk_staff_user_role     FOREIGN KEY (user_id, role) REFERENCES users (id, role);
+ALTER TABLE warehouse_managers ADD CONSTRAINT fk_wm_user_role        FOREIGN KEY (user_id, role) REFERENCES users (id, role);
+ALTER TABLE admins             ADD CONSTRAINT fk_admins_user_role    FOREIGN KEY (user_id, role) REFERENCES users (id, role);
+
+-- ---------------------------------------------------------------------
+-- 2a. Chung tu o trang thai cuoi thi bat bien
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_final_row_immutable() RETURNS trigger AS $$
+BEGIN
+  IF OLD.status IN ('APPROVED','REJECTED','CANCELLED','COMPLETED') AND NEW IS DISTINCT FROM OLD THEN
+    RAISE EXCEPTION '% #%: chung tu o trang thai % la bat bien', TG_TABLE_NAME, OLD.id, OLD.status;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+DO $$ DECLARE t TEXT; BEGIN
+  FOREACH t IN ARRAY ARRAY['material_issue_requests','finished_goods_issue_requests',
+                           'purchase_receipts','productions','production_requests','orders'] LOOP
+    EXECUTE format('CREATE TRIGGER trg_final_immutable BEFORE UPDATE ON %I
+                    FOR EACH ROW EXECUTE FUNCTION fn_final_row_immutable()', t);
+  END LOOP;
+END $$;
+
+-- ---------------------------------------------------------------------
+-- 2b. Chi tiet chi sua duoc khi chung tu cha con PENDING
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_freeze_items() RETURNS trigger AS $$
+DECLARE r JSONB; v_status TEXT;
+BEGIN
+  IF TG_OP = 'DELETE' THEN r := to_jsonb(OLD); ELSE r := to_jsonb(NEW); END IF;
+  EXECUTE format('SELECT status FROM %I WHERE id = $1', TG_ARGV[0])
+     INTO v_status USING (r->>TG_ARGV[1])::bigint;
+  IF TG_OP = 'DELETE' AND v_status IS NULL THEN RETURN OLD; END IF;  -- cascade khi xoa ca chung tu
+  IF v_status IS DISTINCT FROM 'PENDING' THEN
+    RAISE EXCEPTION 'khong duoc sua chi tiet cua % khi trang thai la %', TG_ARGV[0], v_status;
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON purchase_receipt_items
+  FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('purchase_receipts','purchase_receipt_id');
+CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON material_issue_request_items
+  FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('material_issue_requests','request_id');
+CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON finished_goods_issue_request_items
+  FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('finished_goods_issue_requests','request_id');
+CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON order_items
+  FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('orders','order_id');
+
+-- ---------------------------------------------------------------------
+-- 2c. Khoa product/bom/quantity cua Production Request khi da co MIR/production
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_lock_pr_core() RETURNS trigger AS $$
+BEGIN
+  IF (NEW.product_id, NEW.bom_id, NEW.quantity) IS DISTINCT FROM (OLD.product_id, OLD.bom_id, OLD.quantity)
+     AND (EXISTS (SELECT 1 FROM material_issue_requests WHERE production_request_id = OLD.id)
+       OR EXISTS (SELECT 1 FROM productions             WHERE production_request_id = OLD.id)) THEN
+    RAISE EXCEPTION 'production_request %: khong doi product/bom/quantity khi da co MIR hoac production', OLD.id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_lock_pr_core BEFORE UPDATE ON production_requests
+  FOR EACH ROW EXECUTE FUNCTION fn_lock_pr_core();
+
+-- ---------------------------------------------------------------------
+-- 3. inventories: chan ca INSERT/DELETE truc tiep (ton dau ky nhap bang ADJUST_IN co note)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION fn_inv_guard() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.quantity <> 0 THEN
+      RAISE EXCEPTION 'inventories: dong moi phai bat dau tu 0, tang/giam qua stock_movements';
+    END IF;
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'inventories khong duoc xoa';
+  END IF;
+  IF pg_trigger_depth() < 2 THEN
+    RAISE EXCEPTION 'inventories chi duoc thay doi qua stock_movements';
+  END IF;
+  IF (NEW.material_id, NEW.product_id) IS DISTINCT FROM (OLD.material_id, OLD.product_id) THEN
+    RAISE EXCEPTION 'inventories: khong doi material_id/product_id';
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+DROP TRIGGER trg_inv_guard ON inventories;
+CREATE TRIGGER trg_inv_guard BEFORE INSERT OR UPDATE OR DELETE ON inventories
+  FOR EACH ROW EXECUTE FUNCTION fn_inv_guard();
+
+-- ---------------------------------------------------------------------
+-- 4. Finished Goods Issue: don phai CONFIRMED, so luong xuat <= so luong dat
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_validate_fgir() RETURNS trigger AS $$
+DECLARE v_status TEXT;
+BEGIN
+  SELECT status INTO v_status FROM orders WHERE id = NEW.order_id;
+  IF v_status IS DISTINCT FROM 'CONFIRMED' THEN
+    RAISE EXCEPTION 'order % dang % - chi xuat thanh pham cho don CONFIRMED', NEW.order_id, v_status;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_validate_fgir BEFORE INSERT ON finished_goods_issue_requests
+  FOR EACH ROW EXECUTE FUNCTION fn_validate_fgir();
+
+CREATE FUNCTION fn_validate_fgir_item() RETURNS trigger AS $$
+DECLARE v_ordered INTEGER; v_reserved NUMERIC;
+BEGIN
+  SELECT quantity INTO v_ordered FROM order_items
+   WHERE order_id = NEW.order_id AND product_id = NEW.product_id FOR UPDATE;  -- tuan tu hoa
+  SELECT COALESCE(SUM(i.quantity), 0) INTO v_reserved
+    FROM finished_goods_issue_request_items i
+    JOIN finished_goods_issue_requests r ON r.id = i.request_id
+   WHERE i.order_id = NEW.order_id AND i.product_id = NEW.product_id
+     AND r.status IN ('PENDING','APPROVED') AND i.id <> NEW.id;
+  IF v_reserved + NEW.quantity > v_ordered THEN
+    RAISE EXCEPTION 'xuat % > so luong dat % (order %, product %)',
+      v_reserved + NEW.quantity, v_ordered, NEW.order_id, NEW.product_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_validate_fgir_item BEFORE INSERT OR UPDATE ON finished_goods_issue_request_items
+  FOR EACH ROW EXECUTE FUNCTION fn_validate_fgir_item();
+
+-- ---------------------------------------------------------------------
+-- 5. Production: cap theo request + NVL da xuat kho phai du theo BOM khi COMPLETED
+--    (thay the ham cu, trigger trg_validate_production_quantity giu nguyen)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION fn_validate_production_quantity() RETURNS trigger AS $$
+DECLARE
+  v_requested_qty NUMERIC;
+  v_produced_qty  NUMERIC;  -- tong cac ban ghi khac khong CANCELLED
+  v_done_qty      NUMERIC;  -- tong cac ban ghi khac COMPLETED
+BEGIN
+  SELECT quantity INTO v_requested_qty FROM production_requests
+   WHERE id = NEW.production_request_id FOR UPDATE;
+  IF v_requested_qty IS NULL THEN
+    RAISE EXCEPTION 'production_request % khong ton tai', NEW.production_request_id;
+  END IF;
+
+  SELECT COALESCE(SUM(quantity) FILTER (WHERE status <> 'CANCELLED'), 0),
+         COALESCE(SUM(quantity) FILTER (WHERE status =  'COMPLETED'), 0)
+    INTO v_produced_qty, v_done_qty
+    FROM productions
+   WHERE production_request_id = NEW.production_request_id AND id <> NEW.id;
+
+  IF NEW.status <> 'CANCELLED' AND v_produced_qty + NEW.quantity > v_requested_qty THEN
+    RAISE EXCEPTION 'tong so luong san xuat (%) vuot so luong production request (%) cua production request %',
+      v_produced_qty + NEW.quantity, v_requested_qty, NEW.production_request_id;
+  END IF;
+
+  IF NEW.status = 'COMPLETED' AND EXISTS (
+       SELECT 1
+         FROM production_requests pr
+         JOIN bom_items bi ON bi.bom_id = pr.bom_id
+        WHERE pr.id = NEW.production_request_id
+          AND bi.quantity * (v_done_qty + NEW.quantity) >
+              COALESCE((SELECT SUM(sm.quantity)
+                          FROM stock_movements sm
+                          JOIN material_issue_requests mir ON mir.id = sm.material_issue_request_id
+                         WHERE mir.production_request_id = pr.id
+                           AND sm.material_id = bi.material_id
+                           AND sm.movement_type = 'OUT'), 0)) THEN
+    RAISE EXCEPTION 'production_request %: NVL da xuat kho chua du theo BOM de hoan thanh so luong nay',
+      NEW.production_request_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+-- ---------------------------------------------------------------------
+-- 7. Race o cap NVL cua MIR: khoa production_request truoc khi tinh tong
+--    (thay the ham cu, trigger trg_validate_material_issue_item giu nguyen)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION fn_validate_material_issue_item() RETURNS trigger AS $$
+DECLARE
+  v_bom_id BIGINT;
+  v_production_qty NUMERIC;
+  v_bom_qty NUMERIC;
+  v_requested_qty NUMERIC;
+  v_pr_id BIGINT;
+BEGIN
+  SELECT production_request_id INTO v_pr_id
+    FROM material_issue_requests WHERE id = NEW.request_id;
+
+  PERFORM 1 FROM production_requests WHERE id = v_pr_id FOR UPDATE;
+
+  SELECT pr.bom_id, pr.quantity
+    INTO v_bom_id, v_production_qty
+    FROM production_requests pr
+   WHERE pr.id = v_pr_id;
+
+  IF v_bom_id IS NULL THEN
+    RAISE EXCEPTION 'material_issue_request % khong ton tai hoac khong co production_request hop le', NEW.request_id;
+  END IF;
+
+  SELECT bi.quantity INTO v_bom_qty
+    FROM bom_items bi
+   WHERE bi.bom_id = v_bom_id AND bi.material_id = NEW.material_id;
+
+  IF v_bom_qty IS NULL THEN
+    RAISE EXCEPTION 'material % khong nam trong BOM % cua production request cua issue request %',
+      NEW.material_id, v_bom_id, NEW.request_id;
+  END IF;
+
+  SELECT COALESCE(SUM(miri.quantity), 0)
+    INTO v_requested_qty
+    FROM material_issue_request_items miri
+    JOIN material_issue_requests mir ON mir.id = miri.request_id
+   WHERE mir.production_request_id = v_pr_id
+     AND miri.material_id = NEW.material_id
+     AND mir.status IN ('PENDING', 'APPROVED')
+     AND (TG_OP <> 'UPDATE' OR miri.id <> NEW.id);
+
+  IF v_requested_qty + NEW.quantity > v_bom_qty * v_production_qty THEN
+    RAISE EXCEPTION
+      'tong so luong yeu cau NVL (%) vuot nhu cau BOM (%) cho material % cua production request %',
+      v_requested_qty + NEW.quantity, v_bom_qty * v_production_qty, NEW.material_id, v_pr_id;
+  END IF;
+
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+-- ---------------------------------------------------------------------
+-- 8. Nguoi thuc hien + trang thai Production Request khi tao MIR / production
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_validate_pr_child() RETURNS trigger AS $$
+DECLARE v_status TEXT; v_assignee BIGINT; v_actor BIGINT;
+BEGIN
+  SELECT status, assigned_to INTO v_status, v_assignee
+    FROM production_requests WHERE id = NEW.production_request_id;
+  v_actor := (to_jsonb(NEW)->>TG_ARGV[0])::bigint;
+  IF v_status NOT IN ('PENDING','IN_PROGRESS') THEN
+    RAISE EXCEPTION 'production_request % dang %, khong tao them chung tu', NEW.production_request_id, v_status;
+  END IF;
+  IF v_assignee IS DISTINCT FROM v_actor THEN
+    RAISE EXCEPTION 'staff % khong phai nguoi duoc giao production_request %', v_actor, NEW.production_request_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_mir_actor  BEFORE INSERT ON material_issue_requests
+  FOR EACH ROW EXECUTE FUNCTION fn_validate_pr_child('requested_by');
+CREATE TRIGGER trg_prod_actor BEFORE INSERT ON productions
+  FOR EACH ROW EXECUTE FUNCTION fn_validate_pr_child('produced_by');
+
+-- ---------------------------------------------------------------------
+-- 9. Production Request phai dung BOM active + khong rong; BOM da dung thi khong sua item
+-- ---------------------------------------------------------------------
+CREATE FUNCTION fn_validate_production_request() RETURNS trigger AS $$
+BEGIN
+  IF (SELECT is_active FROM boms WHERE id = NEW.bom_id) IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'BOM % khong active', NEW.bom_id;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM bom_items WHERE bom_id = NEW.bom_id) THEN
+    RAISE EXCEPTION 'BOM % chua co nguyen vat lieu', NEW.bom_id;
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_validate_pr_insert BEFORE INSERT ON production_requests
+  FOR EACH ROW EXECUTE FUNCTION fn_validate_production_request();
+
+CREATE FUNCTION fn_lock_bom_items() RETURNS trigger AS $$
+DECLARE v_bom BIGINT;
+BEGIN
+  IF TG_OP = 'DELETE' THEN v_bom := OLD.bom_id; ELSE v_bom := NEW.bom_id; END IF;
+  IF EXISTS (SELECT 1 FROM production_requests WHERE bom_id = v_bom) THEN
+    RAISE EXCEPTION 'BOM % da co production request - tao BOM version moi thay vi sua', v_bom;
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_lock_bom_items BEFORE INSERT OR UPDATE OR DELETE ON bom_items
+  FOR EACH ROW EXECUTE FUNCTION fn_lock_bom_items();
