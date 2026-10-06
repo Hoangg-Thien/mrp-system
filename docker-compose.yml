@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: mrp-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mrp}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be defined in .env}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - ./database/mrp.sql:/docker-entrypoint-initdb.d/01_mrp.sql:ro
+      - mrp_pgdata:/var/lib/postgresql/data
+
+volumes:
+  mrp_pgdata:
