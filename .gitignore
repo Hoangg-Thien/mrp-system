@@ -4,6 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Dependencies & Build Outputs
+node_modules/
+dist/
+
+# Environment Configuration
+.env
+.env*.local
+!.env.example
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +40,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### OS files ###
+.DS_Store
+Thumbs.db

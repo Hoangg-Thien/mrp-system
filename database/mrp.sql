@@ -2,18 +2,8 @@ CREATE TABLE "users" (
   "id" BIGSERIAL PRIMARY KEY,
   "username" VARCHAR(50) UNIQUE NOT NULL,
   "password_hash" VARCHAR(255) NOT NULL,
-  "role" VARCHAR(30) NOT NULL CHECK (role IN ('CUSTOMER', 'STAFF', 'WAREHOUSE_MANAGER', 'ADMIN')) DEFAULT 'CUSTOMER',
+  "role" VARCHAR(30) NOT NULL CHECK (role IN ('STAFF', 'WAREHOUSE_MANAGER', 'ADMIN')),
   "is_active" BOOLEAN NOT NULL DEFAULT true,
-  "created_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP)
-);
-
-CREATE TABLE "customers" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "user_id" BIGINT UNIQUE NOT NULL,
-  "full_name" VARCHAR(150) NOT NULL,
-  "email" VARCHAR(150) UNIQUE,
-  "phone" VARCHAR(20),
-  "address" TEXT,
   "created_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
@@ -62,40 +52,6 @@ CREATE TABLE "products" (
   "selling_price" NUMERIC(15,2) NOT NULL CHECK (selling_price >= 0),
   "is_active" BOOLEAN NOT NULL DEFAULT true,
   "created_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP)
-);
-
-CREATE TABLE "carts" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "customer_id" BIGINT UNIQUE NOT NULL,
-  "created_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP)
-);
-
-CREATE TABLE "cart_items" (
-  "cart_id" BIGINT NOT NULL,
-  "product_id" BIGINT NOT NULL,
-  "quantity" INTEGER NOT NULL CHECK (quantity > 0),
-  PRIMARY KEY ("cart_id", "product_id")
-);
-
-CREATE TABLE "orders" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "customer_id" BIGINT NOT NULL,
-  "staff_id" BIGINT,
-  "order_date" TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "status" VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-  "total_amount" NUMERIC(15,2) NOT NULL CHECK (total_amount >= 0) DEFAULT 0,
-  "voucher_id" BIGINT,
-  "discount_amount" NUMERIC(15,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0)
-);
-
-CREATE TABLE "order_items" (
-  "order_id" BIGINT NOT NULL,
-  "product_id" BIGINT NOT NULL,
-  "quantity" INTEGER NOT NULL CHECK (quantity > 0),
-  "unit_price" NUMERIC(15,2) NOT NULL CHECK (unit_price >= 0),
-  "amount" NUMERIC(15,2) NOT NULL CHECK (amount >= 0),
-  PRIMARY KEY ("order_id", "product_id")
 );
 
 CREATE TABLE "suppliers" (
@@ -201,7 +157,6 @@ CREATE TABLE "productions" (
 
 CREATE TABLE "finished_goods_issue_requests" (
   "id" BIGSERIAL PRIMARY KEY,
-  "order_id" BIGINT NOT NULL,
   "requested_by" BIGINT NOT NULL,
   "reviewed_by" BIGINT,
   "status" VARCHAR(30) NOT NULL CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')) DEFAULT 'PENDING',
@@ -235,52 +190,8 @@ CREATE TABLE "stock_movements" (
   CHECK (product_id IS NULL OR quantity = trunc(quantity))
 );
 
-CREATE TABLE "promotion_programs" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "name" VARCHAR(200) NOT NULL,
-  "description" TEXT,
-  "start_date" TIMESTAMP NOT NULL,
-  "end_date" TIMESTAMP NOT NULL,
-  "status" VARCHAR(30) NOT NULL CHECK (status IN ('DRAFT','ACTIVE','INACTIVE')) DEFAULT 'DRAFT',
-  CHECK (end_date >= start_date)
-);
-
-CREATE TABLE "product_discounts" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "promotion_program_id" BIGINT NOT NULL,
-  "product_id" BIGINT NOT NULL,
-  "discount_percent" NUMERIC(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100)
-);
-
-CREATE TABLE "order_discounts" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "promotion_program_id" BIGINT NOT NULL,
-  "minimum_amount" NUMERIC(15,2) NOT NULL CHECK (minimum_amount >= 0),
-  "discount_percent" NUMERIC(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100)
-);
-
-CREATE TABLE "vouchers" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "promotion_program_id" BIGINT NOT NULL,
-  "code" VARCHAR(50) UNIQUE NOT NULL,
-  "discount_percent" NUMERIC(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
-  "minimum_amount" NUMERIC(15,2) NOT NULL CHECK (minimum_amount >= 0) DEFAULT 0,
-  "maximum_discount" NUMERIC(15,2),
-  "quantity" INTEGER NOT NULL CHECK (quantity >= 0) DEFAULT 0,
-  "used_quantity" INTEGER NOT NULL CHECK (used_quantity >= 0 AND used_quantity <= quantity) DEFAULT 0,
-  "start_date" TIMESTAMP NOT NULL,
-  "end_date" TIMESTAMP NOT NULL,
-  "status" VARCHAR(30) NOT NULL CHECK (status IN ('ACTIVE','INACTIVE')) DEFAULT 'ACTIVE',
-  CHECK (end_date >= start_date),
-  CHECK (maximum_discount IS NULL OR maximum_discount >= 0)
-);
-
 
 CREATE INDEX "idx_products_category" ON "products" ("category_id");
-CREATE INDEX "idx_cart_items_product" ON "cart_items" ("product_id");
-CREATE INDEX "idx_orders_customer" ON "orders" ("customer_id");
-CREATE INDEX "idx_orders_staff" ON "orders" ("staff_id");
-CREATE INDEX "idx_order_items_product" ON "order_items" ("product_id");
 CREATE INDEX "idx_purchase_receipts_supplier" ON "purchase_receipts" ("supplier_id");
 CREATE INDEX "idx_purchase_receipts_manager" ON "purchase_receipts" ("warehouse_manager_id");
 CREATE INDEX "idx_purchase_receipt_items_material" ON "purchase_receipt_items" ("material_id");
@@ -309,11 +220,8 @@ CREATE INDEX "idx_material_issue_items_material" ON "material_issue_request_item
 CREATE INDEX "idx_productions_request" ON "productions" ("production_request_id");
 CREATE INDEX "idx_productions_employee" ON "productions" ("produced_by");
 
-CREATE INDEX "idx_finished_goods_issue_order" ON "finished_goods_issue_requests" ("order_id");
 CREATE INDEX "idx_finished_goods_issue_employee" ON "finished_goods_issue_requests" ("requested_by");
 CREATE INDEX "idx_finished_goods_issue_manager" ON "finished_goods_issue_requests" ("reviewed_by");
-CREATE UNIQUE INDEX "uq_fgir_active_per_order" ON "finished_goods_issue_requests" ("order_id")
-  WHERE status IN ('PENDING','APPROVED');
 
 CREATE UNIQUE INDEX ON "finished_goods_issue_request_items" ("request_id", "product_id");
 CREATE INDEX "idx_finished_goods_issue_items_product" ON "finished_goods_issue_request_items" ("product_id");
@@ -327,28 +235,14 @@ CREATE UNIQUE INDEX "uq_sm_mat_issue" ON "stock_movements" ("material_issue_requ
 CREATE UNIQUE INDEX "uq_sm_production" ON "stock_movements" ("production_id") WHERE production_id IS NOT NULL;
 CREATE UNIQUE INDEX "uq_sm_fg_issue" ON "stock_movements" ("fg_issue_request_id", "product_id") WHERE fg_issue_request_id IS NOT NULL;
 
-CREATE INDEX "idx_product_discounts_product" ON "product_discounts" ("product_id");
-CREATE UNIQUE INDEX "uq_pd_program_product" ON "product_discounts" ("promotion_program_id", "product_id");
-CREATE INDEX "idx_order_discounts_program" ON "order_discounts" ("promotion_program_id");
-CREATE UNIQUE INDEX "uq_od_program_min" ON "order_discounts" ("promotion_program_id", "minimum_amount");
-CREATE INDEX "idx_vouchers_code" ON "vouchers" ("code");
 
-ALTER TABLE "customers" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "staff" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "warehouse_managers" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "admins" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "products" ADD FOREIGN KEY ("category_id") REFERENCES "categories" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "carts" ADD FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "cart_items" ADD FOREIGN KEY ("cart_id") REFERENCES "carts" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "cart_items" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "orders" ADD FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "orders" ADD FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "orders" ADD FOREIGN KEY ("voucher_id") REFERENCES "vouchers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "order_items" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "order_items" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "purchase_receipts" ADD FOREIGN KEY ("supplier_id") REFERENCES "suppliers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "purchase_receipts" ADD FOREIGN KEY ("warehouse_manager_id") REFERENCES "warehouse_managers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
@@ -376,7 +270,6 @@ ALTER TABLE "material_issue_request_items" ADD FOREIGN KEY ("material_id") REFER
 ALTER TABLE "productions" ADD FOREIGN KEY ("production_request_id") REFERENCES "production_requests" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "productions" ADD FOREIGN KEY ("produced_by") REFERENCES "staff" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "finished_goods_issue_requests" ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "finished_goods_issue_requests" ADD FOREIGN KEY ("requested_by") REFERENCES "staff" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "finished_goods_issue_requests" ADD FOREIGN KEY ("reviewed_by") REFERENCES "warehouse_managers" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "finished_goods_issue_request_items" ADD FOREIGN KEY ("request_id") REFERENCES "finished_goods_issue_requests" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
@@ -401,14 +294,7 @@ ALTER TABLE "stock_movements" ADD CONSTRAINT ck_sm_source CHECK (
     OR (movement_type LIKE 'ADJUST_%' AND num_nonnulls(purchase_receipt_id, material_issue_request_id, production_id, fg_issue_request_id) = 0)))
 );
 
-ALTER TABLE "product_discounts" ADD FOREIGN KEY ("promotion_program_id") REFERENCES "promotion_programs" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "product_discounts" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "order_discounts" ADD FOREIGN KEY ("promotion_program_id") REFERENCES "promotion_programs" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "vouchers" ADD FOREIGN KEY ("promotion_program_id") REFERENCES "promotion_programs" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "orders" ADD CONSTRAINT ck_orders_status CHECK (status IN ('PENDING','CONFIRMED','COMPLETED','CANCELLED'));
-ALTER TABLE "orders" ADD CONSTRAINT ck_orders_staff CHECK (status IN ('PENDING','CANCELLED') OR staff_id IS NOT NULL);
-ALTER TABLE "order_items" ADD CONSTRAINT ck_oi_amount CHECK (amount = quantity * unit_price);
 
 ALTER TABLE "purchase_receipts" ADD CONSTRAINT ck_pr_status CHECK (status IN ('PENDING','COMPLETED','CANCELLED'));
 ALTER TABLE "purchase_receipt_items" ADD CONSTRAINT ck_pri_amount CHECK (amount = round(quantity * unit_price, 2));
@@ -430,8 +316,6 @@ ALTER TABLE "production_requests" ADD CONSTRAINT ck_pr_assigned CHECK (
   status IN ('PENDING','CANCELLED') OR assigned_to IS NOT NULL
 );
 
-ALTER TABLE "promotion_programs" ADD CONSTRAINT ck_pp_status CHECK (status IN ('DRAFT','ACTIVE','INACTIVE'));
-ALTER TABLE "vouchers" ADD CONSTRAINT ck_v_status CHECK (status IN ('ACTIVE','INACTIVE'));
 
 CREATE FUNCTION fn_apply_stock_movement() RETURNS trigger AS $$
 DECLARE d NUMERIC(15,3);
@@ -472,13 +356,7 @@ ALTER TABLE stock_movements ADD CONSTRAINT fk_sm_mir_item
 ALTER TABLE stock_movements ADD CONSTRAINT fk_sm_fgir_item
   FOREIGN KEY (fg_issue_request_id, product_id) REFERENCES finished_goods_issue_request_items (request_id, product_id);
 
--- ===== PATCH 3: fg issue item phai thuoc order =====
-ALTER TABLE finished_goods_issue_requests ADD CONSTRAINT uq_fgir_id_order UNIQUE (id, order_id);
-ALTER TABLE finished_goods_issue_request_items ADD COLUMN order_id BIGINT NOT NULL;
-ALTER TABLE finished_goods_issue_request_items ADD CONSTRAINT fk_fgiri_request_order
-  FOREIGN KEY (request_id, order_id) REFERENCES finished_goods_issue_requests (id, order_id);
-ALTER TABLE finished_goods_issue_request_items ADD CONSTRAINT fk_fgiri_order_item
-  FOREIGN KEY (order_id, product_id) REFERENCES order_items (order_id, product_id);
+-- ===== PATCH 3: (da bo) fg issue item khong con gan voi order =====
 
 -- ===== PATCH 4: ADJUST bat buoc co ly do =====
 ALTER TABLE stock_movements ADD CONSTRAINT ck_sm_adjust_note
@@ -646,9 +524,6 @@ FOR EACH ROW EXECUTE FUNCTION fn_validate_production_quantity();
 
 -- ===== INDEX BO SUNG (tim kiem/loc cho Admin, join khi bao cao) =====
 CREATE INDEX idx_production_requests_product ON production_requests (product_id);
-CREATE INDEX idx_vouchers_program ON vouchers (promotion_program_id);
-CREATE INDEX idx_orders_voucher ON orders (voucher_id);
-CREATE INDEX idx_orders_status ON orders (status);
 
 
 -- ---------------------------------------------------------------------
@@ -656,12 +531,10 @@ CREATE INDEX idx_orders_status ON orders (status);
 -- ---------------------------------------------------------------------
 ALTER TABLE users ADD CONSTRAINT uq_users_id_role UNIQUE (id, role);
 
-ALTER TABLE customers          ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'CUSTOMER'          CHECK (role = 'CUSTOMER');
 ALTER TABLE staff              ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'STAFF'             CHECK (role = 'STAFF');
 ALTER TABLE warehouse_managers ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'WAREHOUSE_MANAGER' CHECK (role = 'WAREHOUSE_MANAGER');
 ALTER TABLE admins             ADD COLUMN role VARCHAR(30) NOT NULL DEFAULT 'ADMIN'             CHECK (role = 'ADMIN');
 
-ALTER TABLE customers          ADD CONSTRAINT fk_customers_user_role FOREIGN KEY (user_id, role) REFERENCES users (id, role);
 ALTER TABLE staff              ADD CONSTRAINT fk_staff_user_role     FOREIGN KEY (user_id, role) REFERENCES users (id, role);
 ALTER TABLE warehouse_managers ADD CONSTRAINT fk_wm_user_role        FOREIGN KEY (user_id, role) REFERENCES users (id, role);
 ALTER TABLE admins             ADD CONSTRAINT fk_admins_user_role    FOREIGN KEY (user_id, role) REFERENCES users (id, role);
@@ -679,7 +552,7 @@ END $$ LANGUAGE plpgsql;
 
 DO $$ DECLARE t TEXT; BEGIN
   FOREACH t IN ARRAY ARRAY['material_issue_requests','finished_goods_issue_requests',
-                           'purchase_receipts','productions','production_requests','orders'] LOOP
+                           'purchase_receipts','productions','production_requests'] LOOP
     EXECUTE format('CREATE TRIGGER trg_final_immutable BEFORE UPDATE ON %I
                     FOR EACH ROW EXECUTE FUNCTION fn_final_row_immutable()', t);
   END LOOP;
@@ -708,8 +581,6 @@ CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON material_is
   FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('material_issue_requests','request_id');
 CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON finished_goods_issue_request_items
   FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('finished_goods_issue_requests','request_id');
-CREATE TRIGGER trg_freeze_items BEFORE INSERT OR UPDATE OR DELETE ON order_items
-  FOR EACH ROW EXECUTE FUNCTION fn_freeze_items('orders','order_id');
 
 -- ---------------------------------------------------------------------
 -- 2c. Khoa product/bom/quantity cua Production Request khi da co MIR/production
@@ -753,38 +624,8 @@ CREATE TRIGGER trg_inv_guard BEFORE INSERT OR UPDATE OR DELETE ON inventories
   FOR EACH ROW EXECUTE FUNCTION fn_inv_guard();
 
 -- ---------------------------------------------------------------------
--- 4. Finished Goods Issue: don phai CONFIRMED, so luong xuat <= so luong dat
+-- 4. Finished Goods Issue: (da bo rang buoc theo don hang; chi con CHECK ton kho khi duyet)
 -- ---------------------------------------------------------------------
-CREATE FUNCTION fn_validate_fgir() RETURNS trigger AS $$
-DECLARE v_status TEXT;
-BEGIN
-  SELECT status INTO v_status FROM orders WHERE id = NEW.order_id;
-  IF v_status IS DISTINCT FROM 'CONFIRMED' THEN
-    RAISE EXCEPTION 'order % dang % - chi xuat thanh pham cho don CONFIRMED', NEW.order_id, v_status;
-  END IF;
-  RETURN NEW;
-END $$ LANGUAGE plpgsql;
-CREATE TRIGGER trg_validate_fgir BEFORE INSERT ON finished_goods_issue_requests
-  FOR EACH ROW EXECUTE FUNCTION fn_validate_fgir();
-
-CREATE FUNCTION fn_validate_fgir_item() RETURNS trigger AS $$
-DECLARE v_ordered INTEGER; v_reserved NUMERIC;
-BEGIN
-  SELECT quantity INTO v_ordered FROM order_items
-   WHERE order_id = NEW.order_id AND product_id = NEW.product_id FOR UPDATE;  -- tuan tu hoa
-  SELECT COALESCE(SUM(i.quantity), 0) INTO v_reserved
-    FROM finished_goods_issue_request_items i
-    JOIN finished_goods_issue_requests r ON r.id = i.request_id
-   WHERE i.order_id = NEW.order_id AND i.product_id = NEW.product_id
-     AND r.status IN ('PENDING','APPROVED') AND i.id <> NEW.id;
-  IF v_reserved + NEW.quantity > v_ordered THEN
-    RAISE EXCEPTION 'xuat % > so luong dat % (order %, product %)',
-      v_reserved + NEW.quantity, v_ordered, NEW.order_id, NEW.product_id;
-  END IF;
-  RETURN NEW;
-END $$ LANGUAGE plpgsql;
-CREATE TRIGGER trg_validate_fgir_item BEFORE INSERT OR UPDATE ON finished_goods_issue_request_items
-  FOR EACH ROW EXECUTE FUNCTION fn_validate_fgir_item();
 
 -- ---------------------------------------------------------------------
 -- 5. Production: cap theo request + NVL da xuat kho phai du theo BOM khi COMPLETED
