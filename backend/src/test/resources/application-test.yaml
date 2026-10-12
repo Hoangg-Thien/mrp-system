@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:mrp_test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+
+app:
+  jwt:
+    secret: mrptest-very-secure-jwt-secret-key-at-least-256-bits-long-0000
+    expiration-seconds: 3600
+  cors:
+    allowed-origins: http://localhost:5173
+  bootstrap-admin:
+    username: admin
+    password: Admin@12345
+    full-name: Test Administrator
