@@ -15,6 +15,20 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(BadRequestException.class)
+    ProblemDetail badRequest(BadRequestException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    ProblemDetail invalidParameter(Exception ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Tham số không hợp lệ");
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    ProblemDetail forbidden(Exception ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
+    }
     private static final Set<String> CONFLICT_SQL_STATES = Set.of("23505", "23503", "23514", "P0001");
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -52,7 +66,7 @@ public class GlobalExceptionHandler {
         if (sqlState != null && !CONFLICT_SQL_STATES.contains(sqlState)) {
             return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi không mong muốn");
         }
-        String detail = sqlState != null && "P0001".equals(sqlState) ? extractDriverMessage(ex) : "Dữ liệu đang được sử dụng hoặc bị trùng";
+        String detail = "Dữ liệu vi phạm quy tắc nghiệp vụ, đang được sử dụng hoặc bị trùng";
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
     }
 
@@ -77,12 +91,4 @@ public class GlobalExceptionHandler {
         return null;
     }
 
-    private static String extractDriverMessage(Throwable ex) {
-        Throwable cause = ex;
-        while (cause != null) {
-            if (cause instanceof SQLException) return cause.getMessage();
-            cause = cause.getCause();
-        }
-        return "Dữ liệu đang được sử dụng hoặc bị trùng";
-    }
 }

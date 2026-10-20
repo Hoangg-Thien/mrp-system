@@ -15,6 +15,7 @@ public class AuthController {
     public AuthController(AuthService service) { this.service = service; }
 
     @PostMapping("/login")
+    @io.swagger.v3.oas.annotations.security.SecurityRequirements()
     public LoginResponse login(@Valid @RequestBody LoginRequest request) { return service.login(request); }
 
     @GetMapping("/me")

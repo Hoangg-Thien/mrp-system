@@ -1,111 +1,133 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
+  background: #f5f7f6;
+  color: #1f2937;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+#root { min-height: 100vh; }
+
+.muted { color: #6b7280; font-size: 13px; }
+.full-width { width: 100%; }
+.center, .center-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ---------- Khung ứng dụng (W0) ---------- */
+.app-shell { min-height: 100vh; }
+.app-sider { background: #10312a; }
+
+.sider-brand {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background: #0b251f;
+}
+
+.app-header {
+  background: #fff;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(16, 49, 42, 0.08);
+}
+
+.header-title { font-weight: 600; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-btn { display: flex; align-items: center; gap: 8px; height: 40px; }
+.user-name { font-weight: 500; }
+.app-content { padding: 20px; }
+.app-footer { background: transparent; color: #9ca3af; text-align: center; padding: 12px; }
+
+/* ---------- Tiêu đề trang ---------- */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title { margin: 0; font-size: 22px; font-weight: 600; }
+.page-subtitle { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+.page-extra { display: flex; gap: 8px; align-items: center; }
+
+/* ---------- Bảng + bộ lọc (W1, W2) ---------- */
+.table-card .ant-card-body { padding: 16px; }
+
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.table-pagination { margin-top: 16px; display: flex; justify-content: flex-end; }
+.inline-alert { margin-top: 16px; }
+.stat-card { cursor: pointer; }
+.welcome-card { margin-top: 16px; }
+
+/* ---------- Đăng nhập (W0) ---------- */
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  background: linear-gradient(135deg, #0b251f 0%, #16653a 55%, #2f855a 100%);
+}
+
+.auth-panel {
+  color: #e8f5ee;
+  padding: 64px 56px;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  justify-content: center;
+  gap: 12px;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+.brand-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+.auth-panel h1 { font-size: 32px; margin: 8px 0 0; color: #fff; }
+.auth-panel p { margin: 0; opacity: 0.85; }
+.auth-points { margin: 16px 0 0; padding-left: 18px; line-height: 1.9; opacity: 0.9; }
+
+.auth-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #f5f7f6;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+.login-card { width: 100%; max-width: 420px; }
+.login-alert { margin-bottom: 16px; }
+.login-hint { margin: 16px 0 0; color: #6b7280; font-size: 12px; }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@media (max-width: 900px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .auth-panel { padding: 40px 24px; }
 }

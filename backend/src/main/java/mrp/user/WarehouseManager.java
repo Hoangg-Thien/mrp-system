@@ -20,7 +20,8 @@ public class WarehouseManager {
     @Column(length = 150) private String email;
     @Column(length = 20) private String phone;
     private String address;
-    @Column(name = "created_at", insertable = false, updatable = false) private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
+    @jakarta.persistence.PrePersist void onCreate() { if (createdAt == null) createdAt = LocalDateTime.now(); }
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 30) private UserRole role = UserRole.WAREHOUSE_MANAGER;
     protected WarehouseManager() { }
     public WarehouseManager(Long userId, String fullName, String email, String phone, String address) { this.userId=userId; this.fullName=fullName; this.email=email; this.phone=phone; this.address=address; }

@@ -17,8 +17,8 @@ public class JwtAuthenticationConverter implements Converter<Jwt, JwtAuthenticat
 
     @Override
     public JwtAuthenticationToken convert(Jwt token) {
-        Long userId = token.getClaim("uid");
-        if (userId == null || token.getClaim("pid") == null || token.getClaimAsString("role") == null) {
+        Long userId = toLong(token.getClaim("uid"));
+        if (userId == null || toLong(token.getClaim("pid")) == null || token.getClaimAsString("role") == null) {
             throw new BadCredentialsException("Token không hợp lệ");
         }
         User user = users.findById(userId).orElseThrow(() -> new BadCredentialsException("Token không hợp lệ"));
@@ -29,4 +29,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, JwtAuthenticat
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
                 user.getUsername());
     }
+
+    /** Claim số có thể được parse thành Integer hoặc Long tùy độ lớn. */
+    private static Long toLong(Object value) { return value instanceof Number number ? number.longValue() : null; }
 }
