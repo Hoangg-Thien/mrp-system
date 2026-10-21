@@ -46,3 +46,4 @@ build/
 Thumbs.db
 *.log
 .gemini/
+.agents/
