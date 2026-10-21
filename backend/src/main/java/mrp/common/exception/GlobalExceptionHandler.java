@@ -1,4 +1,4 @@
-package mrp.common;
+package mrp.common.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import java.sql.SQLException;

@@ -1,10 +1,11 @@
 package mrp.fgissue.dto;
 
 
-import mrp.common.BadRequestException;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import mrp.common.exception.BadRequestException;
 
 public final class FgIssueQuery {
     public static final Set<String> ALLOWED_SORTS = Set.of("id", "requestedAt", "status", "requestedBy");

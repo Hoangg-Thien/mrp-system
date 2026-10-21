@@ -3,7 +3,7 @@ package mrp.inventory.dto;
 
 
 import static mrp.inventory.dto.InventoryViews.*;
-import mrp.common.BadRequestException;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import mrp.common.exception.BadRequestException;
 
 /**
  * Read model tồn kho (INV-02, INV-03): LEFT JOIN {@code inventories} để mọi vật tư / sản phẩm đều

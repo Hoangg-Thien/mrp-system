@@ -1,13 +1,14 @@
 package mrp.catalog.dto;
 
 
-import mrp.common.BadRequestException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+
+import mrp.common.exception.BadRequestException;
 
 public final class CatalogQuery {
     private CatalogQuery() { }

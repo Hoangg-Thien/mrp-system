@@ -1,7 +1,7 @@
 package mrp.report;
 
 
-import mrp.common.BadRequestException;
+import mrp.common.exception.BadRequestException;
 import mrp.report.dto.StockReportItemView;
 import mrp.report.service.StockReportService;
 import static org.junit.jupiter.api.Assertions.assertEquals;

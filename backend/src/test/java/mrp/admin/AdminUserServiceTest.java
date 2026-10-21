@@ -6,7 +6,7 @@ import mrp.admin.dto.CreateUserRequest;
 import mrp.admin.service.AdminUserService;
 import mrp.auth.dto.UserView;
 import mrp.auth.service.AuthService;
-import mrp.common.BusinessException;
+import mrp.common.exception.BusinessException;
 import mrp.user.entity.Staff;
 import mrp.user.entity.User;
 import mrp.user.entity.UserRole;

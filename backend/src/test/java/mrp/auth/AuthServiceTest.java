@@ -5,7 +5,7 @@ import mrp.auth.dto.LoginRequest;
 import mrp.auth.dto.LoginResponse;
 import mrp.auth.service.AuthService;
 import mrp.auth.service.JwtService;
-import mrp.common.InvalidCredentialsException;
+import mrp.common.exception.InvalidCredentialsException;
 import mrp.user.entity.AdminProfile;
 import mrp.user.entity.User;
 import mrp.user.entity.UserRole;

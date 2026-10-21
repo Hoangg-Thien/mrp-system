@@ -1,7 +1,7 @@
 package mrp.report.service;
 
 
-import mrp.common.BadRequestException;
+import mrp.common.exception.BadRequestException;
 import mrp.report.dto.ReportGranularity;
 import mrp.report.dto.StockReportItemView;
 import mrp.report.dto.StockReportKind;

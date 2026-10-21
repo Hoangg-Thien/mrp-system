@@ -1,10 +1,11 @@
 package mrp.production.dto;
 
 
-import mrp.common.BadRequestException;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import mrp.common.exception.BadRequestException;
 
 public final class ProductionQuery {
     public static final Set<String> PR_SORTS = Set.of("id", "createdAt", "quantity", "status", "productId");

@@ -2,7 +2,8 @@ package mrp.purchase.dto;
 
 
 import mrp.catalog.dto.CatalogQuery;
-import mrp.common.BadRequestException;
+import mrp.common.exception.BadRequestException;
+
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

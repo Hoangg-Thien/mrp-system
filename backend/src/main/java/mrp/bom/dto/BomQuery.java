@@ -1,10 +1,11 @@
 package mrp.bom.dto;
 
 
-import mrp.common.BadRequestException;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import mrp.common.exception.BadRequestException;
 
 /**
  * Phân trang chuẩn cho BOM: {@code page >= 0}, {@code size 1..100},

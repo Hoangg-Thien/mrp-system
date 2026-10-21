@@ -1,10 +1,11 @@
 package mrp.security;
 
 
-import mrp.common.InvalidCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
+
+import mrp.common.exception.InvalidCredentialsException;
 
 /**
  * Lấy {@code uid} (users.id) và {@code pid} (id bảng profile) từ token đã được

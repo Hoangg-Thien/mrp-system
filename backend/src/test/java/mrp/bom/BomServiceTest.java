@@ -14,9 +14,10 @@ import mrp.catalog.entity.Product;
 import mrp.catalog.repository.MaterialRepository;
 import mrp.catalog.repository.ProductRepository;
 import mrp.catalog.service.CatalogService;
-import mrp.common.BadRequestException;
-import mrp.common.BusinessException;
-import mrp.common.ResourceNotFoundException;
+import mrp.common.exception.BadRequestException;
+import mrp.common.exception.BusinessException;
+import mrp.common.exception.ResourceNotFoundException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
