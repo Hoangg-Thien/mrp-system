@@ -1,8 +1,9 @@
 package mrp.security;
 
+
+import mrp.user.entity.User;
+import mrp.user.repository.UserRepository;
 import java.util.List;
-import mrp.user.User;
-import mrp.user.UserRepository;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

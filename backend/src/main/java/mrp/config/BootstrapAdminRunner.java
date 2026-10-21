@@ -1,9 +1,10 @@
 package mrp.config;
 
-import mrp.admin.AdminUserService;
-import mrp.admin.CreateUserRequest;
-import mrp.user.UserRepository;
-import mrp.user.UserRole;
+
+import mrp.admin.dto.CreateUserRequest;
+import mrp.admin.service.AdminUserService;
+import mrp.user.entity.UserRole;
+import mrp.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

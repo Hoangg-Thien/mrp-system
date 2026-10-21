@@ -1,5 +1,20 @@
 package mrp.admin;
 
+
+import mrp.admin.dto.ChangeRoleRequest;
+import mrp.admin.dto.CreateUserRequest;
+import mrp.admin.service.AdminUserService;
+import mrp.auth.dto.UserView;
+import mrp.auth.service.AuthService;
+import mrp.common.BusinessException;
+import mrp.user.entity.Staff;
+import mrp.user.entity.User;
+import mrp.user.entity.UserRole;
+import mrp.user.repository.AdminProfileRepository;
+import mrp.user.repository.StaffRepository;
+import mrp.user.repository.UserRepository;
+import mrp.user.repository.WarehouseManagerRepository;
+import mrp.user.service.UserReferenceChecker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,16 +22,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.lenient;
 
-import mrp.auth.AuthService;
-import mrp.auth.UserView;
-import mrp.common.BusinessException;
-import mrp.user.AdminProfileRepository;
-import mrp.user.StaffRepository;
-import mrp.user.User;
-import mrp.user.UserReferenceChecker;
-import mrp.user.UserRepository;
-import mrp.user.UserRole;
-import mrp.user.WarehouseManagerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +59,7 @@ class AdminUserServiceTest {
 
         UserView result = service.create(new CreateUserRequest("staff01", "Password@123", UserRole.STAFF, "Staff", null, null, null));
 
-        verify(staff).save(any(mrp.user.Staff.class));
+        verify(staff).save(any(Staff.class));
         assertEquals(UserRole.STAFF, result.role());
     }
 

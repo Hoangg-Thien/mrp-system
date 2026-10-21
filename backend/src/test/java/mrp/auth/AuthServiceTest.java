@@ -1,16 +1,22 @@
 package mrp.auth;
 
+
+import mrp.auth.dto.LoginRequest;
+import mrp.auth.dto.LoginResponse;
+import mrp.auth.service.AuthService;
+import mrp.auth.service.JwtService;
+import mrp.common.InvalidCredentialsException;
+import mrp.user.entity.AdminProfile;
+import mrp.user.entity.User;
+import mrp.user.entity.UserRole;
+import mrp.user.repository.AdminProfileRepository;
+import mrp.user.repository.StaffRepository;
+import mrp.user.repository.UserRepository;
+import mrp.user.repository.WarehouseManagerRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import mrp.common.InvalidCredentialsException;
-import mrp.user.AdminProfileRepository;
-import mrp.user.StaffRepository;
-import mrp.user.User;
-import mrp.user.UserRepository;
-import mrp.user.UserRole;
-import mrp.user.WarehouseManagerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +45,7 @@ class AuthServiceTest {
     void auth01_loginReturnsTokenAndCurrentProfile() {
         User user = new User("admin", encoder.encode("Password@123"), UserRole.ADMIN);
         when(users.findByUsername("admin")).thenReturn(java.util.Optional.of(user));
-        when(admins.findByUserId(null)).thenReturn(java.util.Optional.of(new mrp.user.AdminProfile(1L, "Admin", null, null, null)));
+        when(admins.findByUserId(null)).thenReturn(java.util.Optional.of(new AdminProfile(1L, "Admin", null, null, null)));
         when(jwtService.createToken(user, null)).thenReturn("jwt");
         when(jwtService.getExpirationSeconds()).thenReturn(86400L);
 
