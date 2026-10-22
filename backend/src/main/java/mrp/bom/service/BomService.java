@@ -23,25 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service quản lý công thức sản phẩm BOM (P5).
- * <ul>
- *   <li>Tạo BOM: sản phẩm active, >= 1 dòng, NVL active, không trùng trong BOM; version tự tăng.</li>
- *   <li>Chỉ 1 BOM active cho mỗi sản phẩm: vô hiệu BOM cũ trước khi kích hoạt BOM mới.</li>
- *   <li>Activate / Deactivate: đổi trạng thái BOM, serialize bằng pessimistic lock.</li>
- *   <li>Không có API sửa dòng: BOM đã có production_request thì DB chặn sửa; muốn đổi phải tạo version mới.</li>
- * </ul>
- */
 @Service
 @Transactional(readOnly = true)
 public class BomService {
 
+    private static final Logger log = LoggerFactory.getLogger(BomService.class);
     private final BomRepository bomRepository;
     private final BomItemRepository bomItemRepository;
     private final ProductRepository productRepository;
@@ -92,6 +86,7 @@ public class BomService {
             items.add(new BomItem(bom.getId(), itemReq.materialId(), itemReq.quantity()));
         }
         bomItemRepository.saveAllAndFlush(items);
+        log.info("Created BOM #{} version {} for product #{} with {} items", bom.getId(), bom.getVersion(), request.productId(), items.size());
 
         return detail(bom.getId());
     }
@@ -199,6 +194,7 @@ public class BomService {
 
             bom.setActive(true);
             bomRepository.saveAndFlush(bom);
+            log.info("Activated BOM #{} for product #{}", id, bom.getProductId());
         }
 
         return detail(bom.getId());
@@ -212,6 +208,7 @@ public class BomService {
         if (bom.isActive()) {
             bom.setActive(false);
             bomRepository.saveAndFlush(bom);
+            log.info("Deactivated BOM #{} for product #{}", id, bom.getProductId());
         }
 
         return detail(bom.getId());

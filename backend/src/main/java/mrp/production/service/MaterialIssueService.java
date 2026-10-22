@@ -28,6 +28,8 @@ import mrp.user.repository.StaffRepository;
 import mrp.user.repository.UserRepository;
 import mrp.user.repository.WarehouseManagerRepository;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -50,6 +52,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class MaterialIssueService {
+
+    private static final Logger log = LoggerFactory.getLogger(MaterialIssueService.class);
 
     private final ProductionRequestRepository prRepo;
     private final MaterialIssueRequestRepository mirRepo;
@@ -163,6 +167,8 @@ public class MaterialIssueService {
             mirItemRepo.save(item);
         }
         mirItemRepo.flush();
+        log.info("Created material issue request #{} for production request #{} with {} items by staff #{}",
+                mir.getId(), pr.getId(), req.items().size(), actor.profileId());
 
         String warning = hasShortage ? "Kho hiện tại không đủ tồn cho một số nguyên vật liệu trong phiếu" : null;
         return detailMaterialIssueRequest(mir.getId(), actor, hasShortage, warning);
@@ -330,6 +336,7 @@ public class MaterialIssueService {
                 "Xuất NVL theo phiếu xuất #" + mir.getId()
             );
         }
+        log.info("Approved material issue request #{} with {} items posted to stock by manager #{}", id, items.size(), actor.profileId());
 
         return detailMaterialIssueRequest(id, actor);
     }
@@ -351,6 +358,7 @@ public class MaterialIssueService {
         String originalNote = mir.getNote() != null && !mir.getNote().isBlank() ? mir.getNote() + " " : "";
         mir.setNote(originalNote + "[TỪ CHỐI] " + req.reason().trim());
         mirRepo.saveAndFlush(mir);
+        log.info("Rejected material issue request #{} by manager #{}", id, actor.profileId());
 
         return detailMaterialIssueRequest(id, actor);
     }
@@ -370,6 +378,7 @@ public class MaterialIssueService {
 
         mir.setStatus(MaterialIssueRequestStatus.CANCELLED);
         mirRepo.saveAndFlush(mir);
+        log.info("Cancelled material issue request #{} by staff #{}", id, actor.profileId());
 
         return detailMaterialIssueRequest(id, actor);
     }

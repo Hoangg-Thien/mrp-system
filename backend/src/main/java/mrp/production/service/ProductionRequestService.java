@@ -34,6 +34,8 @@ import mrp.user.repository.StaffRepository;
 import mrp.user.repository.UserRepository;
 import mrp.user.repository.WarehouseManagerRepository;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,6 +56,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProductionRequestService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductionRequestService.class);
 
     private final ProductionRequestRepository prRepo;
     private final MaterialIssueRequestRepository mirRepo;
@@ -136,6 +140,8 @@ public class ProductionRequestService {
             req.note()
         );
         pr = prRepo.saveAndFlush(pr);
+        log.info("Created production request #{} for product #{} (BOM #{}, quantity {}) assigned to staff #{}",
+                pr.getId(), req.productId(), bom.getId(), req.quantity(), req.assignedStaffId());
 
         return detailProductionRequest(pr.getId(), actor);
     }
@@ -310,6 +316,7 @@ public class ProductionRequestService {
 
         pr.setStatus(ProductionRequestStatus.CANCELLED);
         prRepo.saveAndFlush(pr);
+        log.info("Cancelled production request #{} by user #{}", id, actor.userId());
 
         return detailProductionRequest(id, actor);
     }

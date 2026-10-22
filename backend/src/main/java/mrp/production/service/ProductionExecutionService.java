@@ -22,6 +22,8 @@ import mrp.user.entity.UserRole;
 import mrp.user.repository.StaffRepository;
 import mrp.user.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,6 +44,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProductionExecutionService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductionExecutionService.class);
 
     private final ProductionRepository prodRepo;
     private final ProductionRequestRepository prRepo;
@@ -94,6 +98,8 @@ public class ProductionExecutionService {
 
         Production prod = new Production(pr.getId(), req.quantity(), actor.profileId(), req.note());
         prod = prodRepo.saveAndFlush(prod);
+        log.info("Created production #{} for PR #{} quantity {} by staff #{}",
+                prod.getId(), pr.getId(), req.quantity(), actor.profileId());
 
         // Quyết định D4: Chuyển PR sang IN_PROGRESS khi bắt đầu đợt sản xuất đầu tiên
         if (pr.getStatus() == ProductionRequestStatus.PENDING) {
@@ -240,6 +246,8 @@ public class ProductionExecutionService {
             pr.setStatus(ProductionRequestStatus.COMPLETED);
             prRepo.saveAndFlush(pr);
         }
+        log.info("Completed production #{} for PR #{} quantity {} (total completed: {}/{}) by staff #{}",
+                id, pr.getId(), prod.getQuantity(), totalDoneAfterThis, pr.getQuantity(), actor.profileId());
 
         Staff s = staffRepo.findById(actor.profileId()).orElse(null);
         return new ProductionViews.ProductionExecutionView(
@@ -270,6 +278,7 @@ public class ProductionExecutionService {
 
         prod.setStatus(ProductionStatus.CANCELLED);
         prodRepo.saveAndFlush(prod);
+        log.info("Cancelled production #{} for PR #{} by staff #{}", id, prod.getProductionRequestId(), actor.profileId());
 
         Staff s = staffRepo.findById(actor.profileId()).orElse(null);
         return new ProductionViews.ProductionExecutionView(
