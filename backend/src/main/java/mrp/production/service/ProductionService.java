@@ -41,13 +41,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -71,6 +77,7 @@ public class ProductionService {
     private final CatalogService catalogService;
     private final StockLedger stockLedger;
     private final JdbcTemplate jdbc;
+    private final NamedParameterJdbcTemplate namedJdbc;
 
     public ProductionService(
             ProductionRequestRepository prRepo,
@@ -101,6 +108,7 @@ public class ProductionService {
         this.catalogService = catalogService;
         this.stockLedger = stockLedger;
         this.jdbc = jdbc;
+        this.namedJdbc = new NamedParameterJdbcTemplate(jdbc);
     }
 
     // =========================================================================
@@ -154,6 +162,8 @@ public class ProductionService {
         Map<Long, Material> matMap = materialRepo.findAllById(matIds).stream()
                 .collect(Collectors.toMap(Material::getId, m -> m));
 
+        Map<Long, BigDecimal> committedMap = calculateCommittedBatch(allOpenPrs, matIds);
+
         for (BomItem item : bomItems) {
             Material m = matMap.get(item.getMaterialId());
             String code = m != null ? m.getCode() : "";
@@ -163,7 +173,7 @@ public class ProductionService {
             BigDecimal onHand = stockLedger.materialBalance(item.getMaterialId());
 
             // committed: tổng max(0, BOM_item_qty * pr.qty - đã xuất APPROVED) của các PR đang mở
-            BigDecimal committed = calculateCommitted(allOpenPrs, item.getMaterialId());
+            BigDecimal committed = committedMap.getOrDefault(item.getMaterialId(), BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP));
 
             materialInputs.add(new MrpCalculator.MaterialDemandInput(
                 item.getMaterialId(),
@@ -179,23 +189,58 @@ public class ProductionService {
         return MrpCalculator.calculate(productId, quantity, fgOnHand, fgReserved, fgIncoming, materialInputs);
     }
 
-    private BigDecimal calculateCommitted(List<ProductionRequest> openPrs, Long materialId) {
-        BigDecimal totalCommitted = BigDecimal.ZERO;
-        for (ProductionRequest pr : openPrs) {
-            // Lấy BOM item tương ứng của PR đó
-            List<BomItem> prBomItems = bomItemRepo.findByBomIdOrderByMaterialIdAsc(pr.getBomId());
-            for (BomItem bi : prBomItems) {
-                if (bi.getMaterialId().equals(materialId)) {
-                    BigDecimal required = bi.getQuantity().multiply(BigDecimal.valueOf(pr.getQuantity()));
-                    BigDecimal approvedIssued = getApprovedIssuedQuantity(pr.getId(), materialId);
-                    BigDecimal remaining = required.subtract(approvedIssued);
-                    if (remaining.compareTo(BigDecimal.ZERO) > 0) {
-                        totalCommitted = totalCommitted.add(remaining);
-                    }
-                }
-            }
+    public Map<Long, BigDecimal> calculateCommittedBatch(Collection<ProductionRequest> openPrs, Collection<Long> materialIds) {
+        if (openPrs == null || openPrs.isEmpty() || materialIds == null || materialIds.isEmpty()) {
+            return Collections.emptyMap();
         }
-        return totalCommitted.setScale(3, RoundingMode.HALF_UP);
+
+        List<Long> prIds = openPrs.stream().map(ProductionRequest::getId).filter(Objects::nonNull).distinct().toList();
+        List<Long> matIds = materialIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (prIds.isEmpty() || matIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String sql = """
+            SELECT
+                bi.material_id,
+                SUM(CASE
+                    WHEN (bi.quantity * pr.quantity - COALESCE(issued.issued_qty, 0)) > 0
+                    THEN (bi.quantity * pr.quantity - COALESCE(issued.issued_qty, 0))
+                    ELSE 0
+                END) AS committed_qty
+            FROM production_requests pr
+            JOIN bom_items bi ON bi.bom_id = pr.bom_id
+            LEFT JOIN (
+                SELECT mir.production_request_id, miri.material_id, SUM(miri.quantity) AS issued_qty
+                FROM material_issue_requests mir
+                JOIN material_issue_request_items miri ON miri.request_id = mir.id
+                WHERE mir.status = 'APPROVED'
+                  AND mir.production_request_id IN (:prIds)
+                GROUP BY mir.production_request_id, miri.material_id
+            ) issued ON issued.production_request_id = pr.id AND issued.material_id = bi.material_id
+            WHERE pr.id IN (:prIds)
+              AND bi.material_id IN (:matIds)
+            GROUP BY bi.material_id
+            """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("prIds", prIds)
+                .addValue("matIds", matIds);
+
+        Map<Long, BigDecimal> result = new HashMap<>();
+        namedJdbc.query(sql, params, rs -> {
+            Long matId = rs.getLong("material_id");
+            BigDecimal qty = rs.getBigDecimal("committed_qty");
+            result.put(matId, (qty != null ? qty : BigDecimal.ZERO).setScale(3, RoundingMode.HALF_UP));
+        });
+
+        return result;
+    }
+
+    private BigDecimal calculateCommitted(List<ProductionRequest> openPrs, Long materialId) {
+        if (materialId == null) return BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP);
+        return calculateCommittedBatch(openPrs, Set.of(materialId))
+                .getOrDefault(materialId, BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP));
     }
 
     private BigDecimal getApprovedIssuedQuantity(Long prId, Long materialId) {
@@ -449,6 +494,7 @@ public class ProductionService {
                 .collect(Collectors.toMap(Material::getId, m -> m));
 
         List<ProductionViews.RequirementItemView> itemViews = new ArrayList<>();
+        Map<Long, BigDecimal> committedOtherMap = calculateCommittedBatch(otherOpenPrs, matIds);
 
         for (BomItem bi : bomItems) {
             Material m = matMap.get(bi.getMaterialId());
@@ -471,7 +517,7 @@ public class ProductionService {
 
             BigDecimal remainingAllowed = totalReq.subtract(approvedQty.add(pendingQty)).max(BigDecimal.ZERO);
             BigDecimal onHand = stockLedger.materialBalance(bi.getMaterialId());
-            BigDecimal committedOther = calculateCommitted(otherOpenPrs, bi.getMaterialId());
+            BigDecimal committedOther = committedOtherMap.getOrDefault(bi.getMaterialId(), BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP));
 
             BigDecimal remainingToIssue = totalReq.subtract(approvedQty).max(BigDecimal.ZERO);
             BigDecimal usableOther = onHand.subtract(committedOther).max(BigDecimal.ZERO);
