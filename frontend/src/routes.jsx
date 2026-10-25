@@ -5,11 +5,14 @@ import RequireRole from './auth/RequireRole'
 import { useAuth } from './auth/context'
 import { homeByRole } from './utils/statusMap'
 import AdminLayout from './layouts/AdminLayout'
-import AreaLayout from './layouts/AreaLayout'
+import WarehouseLayout from './layouts/WarehouseLayout'
+import StaffLayout from './layouts/StaffLayout'
 
+// Common & Auth
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
-const PendingPage = lazy(() => import('./pages/PendingPage'))
+
+// Admin Pages
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'))
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'))
 const ProfilePage = lazy(() => import('./pages/admin/ProfilePage'))
@@ -19,28 +22,31 @@ const SuppliersPage = lazy(() => import('./pages/admin/SuppliersPage'))
 const MaterialsPage = lazy(() => import('./pages/admin/MaterialsPage'))
 const StaffPage = lazy(() => import('./pages/admin/StaffPage'))
 
-/** Màn hình chờ hiển thị trong khu vực WM/STAFF đến khi backend P3–P9 hoàn tất. */
-const warehousePhases = [
-  { phase: 2, label: 'P2 – Danh mục dữ liệu (backend đã có)', detail: 'Sản phẩm, nguyên vật liệu, nhà cung cấp do quản trị viên cấu hình.' },
-  { phase: 3, label: 'P3 – Quản lý kho (frontend W3)', detail: 'Tồn kho, thẻ kho, lịch sử nhập xuất, điều chỉnh.' },
-  { phase: 4, label: 'P4 – Phiếu nhập kho (frontend W4)', detail: 'Tạo phiếu nhập nhiều dòng NVL, hoàn tất, hủy.' },
-  { phase: 6, label: 'P6 – Kế hoạch MRP (frontend W5–W6)', detail: 'Phê duyệt kế hoạch, yêu cầu sản xuất, duyệt phiếu xuất NVL.' },
-  { phase: 8, label: 'P8 – Xuất kho thành phẩm (frontend W6)', detail: 'Duyệt phiếu xuất thành phẩm do nhân viên lập.' },
-]
+// Warehouse Manager Pages
+const WarehouseDashboard = lazy(() => import('./pages/warehouse/WarehouseDashboard'))
+const InventoryPage = lazy(() => import('./pages/warehouse/InventoryPage'))
+const MovementsPage = lazy(() => import('./pages/warehouse/MovementsPage'))
+const PurchaseReceiptsPage = lazy(() => import('./pages/warehouse/PurchaseReceiptsPage'))
+const BomsPage = lazy(() => import('./pages/warehouse/BomsPage'))
+const MrpPlanningPage = lazy(() => import('./pages/warehouse/MrpPlanningPage'))
+const ProductionRequestsPage = lazy(() => import('./pages/warehouse/ProductionRequestsPage'))
+const MaterialIssuesPage = lazy(() => import('./pages/warehouse/MaterialIssuesPage'))
+const FgIssuesPage = lazy(() => import('./pages/warehouse/FgIssuesPage'))
+const StockReportsPage = lazy(() => import('./pages/warehouse/StockReportsPage'))
 
-const staffPhases = [
-  { phase: 2, label: 'P2 – Danh mục dữ liệu (backend đã có)', detail: 'Xem sản phẩm, nguyên vật liệu.' },
-  { phase: 5, label: 'P5 – BOM (frontend W4)', detail: 'Xem cấu trúc sản phẩm và định mức nguyên vật liệu.' },
-  { phase: 7, label: 'P7 – Sản xuất (frontend W5–W6)', detail: 'Nhận việc, yêu cầu xuất NVL, báo cáo sản xuất, lập phiếu xuất thành phẩm.' },
-  { phase: 9, label: 'P9 – Báo cáo (frontend W7)', detail: 'Thống kê tồn kho, nhập xuất, sản xuất theo tháng/quý/năm.' },
-]
+// Staff Pages
+const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'))
+const StaffProductionRequestsPage = lazy(() => import('./pages/staff/StaffProductionRequestsPage'))
+const StaffMaterialRequestsPage = lazy(() => import('./pages/staff/StaffMaterialRequestsPage'))
+const StaffProductionsPage = lazy(() => import('./pages/staff/StaffProductionsPage'))
+const StaffFgRequestsPage = lazy(() => import('./pages/staff/StaffFgRequestsPage'))
 
 function HomeRedirect() {
   const { user } = useAuth()
   return <Navigate to={user ? homeByRole[user.role] : '/login'} replace />
 }
 
-/** Ba khu vực tách biệt theo role; vào sai khu vực sẽ bị điều hướng về khu vực của mình. */
+/** Ba khu vực tách biệt hoàn toàn theo role; vào sai khu vực sẽ bị điều hướng về khu vực của mình. */
 export default function AppRoutes() {
   return (
     <Suspense fallback={<div className="center-screen"><Spin size="large" /></div>}>
@@ -48,6 +54,7 @@ export default function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<HomeRedirect />} />
 
+        {/* 1. ADMIN AREA */}
         <Route path="/admin" element={<RequireRole role="ADMIN"><AdminLayout /></RequireRole>}>
           <Route index element={<DashboardPage />} />
           <Route path="users" element={<UsersPage />} />
@@ -57,14 +64,32 @@ export default function AppRoutes() {
           <Route path="suppliers" element={<SuppliersPage />} />
           <Route path="materials" element={<MaterialsPage />} />
           <Route path="staff" element={<StaffPage />} />
+          <Route path="reports" element={<StockReportsPage />} />
         </Route>
 
-        <Route path="/warehouse" element={<RequireRole role="WAREHOUSE_MANAGER"><AreaLayout areaKey="warehouse" title="Quản lý kho" /></RequireRole>}>
-          <Route index element={<PendingPage area="quản lý kho" items={warehousePhases} />} />
+        {/* 2. WAREHOUSE MANAGER AREA */}
+        <Route path="/warehouse" element={<RequireRole role="WAREHOUSE_MANAGER"><WarehouseLayout /></RequireRole>}>
+          <Route index element={<WarehouseDashboard />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="movements" element={<MovementsPage />} />
+          <Route path="receipts" element={<PurchaseReceiptsPage />} />
+          <Route path="boms" element={<BomsPage />} />
+          <Route path="planning" element={<MrpPlanningPage />} />
+          <Route path="production-requests" element={<ProductionRequestsPage />} />
+          <Route path="material-issues" element={<MaterialIssuesPage />} />
+          <Route path="fg-issues" element={<FgIssuesPage />} />
+          <Route path="reports" element={<StockReportsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/staff" element={<RequireRole role="STAFF"><AreaLayout areaKey="staff" title="Khu vực nhân viên" /></RequireRole>}>
-          <Route index element={<PendingPage area="nhân viên" items={staffPhases} />} />
+        {/* 3. STAFF AREA */}
+        <Route path="/staff" element={<RequireRole role="STAFF"><StaffLayout /></RequireRole>}>
+          <Route index element={<StaffDashboard />} />
+          <Route path="requests" element={<StaffProductionRequestsPage />} />
+          <Route path="material-requests" element={<StaffMaterialRequestsPage />} />
+          <Route path="productions" element={<StaffProductionsPage />} />
+          <Route path="fg-requests" element={<StaffFgRequestsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

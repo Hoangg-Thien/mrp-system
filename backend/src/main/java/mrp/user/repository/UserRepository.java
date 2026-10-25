@@ -28,7 +28,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
         select u from User u
         where (:role is null or u.role = :role)
           and (:active is null or u.active = :active)
-          and (:keyword is null or lower(u.username) like lower(concat('%', :keyword, '%'))
+        """)
+    Page<User> searchWithoutKeyword(@Param("role") UserRole role, @Param("active") Boolean active, Pageable pageable);
+
+    @Query("""
+        select u from User u
+        where (:role is null or u.role = :role)
+          and (:active is null or u.active = :active)
+          and (lower(u.username) like lower(concat('%', :keyword, '%'))
                or exists (select 1 from Staff s where s.userId = u.id and
                           (lower(s.fullName) like lower(concat('%', :keyword, '%')) or lower(coalesce(s.email, '')) like lower(concat('%', :keyword, '%'))))
                or exists (select 1 from WarehouseManager w where w.userId = u.id and
@@ -36,6 +43,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
                or exists (select 1 from AdminProfile a where a.userId = u.id and
                           (lower(a.fullName) like lower(concat('%', :keyword, '%')) or lower(coalesce(a.email, '')) like lower(concat('%', :keyword, '%')))))
         """)
-    Page<User> search(@Param("role") UserRole role, @Param("active") Boolean active,
-                      @Param("keyword") String keyword, Pageable pageable);
+    Page<User> searchWithKeyword(@Param("role") UserRole role, @Param("active") Boolean active,
+                                 @Param("keyword") String keyword, Pageable pageable);
+
+    default Page<User> search(UserRole role, Boolean active, String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return searchWithoutKeyword(role, active, pageable);
+        }
+        return searchWithKeyword(role, active, keyword.trim(), pageable);
+    }
 }

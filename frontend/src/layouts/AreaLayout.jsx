@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Avatar, Button, Dropdown, Layout, Menu, Tag } from 'antd'
+import { Avatar, Button, Layout, Menu } from 'antd'
 import { LogoutOutlined, ShopOutlined, UserOutlined } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
@@ -17,28 +17,36 @@ export default function AreaLayout({ areaKey, title, menu = [] }) {
 
   return (
     <Layout className="app-shell">
-      <Layout.Sider width={232} className="app-sider">
-        <div className="sider-brand">MRP SYSTEM</div>
-        <Menu theme="dark" mode="inline" selectedKeys={selected} items={items} />
+      <Layout.Sider width={250} className="app-sider">
+        <div className="sider-brand">
+          <span className="brand-logo-icon">M</span>
+          <span className="brand-text">MRP SYSTEM</span>
+        </div>
+        <Menu theme="dark" mode="inline" inlineIndent={16} selectedKeys={selected} items={items} />
+        <div className="sider-footer">
+          <div className="sider-user-card" onClick={() => navigate(`/${areaKey}`)} title="Tài khoản">
+            <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#16653a' }} />
+            <div className="sider-user-info">
+              <span className="sider-user-name">{user.fullName}</span>
+              <span className="sider-user-role">{roleLabels[user.role]}</span>
+            </div>
+            <Button
+              type="text"
+              icon={<LogoutOutlined />}
+              className="sider-logout-btn"
+              title="Đăng xuất"
+              onClick={(e) => {
+                e.stopPropagation()
+                logout()
+                navigate('/login')
+              }}
+            />
+          </div>
+        </div>
       </Layout.Sider>
       <Layout>
         <Layout.Header className="app-header">
           <span className="header-title">{title}</span>
-          <div className="header-right">
-            <Dropdown
-              menu={{
-                items: [
-                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: () => { logout(); navigate('/login') } },
-                ],
-              }}
-            >
-              <Button type="text" className="user-btn">
-                <Avatar size="small" icon={<UserOutlined />} />
-                <span className="user-name">{user.fullName}</span>
-                <Tag color="blue">{roleLabels[user.role]}</Tag>
-              </Button>
-            </Dropdown>
-          </div>
         </Layout.Header>
         <Layout.Content className="app-content">
           <Outlet />

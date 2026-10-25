@@ -1,15 +1,22 @@
 import { useEffect } from 'react'
 import { Form, Input, InputNumber, Modal, Select } from 'antd'
 
-function Control({ field, options }) {
+function renderControl(field, options) {
   switch (field.type) {
-    case 'textarea': return <Input.TextArea rows={3} maxLength={field.max} />
-    case 'password': return <Input.Password autoComplete="new-password" />
-    case 'money': return <InputNumber className="full-width" min={0} precision={2} step={1000} />
-    case 'number': return <InputNumber className="full-width" min={field.min ?? 0} />
-    case 'select': return <Select options={field.options} allowClear />
-    case 'category': return <Select options={options?.categories || []} showSearch optionFilterProp="label" placeholder="Chọn danh mục" />
-    default: return <Input maxLength={field.max} type={field.type === 'email' ? 'email' : 'text'} />
+    case 'textarea':
+      return <Input.TextArea rows={3} maxLength={field.max} placeholder={field.placeholder || `Nhập ${field.label.toLowerCase()}`} />
+    case 'password':
+      return <Input.Password autoComplete="new-password" placeholder={field.placeholder || '••••••••'} />
+    case 'money':
+      return <InputNumber className="full-width" min={0} precision={2} step={1000} placeholder={field.placeholder || '0'} style={{ width: '100%' }} />
+    case 'number':
+      return <InputNumber className="full-width" min={field.min ?? 0} placeholder={field.placeholder || '0'} style={{ width: '100%' }} />
+    case 'select':
+      return <Select options={field.options} allowClear placeholder={field.placeholder || `Chọn ${field.label.toLowerCase()}`} />
+    case 'category':
+      return <Select options={options?.categories || []} showSearch optionFilterProp="label" placeholder="Chọn danh mục" allowClear />
+    default:
+      return <Input maxLength={field.max} type={field.type === 'email' ? 'email' : 'text'} placeholder={field.placeholder || `Nhập ${field.label.toLowerCase()}`} />
   }
 }
 
@@ -34,6 +41,7 @@ export default function FormModal({ title, open, fields, options, initialValues,
       confirmLoading={confirmLoading}
       forceRender
       width={560}
+      destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         {fields.map((field) => (
@@ -49,7 +57,7 @@ export default function FormModal({ title, open, fields, options, initialValues,
               ...(field.rules || []),
             ]}
           >
-            <Control field={field} options={options} />
+            {renderControl(field, options)}
           </Form.Item>
         ))}
       </Form>

@@ -16,7 +16,30 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ConfigProvider locale={viVN} theme={{ token: { colorPrimary: '#16653a', borderRadius: 6 } }}>
+    <ConfigProvider
+      locale={viVN}
+      theme={{
+        token: {
+          colorPrimary: '#16653a',
+          borderRadius: 8,
+          fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
+        },
+        components: {
+          Menu: {
+            darkItemBg: 'transparent',
+            darkSubMenuItemBg: 'rgba(0, 0, 0, 0.22)',
+            darkItemSelectedBg: '#16653a',
+            darkItemHoverBg: 'rgba(255, 255, 255, 0.08)',
+            itemHeight: 46,
+            itemMarginInline: 8,
+            itemMarginBlock: 4,
+          },
+          Layout: {
+            siderBg: '#10312a',
+          },
+        },
+      }}
+    >
       <AntApp>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>

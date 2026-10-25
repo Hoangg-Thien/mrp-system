@@ -55,9 +55,9 @@ public class AuthService {
 
     public UserView view(User user) {
         return switch (user.getRole()) {
-            case STAFF -> staff.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive())).orElseThrow();
-            case WAREHOUSE_MANAGER -> managers.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive())).orElseThrow();
-            case ADMIN -> admins.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive())).orElseThrow();
+            case STAFF -> staff.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive(), user.getCreatedAt())).orElseThrow();
+            case WAREHOUSE_MANAGER -> managers.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive(), user.getCreatedAt())).orElseThrow();
+            case ADMIN -> admins.findByUserId(user.getId()).map(p -> new UserView(user.getId(), user.getUsername(), user.getRole(), p.getId(), p.getFullName(), p.getEmail(), p.getPhone(), p.getAddress(), user.isActive(), user.getCreatedAt())).orElseThrow();
         };
     }
 

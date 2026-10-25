@@ -8,6 +8,7 @@ import PagedTable from '../../components/PagedTable'
 import FormModal from '../../components/FormModal'
 import StatusTag, { RoleTag } from '../../components/StatusTag'
 import { activeOptions, emptyText, roleOptions } from '../../utils/statusMap'
+import { dateTime } from '../../utils/format'
 import { directionOptions, sortOptions, userFields } from './userFields'
 
 const PAGE_SIZE = 10
@@ -26,17 +27,18 @@ export default function UsersPage() {
   const change = (patch) => { setPage(0); setFilters((old) => ({ ...old, ...patch })) }
 
   const columns = [
-    { title: 'Tên đăng nhập', dataIndex: 'username' },
-    { title: 'Họ tên', dataIndex: 'fullName' },
+    { title: 'Tên đăng nhập', dataIndex: 'username', width: 140 },
+    { title: 'Họ tên', dataIndex: 'fullName', width: 180 },
     { title: 'Vai trò', dataIndex: 'role', width: 150, render: (value) => <RoleTag role={value} /> },
     { title: 'Email', dataIndex: 'email', render: emptyText },
-    { title: 'Số điện thoại', dataIndex: 'phone', width: 140, render: emptyText },
-    { title: 'Trạng thái', dataIndex: 'active', width: 150, render: (value) => <StatusTag active={value} /> },
+    { title: 'Số điện thoại', dataIndex: 'phone', width: 130, render: emptyText },
+    { title: 'Trạng thái', dataIndex: 'active', width: 140, render: (value) => <StatusTag active={value} /> },
+    { title: 'Ngày tạo', dataIndex: 'createdAt', width: 160, render: (value) => dateTime(value) },
     {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right',
-      width: 320,
+      width: 280,
       render: (_, row) => {
         const isSelf = row.id === me.id
         const guard = (node) => (isSelf ? <Tooltip title="Không thể thao tác trên tài khoản đang đăng nhập">{node}</Tooltip> : node)
@@ -85,15 +87,18 @@ export default function UsersPage() {
       <PagedTable
         filters={(
           <>
-            <Input.Search allowClear style={{ width: 280 }} placeholder="Tìm username / họ tên / email…"
+            <Input.Search allowClear style={{ width: 260 }} placeholder="Tìm username / họ tên / email…"
               onSearch={(value) => change({ keyword: value?.trim() || undefined })} />
-            <Select allowClear style={{ width: 190 }} placeholder="Vai trò" options={roleOptions} value={filters.role}
+            <Select allowClear style={{ width: 170 }} placeholder="Vai trò" options={roleOptions} value={filters.role}
               onChange={(value) => change({ role: value })} />
-            <Select allowClear style={{ width: 200 }} placeholder="Trạng thái" options={activeOptions} value={filters.active}
+            <Select allowClear style={{ width: 170 }} placeholder="Trạng thái" options={activeOptions} value={filters.active}
               onChange={(value) => change({ active: value })} />
-            <Select style={{ width: 180 }} options={sortOptions} value={filters.sort} onChange={(value) => change({ sort: value })} />
-            <Select style={{ width: 140 }} options={directionOptions} value={filters.direction} onChange={(value) => change({ direction: value })} />
-            <Button icon={<ReloadOutlined />} onClick={() => { setFilters({ sort: 'createdAt', direction: 'desc' }); setPage(0) }}>Đặt lại</Button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+              <span style={{ fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>Sắp xếp:</span>
+              <Select style={{ width: 160 }} options={sortOptions} value={filters.sort} onChange={(value) => change({ sort: value })} />
+              <Select style={{ width: 120 }} options={directionOptions} value={filters.direction} onChange={(value) => change({ direction: value })} />
+              <Button icon={<ReloadOutlined />} onClick={() => { setFilters({ sort: 'createdAt', direction: 'desc' }); setPage(0) }}>Đặt lại</Button>
+            </div>
           </>
         )}
         columns={columns}

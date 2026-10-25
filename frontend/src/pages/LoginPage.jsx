@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Card, Form, Input, Typography } from 'antd'
+import { Alert, Button, Card, Checkbox, Form, Input } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/context'
@@ -10,6 +10,7 @@ import AuthLayout from '../layouts/AuthLayout'
 export default function LoginPage() {
   const { login, user } = useAuth()
   const navigate = useNavigate()
+  const [form] = Form.useForm()
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -30,20 +31,22 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      <Card className="login-card" title="Đăng nhập">
+      <Card className="login-card" title="Đăng nhập hệ thống">
         {error && <Alert type="error" showIcon message={error} className="login-alert" />}
-        <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="username" label="Tên đăng nhập" rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}>
             <Input prefix={<UserOutlined />} placeholder="username" autoComplete="username" size="large" />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
             <Input.Password prefix={<LockOutlined />} placeholder="••••••••" autoComplete="current-password" size="large" />
           </Form.Item>
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>Đăng nhập</Button>
+          <Form.Item name="remember" valuePropName="checked" initialValue={false}>
+            <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+          </Form.Item>
+          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+            Đăng nhập
+          </Button>
         </Form>
-        <Typography.Paragraph className="login-hint">
-          Tài khoản do quản trị viên cấp. Admin đầu tiên được backend tạo từ <code>BOOTSTRAP_ADMIN_USERNAME</code> / <code>BOOTSTRAP_ADMIN_PASSWORD</code>.
-        </Typography.Paragraph>
       </Card>
     </AuthLayout>
   )

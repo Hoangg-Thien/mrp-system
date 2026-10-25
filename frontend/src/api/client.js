@@ -9,9 +9,20 @@
 
 const tokenKey = 'mrp_token'
 export const session = {
-  get: () => localStorage.getItem(tokenKey),
-  set: (token) => localStorage.setItem(tokenKey, token),
-  clear: () => localStorage.removeItem(tokenKey),
+  get: () => localStorage.getItem(tokenKey) || sessionStorage.getItem(tokenKey),
+  set: (token, remember = false) => {
+    if (remember) {
+      localStorage.setItem(tokenKey, token)
+      sessionStorage.removeItem(tokenKey)
+    } else {
+      sessionStorage.setItem(tokenKey, token)
+      localStorage.removeItem(tokenKey)
+    }
+  },
+  clear: () => {
+    localStorage.removeItem(tokenKey)
+    sessionStorage.removeItem(tokenKey)
+  },
 }
 
 /**

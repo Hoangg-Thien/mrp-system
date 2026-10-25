@@ -55,7 +55,7 @@ class AdminUserServiceTest {
         when(users.existsByUsername("staff01")).thenReturn(false);
         when(encoder.encode("Password@123")).thenReturn("hash");
         when(users.save(any(User.class))).thenReturn(user);
-        when(authService.view(user)).thenReturn(new UserView(1L, "staff01", UserRole.STAFF, 2L, "Staff", null, null, null, true));
+        when(authService.view(user)).thenReturn(new UserView(1L, "staff01", UserRole.STAFF, 2L, "Staff", null, null, null, true, null));
 
         UserView result = service.create(new CreateUserRequest("staff01", "Password@123", UserRole.STAFF, "Staff", null, null, null));
 
@@ -88,7 +88,7 @@ class AdminUserServiceTest {
     @Test
     void acc05_referencedUserCannotChangeRoleOrDelete() {
         User user = new User("staff", "hash", UserRole.STAFF);
-        UserView profile = new UserView(1L, "staff", UserRole.STAFF, 2L, "Staff", null, null, null, true);
+        UserView profile = new UserView(1L, "staff", UserRole.STAFF, 2L, "Staff", null, null, null, true, null);
         when(users.findByIdForUpdate(1L)).thenReturn(java.util.Optional.of(user));
         when(authService.view(user)).thenReturn(profile);
         when(referenceChecker.isReferenced(user, 2L)).thenReturn(true);
@@ -101,7 +101,7 @@ class AdminUserServiceTest {
         User user = new User("staff", "hash", UserRole.STAFF);
         user.setActive(false);
         when(users.findByIdForUpdate(1L)).thenReturn(java.util.Optional.of(user));
-        when(authService.view(user)).thenReturn(new UserView(1L, "staff", UserRole.STAFF, 2L, "Staff", null, null, null, true));
+        when(authService.view(user)).thenReturn(new UserView(1L, "staff", UserRole.STAFF, 2L, "Staff", null, null, null, true, null));
         UserView result = service.unlock(1L);
         assertEquals(true, user.isActive());
         assertEquals(true, result.active());
