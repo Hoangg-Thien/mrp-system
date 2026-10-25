@@ -87,13 +87,12 @@ function StaffActiveProductionsTable() {
 
   const columns = [
     { title: 'Mã đợt SX', dataIndex: 'id', width: 95, render: (v) => <Typography.Text code>#{v}</Typography.Text> },
-    { title: 'Mã PR', dataIndex: 'productionRequestId', width: 90, render: (v) => `PR #${v}` },
-    { title: 'Sản phẩm', dataIndex: 'productName', ellipsis: true },
+    { title: 'Yêu cầu SX', dataIndex: 'productionRequestId', width: 110, render: (v) => <Typography.Text strong>PR #{v}</Typography.Text> },
     {
       title: 'Số lượng SX',
       dataIndex: 'quantity',
-      width: 120,
-      render: (v, r) => `${quantity(v)} ${r.productUnit || ''}`,
+      width: 130,
+      render: (v) => <Typography.Text strong>{quantity(v, 0)} sản phẩm</Typography.Text>,
     },
     { title: 'Thời gian bắt đầu', dataIndex: 'startedAt', width: 150, render: dateTime },
     { title: 'Trạng thái', dataIndex: 'status', width: 120, render: (v) => <DocStatusTag status={v} /> },

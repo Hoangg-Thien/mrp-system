@@ -14,6 +14,7 @@ import { emptyText, roleLabels } from '../../utils/statusMap'
 /** Hồ sơ cá nhân người dùng đang đăng nhập. */
 export default function ProfilePage() {
   const { user } = useAuth()
+  if (!user) return null
 
   return (
     <>

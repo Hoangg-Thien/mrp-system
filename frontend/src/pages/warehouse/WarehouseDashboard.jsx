@@ -105,10 +105,10 @@ function PendingFgTable() {
 
   const columns = [
     { title: 'Mã phiếu', dataIndex: 'id', width: 85, render: (v) => <Typography.Text code>#{v}</Typography.Text> },
-    { title: 'Thành phẩm', dataIndex: 'productName', ellipsis: true },
-    { title: 'Số lượng', dataIndex: 'quantity', width: 110, render: (v, r) => `${quantity(v)} ${r.productUnit || ''}` },
-    { title: 'Khách hàng', dataIndex: 'customerName', width: 140, ellipsis: true },
-    { title: 'Thời gian', dataIndex: 'requestedAt', width: 150, render: dateTime },
+    { title: 'Nhân viên yêu cầu', dataIndex: 'requestedByName', width: 150, ellipsis: true },
+    { title: 'Số mặt hàng', dataIndex: 'itemCount', width: 110, render: (v) => `${v} SP` },
+    { title: 'Tổng số lượng', dataIndex: 'totalQuantity', width: 120, render: (v) => <Typography.Text strong>{v}</Typography.Text> },
+    { title: 'Thời gian gửi', dataIndex: 'requestedAt', width: 150, render: dateTime },
     { title: 'Trạng thái', dataIndex: 'status', width: 120, render: (v) => <DocStatusTag status={v} /> },
     {
       title: 'Thao tác',

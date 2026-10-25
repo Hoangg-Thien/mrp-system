@@ -60,13 +60,20 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail conflict(Exception ex) {
         String sqlState = extractSqlState(ex);
         if (sqlState != null && !CONFLICT_SQL_STATES.contains(sqlState)) {
+            log.error("Unhandled SQL data integrity error (SQLState={}): ", sqlState, ex);
             return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi không mong muốn");
         }
-        String detail = "Dữ liệu vi phạm quy tắc nghiệp vụ, đang được sử dụng hoặc bị trùng";
+        log.warn("Data integrity violation (SQLState={}): {}", sqlState, ex.getMessage());
+        String detail = extractBusinessMessage(ex);
+        if (detail == null) {
+            detail = "Dữ liệu vi phạm quy tắc nghiệp vụ, đang được sử dụng hoặc bị trùng";
+        }
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
     }
 
@@ -77,6 +84,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ProblemDetail unexpected(Exception ex) {
+        log.error("Unhandled internal server error: ", ex);
         return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi không mong muốn");
     }
 
@@ -91,4 +99,25 @@ public class GlobalExceptionHandler {
         return null;
     }
 
+    private static String extractBusinessMessage(Throwable ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause instanceof SQLException sqlException) {
+                String state = sqlException.getSQLState();
+                if ("P0001".equals(state) && sqlException.getMessage() != null) {
+                    String msg = sqlException.getMessage();
+                    if (msg.startsWith("ERROR: ")) {
+                        msg = msg.substring(7);
+                    }
+                    int newline = msg.indexOf('\n');
+                    if (newline > 0) {
+                        msg = msg.substring(0, newline);
+                    }
+                    return msg.trim();
+                }
+            }
+            cause = cause.getCause();
+        }
+        return null;
+    }
 }
