@@ -66,7 +66,7 @@ export default function ProductionRequestsPage() {
 
   const productsQuery = useQuery({
     queryKey: ['products-for-pr'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
   })
 
   const staffQuery = useQuery({

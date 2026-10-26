@@ -8,17 +8,14 @@ import mrp.auth.dto.UserView;
 import mrp.user.entity.UserRole;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,5 +39,4 @@ public class AdminUserController {
     @PostMapping("/{id}/lock") public UserView lock(@PathVariable Long id, Authentication auth) { return service.lock(id, auth); }
     @PostMapping("/{id}/unlock") public UserView unlock(@PathVariable Long id) { return service.unlock(id); }
     @PostMapping("/{id}/role") public UserView changeRole(@PathVariable Long id, @Valid @RequestBody ChangeRoleRequest request, Authentication auth) { return service.changeRole(id, request, auth); }
-    @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void delete(@PathVariable Long id, Authentication auth) { service.delete(id, auth); }
 }

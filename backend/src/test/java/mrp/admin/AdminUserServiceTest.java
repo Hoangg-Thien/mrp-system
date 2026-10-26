@@ -82,18 +82,16 @@ class AdminUserServiceTest {
         when(users.findByIdForUpdate(1L)).thenReturn(java.util.Optional.of(user));
         when(users.countByRoleAndActive(UserRole.ADMIN, true)).thenReturn(1L);
         assertThrows(BusinessException.class, () -> service.lock(1L, actor));
-        assertThrows(BusinessException.class, () -> service.delete(1L, actor));
     }
 
     @Test
-    void acc05_referencedUserCannotChangeRoleOrDelete() {
+    void acc05_referencedUserCannotChangeRole() {
         User user = new User("staff", "hash", UserRole.STAFF);
         UserView profile = new UserView(1L, "staff", UserRole.STAFF, 2L, "Staff", null, null, null, true, null);
         when(users.findByIdForUpdate(1L)).thenReturn(java.util.Optional.of(user));
         when(authService.view(user)).thenReturn(profile);
         when(referenceChecker.isReferenced(user, 2L)).thenReturn(true);
         assertThrows(BusinessException.class, () -> service.changeRole(1L, new ChangeRoleRequest(UserRole.WAREHOUSE_MANAGER), actor));
-        assertThrows(BusinessException.class, () -> service.delete(1L, actor));
     }
 
     @Test

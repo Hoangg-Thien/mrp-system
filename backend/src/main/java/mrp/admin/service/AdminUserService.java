@@ -99,21 +99,6 @@ public class AdminUserService {
         return authService.view(user);
     }
 
-    @Transactional
-    public void delete(Long id, Authentication actor) {
-        User user = findForUpdate(id);
-        checkNotSelf(user, actor);
-        if (user.getRole() == UserRole.ADMIN && user.isActive() && users.countByRoleAndActive(UserRole.ADMIN, true) <= 1) {
-            throw new BusinessException("Không thể xóa admin cuối cùng đang hoạt động");
-        }
-        UserView profile = authService.view(user);
-        if (referenceChecker.isReferenced(user, profile.profileId())) {
-            throw new BusinessException("Không thể xóa tài khoản đã phát sinh dữ liệu; hãy khóa tài khoản");
-        }
-        deleteProfile(user.getId(), user.getRole());
-        users.delete(user);
-    }
-
     private User find(Long id) { return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản")); }
     private User findForUpdate(Long id) { return users.findByIdForUpdate(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản")); }
     private void checkNotSelf(User user, Authentication actor) { if (user.getUsername().equals(actor.getName())) throw new BusinessException("Không thể thao tác trên tài khoản hiện tại"); }

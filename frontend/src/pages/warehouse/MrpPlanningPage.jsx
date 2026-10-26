@@ -36,7 +36,7 @@ export default function MrpPlanningPage() {
 
   const productsQuery = useQuery({
     queryKey: ['products-for-mrp'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
   })
 
   const planQuery = useQuery({

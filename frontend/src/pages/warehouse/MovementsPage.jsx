@@ -25,12 +25,12 @@ export default function MovementsPage() {
 
   const materialsQuery = useQuery({
     queryKey: ['materials-for-movements-filter'],
-    queryFn: () => api.get('/api/materials', { size: 200 }),
+    queryFn: () => api.get('/api/materials', { size: 100 }),
   })
 
   const productsQuery = useQuery({
     queryKey: ['products-for-movements-filter'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
   })
 
   const columns = [

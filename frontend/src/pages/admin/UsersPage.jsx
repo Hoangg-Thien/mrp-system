@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Input, Modal, Popconfirm, Select, Space, Tooltip } from 'antd'
+import { Button, Input, Modal, Select, Space, Tooltip } from 'antd'
 import { LockOutlined, PlusOutlined, ReloadOutlined, SwapOutlined, UnlockOutlined } from '@ant-design/icons'
 import { usePagedQuery, useResourceActions } from '../../api/hooks'
 import { useAuth } from '../../auth/context'
@@ -13,7 +13,7 @@ import { directionOptions, sortOptions, userFields } from './userFields'
 
 const PAGE_SIZE = 10
 
-/** W1 – Quản lý tài khoản: tạo, khóa/mở khóa, đổi vai trò, xóa (backend là nguồn sự thật). */
+/** W1 – Quản lý tài khoản: tạo, khóa/mở khóa, đổi vai trò (backend là nguồn sự thật). */
 export default function UsersPage() {
   const { user: me } = useAuth()
   const [filters, setFilters] = useState({ sort: 'createdAt', direction: 'desc' })
@@ -38,7 +38,7 @@ export default function UsersPage() {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right',
-      width: 280,
+      width: 200,
       render: (_, row) => {
         const isSelf = row.id === me.id
         const guard = (node) => (isSelf ? <Tooltip title="Không thể thao tác trên tài khoản đang đăng nhập">{node}</Tooltip> : node)
@@ -50,12 +50,6 @@ export default function UsersPage() {
               onClick={() => actions.runAction.mutate({ id: row.id, name: row.active ? 'lock' : 'unlock' })}>
               {row.active ? 'Khóa' : 'Mở khóa'}
             </Button>)}
-            {guard(
-              <Popconfirm title="Xóa tài khoản này?" okText="Xóa" cancelText="Hủy" okButtonProps={{ danger: true }} disabled={isSelf}
-                onConfirm={() => actions.remove.mutateAsync(row.id).catch(() => undefined)}>
-                <Button size="small" danger disabled={isSelf}>Xóa</Button>
-              </Popconfirm>,
-            )}
           </Space>
         )
       },

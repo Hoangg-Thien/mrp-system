@@ -52,7 +52,7 @@ export default function StaffFgRequestsPage() {
 
   const productsQuery = useQuery({
     queryKey: ['products-for-staff-fg-select'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
   })
 
   const detailQuery = useQuery({

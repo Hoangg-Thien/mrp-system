@@ -171,13 +171,13 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
 
   const materialsQuery = useQuery({
     queryKey: ['active-materials-select'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
     enabled: open,
   })
 
   const productsQuery = useQuery({
     queryKey: ['active-products-select'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
     enabled: open,
   })
 

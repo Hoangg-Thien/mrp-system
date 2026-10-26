@@ -76,7 +76,7 @@ export default function PurchaseReceiptsPage() {
 
   const materialsQuery = useQuery({
     queryKey: ['active-materials-all'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
   })
 
   const detailQuery = useQuery({

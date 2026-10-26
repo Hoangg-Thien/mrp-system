@@ -51,12 +51,12 @@ export default function BomsPage() {
 
   const productsQuery = useQuery({
     queryKey: ['products-for-bom'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    queryFn: () => api.get('/api/products', { size: 100 }),
   })
 
   const materialsQuery = useQuery({
     queryKey: ['active-materials-for-bom'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
   })
 
   const detailQuery = useQuery({
