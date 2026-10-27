@@ -325,7 +325,7 @@ export default function PurchaseReceiptsPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Typography.Title level={5} style={{ margin: 0 }}>Danh sách dòng nguyên vật liệu</Typography.Title>
-            <Tag color="green" style={{ fontSize: 13, padding: '2px 8px' }}>
+            <Tag className="erp-tag erp-tag-approved">
               Tạm tính: <strong>{money(createEstimatedTotal)} đ</strong>
             </Tag>
           </div>
@@ -447,7 +447,7 @@ export default function PurchaseReceiptsPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Typography.Title level={5} style={{ margin: 0 }}>Danh sách dòng nguyên vật liệu</Typography.Title>
-            <Tag color="green" style={{ fontSize: 13, padding: '2px 8px' }}>
+            <Tag className="erp-tag erp-tag-approved">
               Tạm tính: <strong>{money(editEstimatedTotal)} đ</strong>
             </Tag>
           </div>
@@ -611,7 +611,7 @@ export default function PurchaseReceiptsPage() {
                     <Table.Summary.Cell index={0} colSpan={5} style={{ textAlign: 'right', fontWeight: 600 }}>
                       Tổng cộng:
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} style={{ fontWeight: 700, color: '#16653a' }}>
+                    <Table.Summary.Cell index={1} style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
                       {money(total)} đ
                     </Table.Summary.Cell>
                   </Table.Summary.Row>

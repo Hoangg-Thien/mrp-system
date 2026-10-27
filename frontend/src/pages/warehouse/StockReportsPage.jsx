@@ -138,7 +138,7 @@ export default function StockReportsPage() {
       dataIndex: 'closingBalance',
       width: 130,
       render: (v) => (
-        <Typography.Text strong style={{ color: '#16653a' }}>
+        <Typography.Text strong style={{ color: 'var(--status-approved-text)' }}>
           {quantity(v, kind === 'PRODUCT' ? 0 : 3)}
         </Typography.Text>
       ),
@@ -280,7 +280,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng nhập trong kỳ"
               value={quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#16653a' }}
+              valueStyle={{ color: 'var(--status-approved-text)' }}
             />
           </Card>
         </Col>
@@ -289,7 +289,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng xuất trong kỳ"
               value={quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#dc2626' }}
+              valueStyle={{ color: 'var(--status-rejected-text)' }}
             />
           </Card>
         </Col>
@@ -298,7 +298,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (+)"
               value={quantity(totals.adjIn, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#0891b2' }}
+              valueStyle={{ color: 'var(--status-progress-text)' }}
             />
           </Card>
         </Col>
@@ -307,7 +307,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (-)"
               value={quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#c026d3' }}
+              valueStyle={{ color: 'var(--status-pending-text)' }}
             />
           </Card>
         </Col>
@@ -316,7 +316,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng tồn cuối kỳ"
               value={quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#047857', fontWeight: 700 }}
+              valueStyle={{ color: 'var(--status-approved-text)', fontWeight: 700 }}
             />
           </Card>
         </Col>
@@ -333,10 +333,10 @@ export default function StockReportsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="Tồn đầu" fill="#9ca3af" />
-                <Bar dataKey="Nhập kho" fill="#16a34a" />
-                <Bar dataKey="Xuất kho" fill="#ef4444" />
-                <Bar dataKey="Tồn cuối" fill="#0284c7" />
+                <Bar dataKey="Tồn đầu" fill="#94a3b8" />
+                <Bar dataKey="Nhập kho" fill="#166534" />
+                <Bar dataKey="Xuất kho" fill="#b91c1c" />
+                <Bar dataKey="Tồn cuối" fill="#1d4ed8" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -362,10 +362,10 @@ export default function StockReportsPage() {
               <Table.Summary.Cell index={1}>
                 {quantity(totals.opening, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={2} style={{ color: '#16653a' }}>
+              <Table.Summary.Cell index={2} style={{ color: 'var(--status-approved-text)' }}>
                 +{quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={3} style={{ color: '#dc2626' }}>
+              <Table.Summary.Cell index={3} style={{ color: 'var(--status-rejected-text)' }}>
                 -{quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
               <Table.Summary.Cell index={4}>
@@ -374,7 +374,7 @@ export default function StockReportsPage() {
               <Table.Summary.Cell index={5}>
                 {quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={6} style={{ color: '#047857', fontWeight: 700 }}>
+              <Table.Summary.Cell index={6} style={{ color: 'var(--status-approved-text)', fontWeight: 700 }}>
                 {quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
             </Table.Summary.Row>

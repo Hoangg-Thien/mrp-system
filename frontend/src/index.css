@@ -1,32 +1,104 @@
 :root {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Primary Brand - Forest Deep Green */
+  --color-primary: #166534;
+  --color-primary-hover: #15803d;
+  --color-primary-active: #14532d;
+  --color-primary-subtle: #f0fdf4;
+
+  /* Neutrals (Slate Palette) */
+  --color-bg-app: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #f1f5f9;
+  --color-bg-muted: #e2e8f0;
+
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-border-strong: #cbd5e1;
+
+  --color-text-main: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #94a3b8;
+
+  /* 4 Semantic Business Statuses */
+  --status-pending-text: #b45309;
+  --status-pending-bg: #fffbeb;
+  --status-pending-border: #fde68a;
+
+  --status-approved-text: #166534;
+  --status-approved-bg: #f0fdf4;
+  --status-approved-border: #bbf7d0;
+
+  --status-rejected-text: #b91c1c;
+  --status-rejected-bg: #fef2f2;
+  --status-rejected-border: #fecaca;
+
+  --status-progress-text: #1d4ed8;
+  --status-progress-bg: #eff6ff;
+  --status-progress-border: #bfdbfe;
+
+  /* Sidebar & Navigation */
+  --sider-bg: #0f172a;
+  --sider-brand-bg: #090e17;
+  --sider-border: #1e293b;
+  --sider-active-bg: #1e293b;
+  --sider-hover-bg: rgba(255, 255, 255, 0.06);
+  --sider-text-muted: #94a3b8;
+  --sider-text-active: #ffffff;
+
+  /* Radius & Density Tokens */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  background: #f5f7f6;
-  color: #1f2937;
+  background: var(--color-bg-app);
+  color: var(--color-text-main);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-#root { min-height: 100vh; }
+#root {
+  min-height: 100vh;
+}
 
-.muted { color: #6b7280; font-size: 13px; }
-.full-width { width: 100%; }
-.center, .center-screen {
+.muted {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.center,
+.center-screen {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background: var(--color-bg-app);
 }
 
-/* ---------- Khung ứng dụng (W0) ---------- */
-.app-shell { min-height: 100vh; }
+/* ---------- Khung ứng dụng ERP ---------- */
+.app-shell {
+  min-height: 100vh;
+}
+
 .app-sider {
-  background: #10312a !important;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.12);
+  background: var(--sider-bg) !important;
+  border-right: 1px solid var(--sider-border);
   z-index: 100;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -41,47 +113,47 @@ body {
 }
 
 .sider-brand {
-  height: 60px;
-  min-height: 60px;
+  height: 52px;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
-  background: #0b251f;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--sider-brand-bg);
+  border-bottom: 1px solid var(--sider-border);
   user-select: none;
   padding: 0 16px;
   overflow: hidden;
 }
 
 .brand-logo-icon {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  background: #16653a;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: var(--color-primary);
   color: #fff;
-  font-weight: 800;
-  font-size: 16px;
-  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .brand-text {
   color: #fff;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 1.5px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.8px;
   white-space: nowrap;
 }
 
-/* Collapsed Brand */
 .app-sider.ant-layout-sider-collapsed .sider-brand {
   padding: 0;
+  justify-content: center;
 }
+
 .app-sider.ant-layout-sider-collapsed .brand-text {
   display: none;
 }
@@ -91,9 +163,9 @@ body {
   border-inline-end: none !important;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
-  padding: 8px 10px;
+  padding: 8px 8px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -101,23 +173,23 @@ body {
 .app-sider .ant-menu.ant-menu-dark::-webkit-scrollbar {
   width: 4px;
 }
+
 .app-sider .ant-menu.ant-menu-dark::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
-/* Menu item group titles */
+/* Menu group titles */
 .app-sider .ant-menu-dark .ant-menu-item-group-title {
-  color: #6ee7b7 !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.2px !important;
-  padding: 14px 12px 6px !important;
+  color: var(--sider-text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.8px !important;
+  padding: 12px 10px 4px !important;
   opacity: 0.85;
   text-transform: uppercase;
 }
 
-/* When collapsed, hide group titles */
 .app-sider.ant-layout-sider-collapsed .ant-menu-item-group-title {
   display: none !important;
 }
@@ -125,64 +197,70 @@ body {
 /* Menu items styling */
 .app-sider .ant-menu-dark .ant-menu-item,
 .app-sider .ant-menu-dark .ant-menu-submenu-title {
-  height: 44px !important;
-  line-height: 44px !important;
-  margin: 0 !important;
+  height: 38px !important;
+  line-height: 38px !important;
+  margin: 1px 0 !important;
   width: 100% !important;
-  border-radius: 8px !important;
-  font-size: 14px !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
   display: flex !important;
   align-items: center !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease;
   flex-shrink: 0;
+  color: #cbd5e1 !important;
 }
 
 .app-sider .ant-menu-dark .ant-menu-item-icon {
-  font-size: 17px !important;
-  margin-right: 12px !important;
+  font-size: 15px !important;
+  margin-right: 10px !important;
+  color: var(--sider-text-muted) !important;
 }
 
 .app-sider.ant-layout-sider-collapsed .ant-menu-dark .ant-menu-item-icon {
   margin-right: 0 !important;
 }
 
-/* Submenu background container */
+/* Submenu container */
 .app-sider .ant-menu-dark .ant-menu-sub {
-  background: rgba(0, 0, 0, 0.24) !important;
-  border-radius: 8px !important;
-  padding: 4px !important;
-  margin-top: 4px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 2px !important;
+  margin-top: 2px !important;
 }
 
 .app-sider .ant-menu-dark .ant-menu-sub .ant-menu-item {
-  height: 38px !important;
-  line-height: 38px !important;
-  font-size: 13.5px !important;
-  border-radius: 6px !important;
-  margin: 2px 0 !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  font-size: 12.5px !important;
+  border-radius: var(--radius-xs) !important;
+  margin: 1px 0 !important;
 }
 
 /* Active / Selected Item */
 .app-sider .ant-menu-dark .ant-menu-item-selected {
-  background-color: #16653a !important;
-  color: #ffffff !important;
+  background-color: var(--sider-active-bg) !important;
+  color: var(--sider-text-active) !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 8px rgba(22, 101, 58, 0.45);
+  border-left: 3px solid var(--color-primary) !important;
+}
+
+.app-sider .ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
+  color: var(--sider-text-active) !important;
 }
 
 /* Hover Item */
 .app-sider .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected):hover,
 .app-sider .ant-menu-dark .ant-menu-submenu-title:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--sider-hover-bg) !important;
   color: #ffffff !important;
 }
 
-/* Sider Footer (Pinned bottom user card) */
+/* Sider Footer */
 .sider-footer {
   margin-top: auto;
-  padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.22);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  background: var(--sider-brand-bg);
+  border-top: 1px solid var(--sider-border);
   display: flex;
   flex-direction: column;
 }
@@ -190,17 +268,18 @@ body {
 .sider-user-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
   user-select: none;
 }
 
 .sider-user-card:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .sider-user-info {
@@ -211,9 +290,9 @@ body {
 }
 
 .sider-user-name {
-  color: #fff;
-  font-weight: 600;
-  font-size: 13px;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 12.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -221,31 +300,30 @@ body {
 }
 
 .sider-user-role {
-  color: #a7f3d0;
+  color: var(--sider-text-muted);
   font-size: 11px;
   white-space: nowrap;
   line-height: 1.3;
 }
 
 .sider-logout-btn {
-  color: #9ca3af !important;
-  padding: 4px !important;
-  height: 28px !important;
-  width: 28px !important;
+  color: #94a3b8 !important;
+  padding: 0 !important;
+  height: 24px !important;
+  width: 24px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: 6px !important;
+  border-radius: var(--radius-xs) !important;
 }
 
 .sider-logout-btn:hover {
-  color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.15) !important;
+  color: var(--status-rejected-text) !important;
+  background: var(--status-rejected-bg) !important;
 }
 
-/* Sider collapsed footer */
 .app-sider.ant-layout-sider-collapsed .sider-footer {
-  padding: 12px 8px;
+  padding: 8px;
   align-items: center;
 }
 
@@ -253,143 +331,432 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sider-user-card-collapsed:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* User Avatar */
+.user-avatar {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 /* Header */
 .app-header {
-  background: #fff;
-  padding: 0 20px;
+  background: var(--color-bg-surface);
+  padding: 0 16px;
   display: flex;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  height: 54px;
+  border-bottom: 1px solid var(--color-border);
+  height: 48px;
+  line-height: 48px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .collapse-btn {
-  width: 36px !important;
-  height: 36px !important;
+  width: 30px !important;
+  height: 30px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: 8px !important;
-  border: 1px solid #e5e7eb !important;
-  font-size: 16px !important;
-  color: #4b5563 !important;
-  background: #fff !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--color-border) !important;
+  font-size: 14px !important;
+  color: var(--color-text-secondary) !important;
+  background: var(--color-bg-surface) !important;
+  transition: all 0.15s ease !important;
 }
 
 .collapse-btn:hover {
-  background-color: #f9fafb !important;
-  border-color: #d1d5db !important;
-  color: #16653a !important;
+  background-color: var(--color-bg-subtle) !important;
+  border-color: var(--color-border-strong) !important;
+  color: var(--color-primary) !important;
 }
 
 .header-title {
   font-weight: 600;
-  font-size: 15px;
-  color: #1f2937;
+  font-size: 13.5px;
+  color: var(--color-text-main);
 }
 
-.header-title { font-weight: 600; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.user-btn { display: flex; align-items: center; gap: 8px; height: 40px; }
-.user-name { font-weight: 500; }
-.app-content { padding: 20px; }
-.app-footer { background: transparent; color: #9ca3af; text-align: center; padding: 12px; }
+.app-content {
+  padding: 16px;
+  background: var(--color-bg-app);
+}
+
+.app-footer {
+  background: transparent;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 11.5px;
+}
 
 /* ---------- Tiêu đề trang ---------- */
 .page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
 }
 
-.page-title { margin: 0; font-size: 22px; font-weight: 600; }
-.page-subtitle { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
-.page-extra { display: flex; gap: 8px; align-items: center; }
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  letter-spacing: -0.2px;
+}
 
-/* ---------- Bảng + bộ lọc (W1, W2) ---------- */
-.table-card .ant-card-body { padding: 16px; }
+.page-subtitle {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.page-extra {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---------- Bảng + Bộ lọc ERP ---------- */
+.table-card {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--color-bg-surface) !important;
+  box-shadow: none !important;
+}
+
+.table-card .ant-card-body {
+  padding: 12px 14px;
+}
 
 .table-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  align-items: center;
 }
 
-.table-pagination { margin-top: 16px; display: flex; justify-content: flex-end; }
-.inline-alert { margin-top: 16px; }
-.stat-card { cursor: pointer; }
-.welcome-card { margin-top: 16px; }
+.table-pagination {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
 
-/* ---------- Đăng nhập (W0) ---------- */
+/* Ant Table Customization for Enterprise Density */
+.ant-table {
+  font-size: 13px !important;
+  color: var(--color-text-main) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--color-bg-subtle) !important;
+  color: var(--color-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  padding: 8px 10px !important;
+  border-bottom: 1px solid var(--color-border-strong) !important;
+  border-start-start-radius: 0 !important;
+  border-start-end-radius: 0 !important;
+}
+
+.ant-table-tbody > tr > td {
+  padding: 8px 10px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.ant-table-summary {
+  background: var(--color-bg-subtle) !important;
+  font-weight: 600;
+}
+
+/* ---------- Thẻ nghiệp vụ Card ---------- */
+.ant-card {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.ant-card .ant-card-head {
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  background: #fafbfc;
+}
+
+.ant-card .ant-card-body {
+  padding: 14px !important;
+}
+
+/* ---------- Tag hệ thống (Chuẩn 4 trạng thái nghiệp vụ) ---------- */
+.erp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 1px 7px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* 1. CHỜ */
+.erp-tag-pending {
+  color: var(--status-pending-text) !important;
+  background-color: var(--status-pending-bg) !important;
+  border-color: var(--status-pending-border) !important;
+}
+
+/* 2. DUYỆT / HOÀN THÀNH */
+.erp-tag-approved {
+  color: var(--status-approved-text) !important;
+  background-color: var(--status-approved-bg) !important;
+  border-color: var(--status-approved-border) !important;
+}
+
+/* 3. TỪ CHỐI / HỦY */
+.erp-tag-rejected {
+  color: var(--status-rejected-text) !important;
+  background-color: var(--status-rejected-bg) !important;
+  border-color: var(--status-rejected-border) !important;
+}
+
+/* 4. ĐANG THỰC HIỆN */
+.erp-tag-progress {
+  color: var(--status-progress-text) !important;
+  background-color: var(--status-progress-bg) !important;
+  border-color: var(--status-progress-border) !important;
+}
+
+/* Neutral / Role */
+.erp-tag-role {
+  color: var(--color-text-secondary) !important;
+  background-color: var(--color-bg-subtle) !important;
+  border-color: var(--color-border) !important;
+  font-weight: 500;
+}
+
+.erp-tag-neutral {
+  color: var(--color-text-secondary) !important;
+  background-color: var(--color-bg-subtle) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* ---------- MRP Planning Component Styles ---------- */
+.mrp-filter-card {
+  margin-bottom: 14px;
+}
+
+.mrp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mrp-kpi-cell {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.mrp-kpi-cell .ant-statistic-title {
+  color: var(--color-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.mrp-kpi-cell .ant-statistic-content {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.kpi-val-warning .ant-statistic-content {
+  color: var(--status-pending-text) !important;
+}
+
+.kpi-val-progress .ant-statistic-content {
+  color: var(--status-progress-text) !important;
+}
+
+.kpi-val-success .ant-statistic-content {
+  color: var(--status-approved-text) !important;
+}
+
+.kpi-val-danger .ant-statistic-content {
+  color: var(--status-rejected-text) !important;
+}
+
+.kpi-val-neutral .ant-statistic-content {
+  color: var(--color-text-main) !important;
+}
+
+.mrp-formula-box {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-family: Consolas, Monaco, monospace;
+  margin: 10px 0;
+  display: inline-block;
+  width: 100%;
+}
+
+.mrp-select-product {
+  min-width: 320px;
+}
+
+.mrp-input-qty {
+  width: 140px;
+}
+
+.mrp-alert {
+  margin-bottom: 14px;
+}
+
+.mrp-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.mrp-divider {
+  margin: 12px 0 10px;
+}
+
+.mrp-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Trang Đăng nhập (Clean Enterprise - Không gradient) ---------- */
 .auth-layout {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  background: linear-gradient(135deg, #0b251f 0%, #16653a 55%, #2f855a 100%);
+  background: var(--sider-bg);
 }
 
 .auth-panel {
-  color: #e8f5ee;
+  color: #e2e8f0;
   padding: 64px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
+  border-right: 1px solid var(--sider-border);
 }
 
 .brand-mark {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.16);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 20px;
 }
 
-.auth-panel h1 { font-size: 32px; margin: 8px 0 0; color: #fff; }
-.auth-panel p { margin: 0; opacity: 0.85; }
-.auth-points { margin: 16px 0 0; padding-left: 18px; line-height: 1.9; opacity: 0.9; }
+.auth-panel h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 8px 0 0;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.auth-panel p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.auth-points {
+  margin: 16px 0 0;
+  padding-left: 18px;
+  line-height: 2;
+  color: #cbd5e1;
+  font-size: 13px;
+}
 
 .auth-form {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: #f5f7f6;
+  background: var(--color-bg-app);
 }
 
-.login-card { width: 100%; max-width: 420px; }
-.login-alert { margin-bottom: 16px; }
-.login-hint { margin: 16px 0 0; color: #6b7280; font-size: 12px; }
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+.login-card .ant-card-head {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  font-size: 15px !important;
+}
+
+.login-alert {
+  margin-bottom: 14px;
+}
+
+.login-hint {
+  margin: 14px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
 
 @media (max-width: 900px) {
-  .auth-layout { grid-template-columns: 1fr; }
-  .auth-panel { padding: 40px 24px; }
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+  .auth-panel {
+    padding: 36px 20px;
+  }
 }

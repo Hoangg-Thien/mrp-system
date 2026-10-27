@@ -17,6 +17,8 @@ export default function PagedTable({ filters, columns, data, loading, page, size
         onChange={onTableChange}
         locale={{ emptyText: 'Không có dữ liệu' }}
         scroll={{ x: 'max-content' }}
+        size="small"
+        bordered
       />
       <Pagination
         className="table-pagination"
@@ -26,6 +28,7 @@ export default function PagedTable({ filters, columns, data, loading, page, size
         showSizeChanger={false}
         onChange={(value) => onPageChange(value - 1)}
         showTotal={(sum, range) => `${range[0]}–${range[1]} / ${sum} bản ghi`}
+        size="small"
       />
     </Card>
   )

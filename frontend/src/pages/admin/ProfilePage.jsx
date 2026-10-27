@@ -37,7 +37,7 @@ export default function ProfilePage() {
               Tên đăng nhập: <strong>{user.username}</strong>
             </Typography.Text>
             {user.profileId && (
-              <Tag color="cyan" style={{ marginTop: 8 }}>
+              <Tag className="erp-tag erp-tag-neutral">
                 Mã hồ sơ: #{user.profileId}
               </Tag>
             )}

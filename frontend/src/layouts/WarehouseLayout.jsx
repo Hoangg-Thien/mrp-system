@@ -130,12 +130,12 @@ export default function WarehouseLayout() {
               }}
             >
               <div className="sider-user-card-collapsed" title={`${user.fullName} (${roleLabels[user.role]})`}>
-                <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#16653a' }} />
+                <Avatar icon={<UserOutlined />} className="user-avatar" />
               </div>
             </Dropdown>
           ) : (
             <div className="sider-user-card" onClick={() => navigate('/warehouse/profile')} title="Xem hồ sơ cá nhân">
-              <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#16653a' }} />
+              <Avatar icon={<UserOutlined />} className="user-avatar" />
               <div className="sider-user-info">
                 <span className="sider-user-name">{user.fullName}</span>
                 <span className="sider-user-role">{roleLabels[user.role]}</span>

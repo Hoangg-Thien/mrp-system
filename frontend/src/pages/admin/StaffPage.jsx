@@ -38,13 +38,13 @@ export default function StaffPage() {
       title: 'Vai trò trong hệ thống',
       key: 'role',
       width: 200,
-      render: () => <Tag color="green">Nhân viên sản xuất (STAFF)</Tag>,
+      render: () => <Tag className="erp-tag erp-tag-role">Nhân viên sản xuất (STAFF)</Tag>,
     },
     {
       title: 'Trạng thái hoạt động',
       key: 'status',
       width: 180,
-      render: () => <Tag color="success">Đang làm việc</Tag>,
+      render: () => <Tag className="erp-tag erp-tag-approved">Đang làm việc</Tag>,
     },
   ]
 

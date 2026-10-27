@@ -45,12 +45,12 @@ function StatCard({ item }) {
       loading={query.isPending}
       onClick={() => navigate(item.to)}
       hoverable
-      style={item.highlight ? { borderColor: '#d97706', background: '#fffbeb' } : {}}
+      style={item.highlight ? { borderColor: 'var(--status-pending-border)', background: 'var(--status-pending-bg)' } : {}}
     >
       <Statistic
         title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{item.icon} {item.label}</span>}
         value={query.data?.totalElements ?? 0}
-        valueStyle={item.highlight ? { color: '#b45309', fontWeight: 700 } : {}}
+        valueStyle={item.highlight ? { color: 'var(--status-pending-text)', fontWeight: 700 } : {}}
       />
     </Card>
   )

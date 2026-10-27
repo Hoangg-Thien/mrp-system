@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import {
-  Badge,
   Button,
   Descriptions,
   Divider,
@@ -137,7 +136,7 @@ export default function ProductionRequestsPage() {
       title: 'BOM',
       dataIndex: 'bomVersion',
       width: 80,
-      render: (v) => <Badge count={`v${v}`} style={{ backgroundColor: '#108ee9' }} />,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">v{v}</Tag>,
     },
     { title: 'Nhân viên phụ trách', dataIndex: 'assignedStaffName', width: 160 },
     { title: 'Trạng thái', dataIndex: 'status', sorter: true, width: 120, render: (v) => <DocStatusTag status={v} /> },
@@ -458,7 +457,11 @@ export default function ProductionRequestsPage() {
                   width: 100,
                   render: (v) => {
                     const num = Number(v) || 0
-                    return num > 0 ? <Tag color="red">Thiếu: {quantity(num)}</Tag> : <Tag color="green">Đủ</Tag>
+                    return num > 0 ? (
+                      <span className="erp-tag erp-tag-rejected">Thiếu: {quantity(num)}</span>
+                    ) : (
+                      <span className="erp-tag erp-tag-approved">Đủ</span>
+                    )
                   },
                 },
               ]}

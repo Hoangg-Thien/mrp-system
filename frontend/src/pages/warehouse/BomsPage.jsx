@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Badge,
   Button,
   Card,
   Descriptions,
@@ -11,6 +10,7 @@ import {
   Select,
   Space,
   Table,
+  Tag,
   Typography,
   message,
 } from 'antd'
@@ -105,7 +105,7 @@ export default function BomsPage() {
       dataIndex: 'version',
       sorter: true,
       width: 110,
-      render: (v) => <Badge count={`v${v}`} style={{ backgroundColor: '#108ee9' }} />,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">v{v}</Tag>,
     },
     {
       title: 'Trạng thái',

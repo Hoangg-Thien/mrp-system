@@ -8,7 +8,6 @@ import {
   Select,
   Space,
   Table,
-  Tag,
   Typography,
   message,
 } from 'antd'
@@ -302,9 +301,9 @@ export default function FgIssuesPage() {
                     const reqQty = Number(r.quantity) || 0
                     const curStock = Number(r.currentStock) || 0
                     return curStock >= reqQty ? (
-                      <Tag color="green">Đủ tồn kho</Tag>
+                      <span className="erp-tag erp-tag-approved">Đủ tồn kho</span>
                     ) : (
-                      <Tag color="red">Thiếu {reqQty - curStock}</Tag>
+                      <span className="erp-tag erp-tag-rejected">Thiếu {reqQty - curStock}</span>
                     )
                   },
                 },

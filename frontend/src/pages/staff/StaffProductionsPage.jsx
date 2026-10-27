@@ -108,7 +108,7 @@ export default function StaffProductionsPage() {
       title: 'Yêu cầu SX',
       dataIndex: 'productionRequestId',
       width: 120,
-      render: (v) => <Tag color="blue">PR #{v}</Tag>,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">PR #{v}</Tag>,
     },
     {
       title: 'Số lượng sản xuất',
@@ -316,7 +316,7 @@ export default function StaffProductionsPage() {
               <DocStatusTag status={detailQuery.data.status} />
             </Descriptions.Item>
             <Descriptions.Item label="Yêu cầu SX liên quan">
-              <Tag color="blue">PR #{detailQuery.data.productionRequestId}</Tag>
+              <Tag className="erp-tag erp-tag-neutral">PR #{detailQuery.data.productionRequestId}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Số lượng sản xuất">
               {detailQuery.data.quantity} sản phẩm

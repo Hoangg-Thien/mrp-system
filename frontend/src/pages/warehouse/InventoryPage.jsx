@@ -316,8 +316,8 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
         </Form.Item>
 
         {currentStockInfo && (
-          <div style={{ marginBottom: 16, background: '#f0fdf4', padding: '8px 12px', borderRadius: 6, border: '1px solid #bbf7d0' }}>
-            <span style={{ fontSize: 13, color: '#16653a' }}>
+          <div style={{ marginBottom: 16, background: 'var(--status-approved-bg)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--status-approved-border)' }}>
+            <span style={{ fontSize: 13, color: 'var(--status-approved-text)' }}>
               Tồn kho hiện tại: <strong>{quantity(currentStockInfo.quantity, targetType === 'product' ? 0 : 3)} {currentStockInfo.unit}</strong>
             </span>
           </div>

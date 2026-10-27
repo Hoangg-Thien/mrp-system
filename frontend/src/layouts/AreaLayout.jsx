@@ -25,7 +25,7 @@ export default function AreaLayout({ areaKey, title, menu = [] }) {
         <Menu theme="dark" mode="inline" inlineIndent={16} selectedKeys={selected} items={items} />
         <div className="sider-footer">
           <div className="sider-user-card" onClick={() => navigate(`/${areaKey}`)} title="Tài khoản">
-            <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#16653a' }} />
+            <Avatar icon={<UserOutlined />} className="user-avatar" />
             <div className="sider-user-info">
               <span className="sider-user-name">{user.fullName}</span>
               <span className="sider-user-role">{roleLabels[user.role]}</span>

@@ -245,7 +245,7 @@ export default function StaffDashboard() {
               title="Yêu cầu đang làm"
               value={activePrQuery.data?.totalElements ?? 0}
               prefix={<FieldTimeOutlined />}
-              valueStyle={{ color: '#2563eb' }}
+              valueStyle={{ color: 'var(--status-progress-text)' }}
             />
           </Card>
         </Col>

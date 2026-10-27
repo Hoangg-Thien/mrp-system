@@ -88,7 +88,7 @@ export default function MaterialIssuesPage() {
       dataIndex: 'productionRequestId',
       sorter: true,
       width: 110,
-      render: (v) => <Tag color="blue">PR #{v}</Tag>,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">PR #{v}</Tag>,
     },
     { title: 'Nhân viên yêu cầu', dataIndex: 'requestedByName', width: 150 },
     {
@@ -240,7 +240,7 @@ export default function MaterialIssuesPage() {
                 <DocStatusTag status={detailQuery.data.status} />
               </Descriptions.Item>
               <Descriptions.Item label="Yêu cầu SX liên quan">
-                <Tag color="blue">PR #{detailQuery.data.productionRequestId}</Tag>
+                <Tag className="erp-tag erp-tag-neutral">PR #{detailQuery.data.productionRequestId}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Nhân viên đề nghị">
                 {detailQuery.data.requestedByName}
@@ -300,9 +300,9 @@ export default function MaterialIssuesPage() {
                     const reqQty = Number(r.quantity) || 0
                     const curStock = Number(r.currentStock) || 0
                     return curStock >= reqQty ? (
-                      <Tag color="green">Đủ tồn kho</Tag>
+                      <span className="erp-tag erp-tag-approved">Đủ tồn kho</span>
                     ) : (
-                      <Tag color="red">Thiếu {quantity(reqQty - curStock)}</Tag>
+                      <span className="erp-tag erp-tag-rejected">Thiếu {quantity(reqQty - curStock)}</span>
                     )
                   },
                 },

@@ -113,7 +113,7 @@ export default function StaffMaterialRequestsPage() {
       dataIndex: 'productionRequestId',
       sorter: true,
       width: 120,
-      render: (v) => <Tag color="blue">PR #{v}</Tag>,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">PR #{v}</Tag>,
     },
     {
       title: 'Số dòng NVL',
@@ -268,7 +268,7 @@ export default function StaffMaterialRequestsPage() {
               description={(
                 <div style={{ marginTop: 6 }}>
                   {prRequirementsQuery.data.materials?.map((m) => (
-                    <Tag key={m.materialId} color={m.remainingAllowed > 0 ? 'blue' : 'default'} style={{ marginBottom: 4 }}>
+                    <Tag key={m.materialId} className={`erp-tag ${m.remainingAllowed > 0 ? 'erp-tag-progress' : 'erp-tag-neutral'}`} style={{ marginBottom: 4 }}>
                       {m.materialName}: còn được xin {quantity(m.remainingAllowed)} {m.unit} (tồn kho: {quantity(m.onHand)})
                     </Tag>
                   ))}
@@ -393,7 +393,7 @@ export default function StaffMaterialRequestsPage() {
                 <DocStatusTag status={detailQuery.data.status} />
               </Descriptions.Item>
               <Descriptions.Item label="Yêu cầu SX liên quan">
-                <Tag color="blue">PR #{detailQuery.data.productionRequestId}</Tag>
+                <Tag className="erp-tag erp-tag-neutral">PR #{detailQuery.data.productionRequestId}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Người yêu cầu">
                 {detailQuery.data.requestedByName}
