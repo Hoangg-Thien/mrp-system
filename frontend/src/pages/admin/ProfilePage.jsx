@@ -20,7 +20,7 @@ export default function ProfilePage() {
     <>
       <PageHeader
         title="Hồ sơ cá nhân"
-        subtitle="Thông tin chi tiết về tài khoản và quyền hạn trong hệ thống MRP"
+        subtitle="Thông tin tài khoản và phạm vi quyền hạn trong hệ thống"
       />
 
       <Row gutter={[20, 20]}>

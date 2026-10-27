@@ -1,0 +1,44 @@
+import { Modal } from 'antd'
+
+/**
+ * Hộp thoại xác nhận đăng xuất thống nhất toàn hệ thống (Modal ở giữa màn hình)
+ * @param {Function} onConfirm - Callback thực thi khi người dùng bấm Đăng xuất
+ */
+export function confirmLogout(onConfirm) {
+  Modal.confirm({
+    title: 'Xác nhận đăng xuất',
+    content: 'Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc hiện tại không?',
+    okText: 'Đăng xuất',
+    cancelText: 'Hủy',
+    okButtonProps: { danger: true },
+    centered: true,
+    width: 440,
+    onOk: onConfirm,
+  })
+}
+
+/**
+ * Hộp thoại xác nhận thao tác quan trọng (thống nhất kiểu Modal giữa màn hình)
+ * @param {Object} options - { title, content, onOk, danger, okText, cancelText, width }
+ */
+export function confirmAction({
+  title = 'Xác nhận thao tác?',
+  content,
+  onOk,
+  danger = false,
+  okText = 'Xác nhận',
+  cancelText = 'Hủy',
+  width = 440,
+}) {
+  return Modal.confirm({
+    title,
+    content,
+    okText,
+    cancelText,
+    okButtonProps: { danger },
+    centered: true,
+    width,
+    onOk: () => onOk?.(),
+  })
+}
+

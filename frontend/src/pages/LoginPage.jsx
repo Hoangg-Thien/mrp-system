@@ -35,16 +35,16 @@ export default function LoginPage() {
         {error && <Alert type="error" showIcon message={error} className="login-alert" />}
         <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="username" label="Tên đăng nhập" rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}>
-            <Input prefix={<UserOutlined />} placeholder="username" autoComplete="username" size="large" />
+            <Input prefix={<UserOutlined />} placeholder="Nhập tên tài khoản hoặc mã nhân viên" autoComplete="username" size="large" />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
-            <Input.Password prefix={<LockOutlined />} placeholder="••••••••" autoComplete="current-password" size="large" />
+            <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu truy cập" autoComplete="current-password" size="large" />
           </Form.Item>
           <Form.Item name="remember" valuePropName="checked" initialValue={false}>
             <Checkbox>Ghi nhớ đăng nhập</Checkbox>
           </Form.Item>
           <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-            Đăng nhập
+            Đăng nhập vào hệ thống
           </Button>
         </Form>
       </Card>

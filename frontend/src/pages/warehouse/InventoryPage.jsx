@@ -383,8 +383,8 @@ export default function InventoryPage() {
   return (
     <>
       <PageHeader
-        title="Tồn kho"
-        subtitle="Tồn hiện tại do backend tính qua sổ kho; frontend chỉ hiển thị và gửi lệnh điều chỉnh"
+        title="Tồn kho &amp; Kiểm kê"
+        subtitle="Theo dõi số lượng tồn kho thực tế, định mức khả dụng và thực hiện điều chỉnh kiểm kê"
         extra={(
           <Button
             type="primary"

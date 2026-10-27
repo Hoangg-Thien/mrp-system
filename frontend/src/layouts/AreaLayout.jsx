@@ -3,6 +3,7 @@ import { Avatar, Button, Layout, Menu } from 'antd'
 import { LogoutOutlined, ShopOutlined, UserOutlined } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
+import { confirmLogout } from '../utils/confirm'
 
 /**
  * Khung chung cho khu vực WM / STAFF. Menu nhận từ `menu` để mở dần theo phase backend
@@ -14,13 +15,14 @@ export default function AreaLayout({ areaKey, title, menu = [] }) {
   const location = useLocation()
   const items = [{ key: `/${areaKey}`, icon: <ShopOutlined />, label: <NavLink to={`/${areaKey}`}>{title}</NavLink> }, ...menu]
   const selected = [location.pathname]
+  const handleLogout = () => confirmLogout(() => { logout(); navigate('/login') })
 
   return (
     <Layout className="app-shell">
       <Layout.Sider width={250} className="app-sider">
         <div className="sider-brand">
-          <span className="brand-logo-icon">M</span>
-          <span className="brand-text">MRP SYSTEM</span>
+          <span className="brand-logo-icon">MRP</span>
+          <span className="brand-text">ĐIỀU HÀNH CHUNG</span>
         </div>
         <Menu theme="dark" mode="inline" inlineIndent={16} selectedKeys={selected} items={items} />
         <div className="sider-footer">
@@ -37,8 +39,7 @@ export default function AreaLayout({ areaKey, title, menu = [] }) {
               title="Đăng xuất"
               onClick={(e) => {
                 e.stopPropagation()
-                logout()
-                navigate('/login')
+                handleLogout()
               }}
             />
           </div>

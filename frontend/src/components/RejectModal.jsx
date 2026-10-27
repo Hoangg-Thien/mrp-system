@@ -19,6 +19,8 @@ export default function RejectModal({ open, confirmLoading, onCancel, onSubmit, 
       cancelText="Hủy"
       okButtonProps={{ danger: true }}
       confirmLoading={confirmLoading}
+      centered
+      width={480}
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={(values) => onSubmit(values.reason)}>

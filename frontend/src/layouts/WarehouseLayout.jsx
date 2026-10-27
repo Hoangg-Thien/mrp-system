@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
+import { confirmLogout } from '../utils/confirm'
 
 /** Khu vực QUẢN LÝ KHO (WM) – tách biệt với ADMIN và STAFF (plan mục 3.2). */
 export default function WarehouseLayout() {
@@ -29,6 +30,7 @@ export default function WarehouseLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const handleLogout = () => confirmLogout(() => { logout(); navigate('/login') })
 
   const items = [
     {
@@ -97,8 +99,8 @@ export default function WarehouseLayout() {
     <Layout className="app-shell">
       <Layout.Sider collapsible collapsed={collapsed} trigger={null} width={250} className="app-sider">
         <div className="sider-brand">
-          <span className="brand-logo-icon">M</span>
-          <span className="brand-text">MRP SYSTEM</span>
+          <span className="brand-logo-icon">KHO</span>
+          <span className="brand-text">QUẢN LÝ KHO</span>
         </div>
         <Menu
           theme="dark"
@@ -125,7 +127,7 @@ export default function WarehouseLayout() {
                   },
                   { type: 'divider' },
                   { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân', onClick: () => navigate('/warehouse/profile') },
-                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: () => { logout(); navigate('/login') } },
+                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: handleLogout },
                 ],
               }}
             >
@@ -147,8 +149,7 @@ export default function WarehouseLayout() {
                 title="Đăng xuất"
                 onClick={(e) => {
                   e.stopPropagation()
-                  logout()
-                  navigate('/login')
+                  handleLogout()
                 }}
               />
             </div>
@@ -172,7 +173,7 @@ export default function WarehouseLayout() {
         <Layout.Content className="app-content">
           <Outlet />
         </Layout.Content>
-        <Layout.Footer className="app-footer">MRP System – Phân hệ Quản lý kho</Layout.Footer>
+        <Layout.Footer className="app-footer">Phân hệ Quản lý Kho – Chuỗi cung ứng &amp; Tồn kho</Layout.Footer>
       </Layout>
     </Layout>
   )

@@ -21,8 +21,20 @@ function renderControl(field, options) {
 }
 
 /** Modal form sinh từ cấu hình fields; rules bám theo validation của backend. */
-export default function FormModal({ title, open, fields, options, initialValues, confirmLoading, onCancel, onSubmit }) {
+export default function FormModal({
+  title,
+  open,
+  fields,
+  options,
+  initialValues,
+  confirmLoading,
+  onCancel,
+  onSubmit,
+  width,
+}) {
   const [form] = Form.useForm()
+  const isMultiCol = fields.length >= 4
+  const modalWidth = width || (isMultiCol ? 640 : 480)
 
   useEffect(() => {
     if (!open) return
@@ -40,26 +52,36 @@ export default function FormModal({ title, open, fields, options, initialValues,
       cancelText="Hủy"
       confirmLoading={confirmLoading}
       forceRender
-      width={560}
+      centered
+      width={modalWidth}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit}>
-        {fields.map((field) => (
-          <Form.Item
-            key={field.name}
-            name={field.name}
-            label={field.label}
-            rules={[
-              ...(field.required ? [{ required: true, message: `Vui lòng nhập ${field.label.toLowerCase()}` }] : []),
-              ...(field.max ? [{ max: field.max, message: `Tối đa ${field.max} ký tự` }] : []),
-              ...(field.min ? [{ min: field.min, message: `Tối thiểu ${field.min} ký tự` }] : []),
-              ...(field.type === 'email' ? [{ type: 'email', message: 'Email không hợp lệ' }] : []),
-              ...(field.rules || []),
-            ]}
-          >
-            {renderControl(field, options)}
-          </Form.Item>
-        ))}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        className={isMultiCol ? 'form-modal-grid' : ''}
+      >
+        {fields.map((field) => {
+          const isFullWidth = field.type === 'textarea' || field.fullWidth
+          return (
+            <Form.Item
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              className={isFullWidth ? 'form-full-width' : ''}
+              rules={[
+                ...(field.required ? [{ required: true, message: `Vui lòng nhập ${field.label.toLowerCase()}` }] : []),
+                ...(field.max ? [{ max: field.max, message: `Tối đa ${field.max} ký tự` }] : []),
+                ...(field.min ? [{ min: field.min, message: `Tối thiểu ${field.min} ký tự` }] : []),
+                ...(field.type === 'email' ? [{ type: 'email', message: 'Email không hợp lệ' }] : []),
+                ...(field.rules || []),
+              ]}
+            >
+              {renderControl(field, options)}
+            </Form.Item>
+          )
+        })}
       </Form>
     </Modal>
   )

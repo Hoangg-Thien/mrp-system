@@ -24,22 +24,22 @@ export function useResourceActions({ key, path, invalidateKeys }) {
   const onError = (error) => message.error(error.message)
   const create = useMutation({
     mutationFn: (body) => api.post(path, body),
-    onSuccess: () => { message.success('Đã tạo mới'); refresh() },
+    onSuccess: () => { message.success('Thêm mới thành công'); refresh() },
     onError,
   })
   const update = useMutation({
     mutationFn: ({ id, body }) => api.put(`${path}/${id}`, body),
-    onSuccess: () => { message.success('Đã cập nhật'); refresh() },
+    onSuccess: () => { message.success('Cập nhật thành công'); refresh() },
     onError,
   })
   const remove = useMutation({
     mutationFn: (id) => api.del(`${path}/${id}`),
-    onSuccess: () => { message.success('Đã xóa'); refresh() },
+    onSuccess: () => { message.success('Đã xóa thành công'); refresh() },
     onError,
   })
   const runAction = useMutation({
     mutationFn: ({ id, name, body }) => api.post(`${path}/${id}/${name}`, body),
-    onSuccess: () => { message.success('Đã cập nhật trạng thái'); refresh() },
+    onSuccess: () => { message.success('Cập nhật trạng thái thành công'); refresh() },
     onError,
   })
 

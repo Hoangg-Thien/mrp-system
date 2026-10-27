@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Input, Modal, Popconfirm, Select, Space, Tooltip } from 'antd'
+import { Button, Input, Modal, Select, Space, Tooltip } from 'antd'
 import { LockOutlined, PlusOutlined, ReloadOutlined, SwapOutlined, UnlockOutlined } from '@ant-design/icons'
 import { usePagedQuery, useResourceActions } from '../../api/hooks'
 import { useAuth } from '../../auth/context'
@@ -7,6 +7,7 @@ import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import FormModal from '../../components/FormModal'
 import StatusTag, { RoleTag } from '../../components/StatusTag'
+import { confirmAction } from '../../utils/confirm'
 import { activeOptions, emptyText, roleOptions } from '../../utils/statusMap'
 import { dateTime } from '../../utils/format'
 import { directionOptions, sortOptions, userFields } from './userFields'
@@ -38,23 +39,42 @@ export default function UsersPage() {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right',
-      width: 280,
+      width: 210,
       render: (_, row) => {
         const isSelf = row.id === me.id
         const guard = (node) => (isSelf ? <Tooltip title="Không thể thao tác trên tài khoản đang đăng nhập">{node}</Tooltip> : node)
         return (
           <Space size={4}>
-            {guard(<Button size="small" icon={<SwapOutlined />} disabled={isSelf}
-              onClick={() => { setRoleTarget(row); setRoleValue(row.role) }}>Đổi vai trò</Button>)}
-            {guard(<Button size="small" icon={row.active ? <LockOutlined /> : <UnlockOutlined />} disabled={isSelf}
-              onClick={() => actions.runAction.mutate({ id: row.id, name: row.active ? 'lock' : 'unlock' })}>
-              {row.active ? 'Khóa' : 'Mở khóa'}
-            </Button>)}
             {guard(
-              <Popconfirm title="Xóa tài khoản này?" okText="Xóa" cancelText="Hủy" okButtonProps={{ danger: true }} disabled={isSelf}
-                onConfirm={() => actions.remove.mutateAsync(row.id).catch(() => undefined)}>
-                <Button size="small" danger disabled={isSelf}>Xóa</Button>
-              </Popconfirm>,
+              <Button
+                size="small"
+                icon={<SwapOutlined />}
+                disabled={isSelf}
+                onClick={() => { setRoleTarget(row); setRoleValue(row.role) }}
+              >
+                Đổi vai trò
+              </Button>
+            )}
+            {guard(
+              <Button
+                size="small"
+                icon={row.active ? <LockOutlined /> : <UnlockOutlined />}
+                disabled={isSelf}
+                danger={row.active}
+                onClick={() =>
+                  confirmAction({
+                    title: row.active ? 'Xác nhận khóa tài khoản?' : 'Xác nhận mở khóa tài khoản?',
+                    content: row.active
+                      ? `Bạn có chắc chắn muốn khóa tài khoản "${row.username}"? Người dùng sẽ bị chặn đăng nhập vào hệ thống.`
+                      : `Mở khóa tài khoản "${row.username}" để người dùng có thể đăng nhập lại bình thường?`,
+                    okText: row.active ? 'Khóa tài khoản' : 'Mở khóa',
+                    danger: row.active,
+                    onOk: () => actions.runAction.mutateAsync({ id: row.id, name: row.active ? 'lock' : 'unlock' }),
+                  })
+                }
+              >
+                {row.active ? 'Khóa' : 'Mở khóa'}
+              </Button>
             )}
           </Space>
         )
@@ -82,7 +102,7 @@ export default function UsersPage() {
 
   return (
     <>
-      <PageHeader title="Tài khoản" subtitle="Tạo và phân quyền STAFF / WAREHOUSE_MANAGER / ADMIN"
+      <PageHeader title="Tài khoản" subtitle="Tạo và phân quyền Quản trị viên / Quản lý kho / Nhân viên xưởng"
         extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>Tạo tài khoản</Button>} />
       <PagedTable
         filters={(
@@ -111,9 +131,20 @@ export default function UsersPage() {
       />
       <FormModal title="Tạo tài khoản" open={open} fields={userFields} confirmLoading={actions.create.isPending}
         onCancel={() => setOpen(false)} onSubmit={submit} />
-      <Modal title={`Đổi vai trò: ${roleTarget?.username || ''}`} open={!!roleTarget} onOk={changeRole} okText="Lưu" cancelText="Hủy"
-        confirmLoading={actions.runAction.isPending} onCancel={() => setRoleTarget(null)}>
-        <p className="muted">Backend sẽ tạo/xóa hồ sơ tương ứng và chặn nếu tài khoản đã phát sinh dữ liệu nghiệp vụ.</p>
+      <Modal
+        title={`Đổi vai trò: ${roleTarget?.username || ''}`}
+        open={!!roleTarget}
+        onOk={changeRole}
+        okText="Lưu"
+        cancelText="Hủy"
+        centered
+        width={480}
+        confirmLoading={actions.runAction.isPending}
+        onCancel={() => setRoleTarget(null)}
+      >
+        <p className="muted" style={{ marginBottom: 12 }}>
+          Hệ thống sẽ cập nhật quyền hạn tương ứng và chặn thao tác nếu tài khoản đã phát sinh dữ liệu liên quan.
+        </p>
         <Select style={{ width: '100%' }} options={roleOptions} value={roleValue} onChange={setRoleValue} />
       </Modal>
     </>

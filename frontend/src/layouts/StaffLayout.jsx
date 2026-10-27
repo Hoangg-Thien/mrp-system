@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
+import { confirmLogout } from '../utils/confirm'
 
 /** Khu vực NHÂN VIÊN (STAFF) – tách biệt hoàn toàn với ADMIN và WM (plan mục 3.3). */
 export default function StaffLayout() {
@@ -22,6 +23,7 @@ export default function StaffLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const handleLogout = () => confirmLogout(() => { logout(); navigate('/login') })
 
   const items = [
     {
@@ -74,8 +76,8 @@ export default function StaffLayout() {
     <Layout className="app-shell">
       <Layout.Sider collapsible collapsed={collapsed} trigger={null} width={250} className="app-sider">
         <div className="sider-brand">
-          <span className="brand-logo-icon">M</span>
-          <span className="brand-text">MRP SYSTEM</span>
+          <span className="brand-logo-icon">SX</span>
+          <span className="brand-text">XƯỞNG SẢN XUẤT</span>
         </div>
         <Menu
           theme="dark"
@@ -102,7 +104,7 @@ export default function StaffLayout() {
                   },
                   { type: 'divider' },
                   { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân', onClick: () => navigate('/staff/profile') },
-                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: () => { logout(); navigate('/login') } },
+                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: handleLogout },
                 ],
               }}
             >
@@ -124,8 +126,7 @@ export default function StaffLayout() {
                 title="Đăng xuất"
                 onClick={(e) => {
                   e.stopPropagation()
-                  logout()
-                  navigate('/login')
+                  handleLogout()
                 }}
               />
             </div>
@@ -149,7 +150,7 @@ export default function StaffLayout() {
         <Layout.Content className="app-content">
           <Outlet />
         </Layout.Content>
-        <Layout.Footer className="app-footer">MRP System – Phân hệ Nhân viên</Layout.Footer>
+        <Layout.Footer className="app-footer">Phân hệ Điều hành &amp; Phân xưởng Sản xuất</Layout.Footer>
       </Layout>
     </Layout>
   )

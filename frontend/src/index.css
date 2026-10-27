@@ -760,3 +760,87 @@ body {
     padding: 36px 20px;
   }
 }
+
+/* ==========================================================================
+   MODAL & POPUP VIEWPORT FIT SYSTEM
+   Fit mọi popup trong màn hình, triệt tiêu việc kéo trang lên xuống khi mở popup
+   ========================================================================== */
+.ant-modal {
+  max-width: calc(100vw - 32px);
+  padding-bottom: 0 !important;
+}
+
+.ant-modal-content {
+  max-height: calc(100vh - 40px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 20px 24px !important;
+}
+
+.ant-modal-header {
+  flex: 0 0 auto !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.ant-modal-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--color-text-title) !important;
+}
+
+.ant-modal-body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100vh - 170px) !important;
+  padding: 6px 4px 6px 0 !important;
+}
+
+.ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ant-modal-body::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.ant-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.ant-modal-footer {
+  flex: 0 0 auto !important;
+  margin-top: 14px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid var(--color-border) !important;
+}
+
+/* Lưới 2 cột cho các form modal có nhiều trường */
+.form-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 0;
+}
+
+.form-modal-grid .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.form-modal-grid .form-full-width {
+  grid-column: 1 / -1 !important;
+}
+

@@ -51,8 +51,8 @@ export default function StaffPage() {
   return (
     <>
       <PageHeader
-        title="Nhân viên (giao việc)"
-        subtitle="Danh sách nhân viên (STAFF) đang hoạt động dùng cho Quản lý kho phân công sản xuất"
+        title="Nhân viên sản xuất"
+        subtitle="Danh sách nhân viên xưởng đang hoạt động dùng cho phân công lệnh sản xuất"
         extra={(
           <Button
             type="primary"

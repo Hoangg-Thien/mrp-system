@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
+import { confirmLogout } from '../utils/confirm'
 
 /** Khu vực ADMIN – tách biệt hoàn toàn với /warehouse và /staff (plan mục 3.1). */
 export default function AdminLayout() {
@@ -23,6 +24,7 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const handleLogout = () => confirmLogout(() => { logout(); navigate('/login') })
 
   const items = [
     {
@@ -46,7 +48,7 @@ export default function AdminLayout() {
             { key: '/admin/products', icon: <TableOutlined />, label: <NavLink to="/admin/products">Sản phẩm</NavLink> },
             { key: '/admin/suppliers', icon: <ProfileOutlined />, label: <NavLink to="/admin/suppliers">Nhà cung cấp</NavLink> },
             { key: '/admin/materials', icon: <AppstoreOutlined />, label: <NavLink to="/admin/materials">Nguyên vật liệu</NavLink> },
-            { key: '/admin/staff', icon: <TeamOutlined />, label: <NavLink to="/admin/staff">Nhân viên (giao việc)</NavLink> },
+            { key: '/admin/staff', icon: <TeamOutlined />, label: <NavLink to="/admin/staff">Nhân viên sản xuất</NavLink> },
           ],
         },
         { key: '/admin/reports', icon: <BarChartOutlined />, label: <NavLink to="/admin/reports">Báo cáo kho</NavLink> },
@@ -66,8 +68,8 @@ export default function AdminLayout() {
     <Layout className="app-shell">
       <Layout.Sider collapsible collapsed={collapsed} trigger={null} width={250} className="app-sider">
         <div className="sider-brand">
-          <span className="brand-logo-icon">M</span>
-          <span className="brand-text">MRP SYSTEM</span>
+          <span className="brand-logo-icon">QT</span>
+          <span className="brand-text">QUẢN TRỊ HỆ THỐNG</span>
         </div>
         <Menu
           theme="dark"
@@ -94,7 +96,7 @@ export default function AdminLayout() {
                   },
                   { type: 'divider' },
                   { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân', onClick: () => navigate('/admin/profile') },
-                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: () => { logout(); navigate('/login') } },
+                  { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: handleLogout },
                 ],
               }}
             >
@@ -116,8 +118,7 @@ export default function AdminLayout() {
                 title="Đăng xuất"
                 onClick={(e) => {
                   e.stopPropagation()
-                  logout()
-                  navigate('/login')
+                  handleLogout()
                 }}
               />
             </div>
@@ -135,13 +136,13 @@ export default function AdminLayout() {
                 onClick={() => setCollapsed(!collapsed)}
               />
             </Tooltip>
-            <span className="header-title">Hệ thống Quản lý Sản xuất MRP</span>
+            <span className="header-title">Hệ thống Quản lý Kế hoạch Sản xuất & Kho vận</span>
           </div>
         </Layout.Header>
         <Layout.Content className="app-content">
           <Outlet />
         </Layout.Content>
-        <Layout.Footer className="app-footer">MRP System – Khu vực quản trị</Layout.Footer>
+        <Layout.Footer className="app-footer">Khu vực Quản trị Hệ thống</Layout.Footer>
       </Layout>
     </Layout>
   )
