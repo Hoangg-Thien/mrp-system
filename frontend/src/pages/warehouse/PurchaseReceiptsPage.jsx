@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useState } from 'react'
@@ -26,7 +27,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -168,23 +169,23 @@ export default function PurchaseReceiptsPage() {
               >
                 Sửa
               </Button>
-              <ConfirmButton
+              <ConfirmButton disabled={completeMutation.isPending}
                 type="primary"
                 size="small"
                 title="Hoàn tất phiếu nhập này?"
                 description="Hệ thống sẽ cập nhật tăng tồn kho NVL. Hành động này không thể hoàn tác."
                 loading={completeMutation.isPending}
-                onConfirm={() => completeMutation.mutate(r.id)}
+                onConfirm={() => completeMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Hoàn tất
               </ConfirmButton>
-              <ConfirmButton
+              <ConfirmButton disabled={cancelMutation.isPending}
                 danger
                 size="small"
                 title="Hủy phiếu nhập kho này?"
                 description="Phiếu sẽ bị hủy và không ghi nhận tồn kho."
                 loading={cancelMutation.isPending}
-                onConfirm={() => cancelMutation.mutate(r.id)}
+                onConfirm={() => cancelMutation.mutateAsync(r.id)}
               >
                 <CloseOutlined />
               </ConfirmButton>
@@ -302,7 +303,7 @@ export default function PurchaseReceiptsPage() {
       />
 
       {/* Modal tạo phiếu nhập mới */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo phiếu nhập kho NVL"
         open={createModalOpen}
         width={760}
@@ -425,7 +426,7 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal sửa dòng phiếu nhập (khi PENDING) */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: updateMutation.isPending }} closable={!(updateMutation.isPending)} maskClosable={!(updateMutation.isPending)} okButtonProps={{ disabled: updateMutation.isPending }}
         title={`Chỉnh sửa phiếu nhập #${editItem?.id}`}
         open={!!editItem}
         width={760}
@@ -547,30 +548,30 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu nhập */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} maskClosable={!(completeMutation.isPending)} okButtonProps={{ disabled: completeMutation.isPending }}
         title={`Chi tiết phiếu nhập #${detailId}`}
         open={!!detailId}
         width={720}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={completeMutation.isPending}
               key="complete"
               type="primary"
               title="Xác nhận hoàn tất phiếu nhập này?"
               description="Hệ thống sẽ cập nhật tăng tồn kho NVL. Không thể hoàn tác."
               loading={completeMutation.isPending}
-              onConfirm={() => completeMutation.mutate(detailId)}
+              onConfirm={() => completeMutation.mutateAsync(detailId)}
             >
               Hoàn tất phiếu nhập
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Xác nhận hủy phiếu nhập này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Alert, Button, Card, Checkbox, Form, Input } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Navigate, useNavigate } from 'react-router-dom'
@@ -13,10 +13,13 @@ export default function LoginPage() {
   const [form] = Form.useForm()
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const submitting = useRef(false)
 
   if (user) return <Navigate to={homeByRole[user.role] || '/login'} replace />
 
   const onFinish = async (values) => {
+    if (submitting.current) return
+    submitting.current = true
     setLoading(true)
     setError(null)
     try {
@@ -25,6 +28,7 @@ export default function LoginPage() {
     } catch (err) {
       setError(err.message)
     } finally {
+      submitting.current = false
       setLoading(false)
     }
   }
@@ -43,7 +47,7 @@ export default function LoginPage() {
           <Form.Item name="remember" valuePropName="checked" initialValue={false}>
             <Checkbox>Ghi nhớ đăng nhập</Checkbox>
           </Form.Item>
-          <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+          <Button disabled={loading} type="primary" htmlType="submit" block size="large" loading={loading}>
             Đăng nhập vào hệ thống
           </Button>
         </Form>

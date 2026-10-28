@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useState } from 'react'
 import {
   Alert,
@@ -19,7 +20,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -112,17 +113,17 @@ export default function MaterialIssuesPage() {
           </Button>
           {r.status === 'PENDING' && (
             <>
-              <ConfirmButton
+              <ConfirmButton disabled={approveMutation.isPending}
                 type="primary"
                 size="small"
                 title="Duyệt phiếu xuất NVL này?"
                 description="Hệ thống sẽ trừ tồn kho NVL. Nếu kho không đủ tồn, thao tác sẽ bị chặn."
                 loading={approveMutation.isPending}
-                onConfirm={() => approveMutation.mutate(r.id)}
+                onConfirm={() => approveMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Duyệt
               </ConfirmButton>
-              <Button
+              <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
                 danger
                 size="small"
                 icon={<CloseOutlined />}
@@ -201,25 +202,25 @@ export default function MaterialIssuesPage() {
       />
 
       {/* Modal chi tiết phiếu xuất NVL */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} maskClosable={!(approveMutation.isPending)} okButtonProps={{ disabled: approveMutation.isPending }}
         title={`Chi tiết phiếu xuất NVL #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={approveMutation.isPending}
               key="approve"
               type="primary"
               title="Xác nhận duyệt xuất NVL này?"
               description="Hệ thống sẽ trừ tồn kho NVL qua sổ kho."
               loading={approveMutation.isPending}
-              onConfirm={() => approveMutation.mutate(detailId)}
+              onConfirm={() => approveMutation.mutateAsync(detailId)}
             >
               Duyệt xuất kho
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <Button
+            <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
               key="reject"
               danger
               onClick={() => setRejectId(detailId)}

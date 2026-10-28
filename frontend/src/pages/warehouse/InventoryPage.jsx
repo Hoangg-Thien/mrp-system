@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useState } from 'react'
@@ -16,7 +17,7 @@ import {
   message,
 } from 'antd'
 import { PlusCircleOutlined, ReloadOutlined } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import PageHeader from '../../components/PageHeader'
@@ -260,7 +261,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
   }
 
   return (
-    <Modal
+    <Modal cancelButtonProps={{ disabled: adjustMutation.isPending }} closable={!(adjustMutation.isPending)} maskClosable={!(adjustMutation.isPending)} okButtonProps={{ disabled: adjustMutation.isPending }}
       title="Điều chỉnh tồn kho (Kiểm kê)"
       open={open}
       onCancel={onClose}

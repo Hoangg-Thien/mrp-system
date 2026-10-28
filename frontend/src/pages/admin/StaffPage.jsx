@@ -85,7 +85,7 @@ export default function StaffPage() {
             onSearch={setKeyword}
             onChange={(e) => !e.target.value && setKeyword('')}
           />
-          <Button
+          <Button disabled={query.isFetching}
             icon={<ReloadOutlined />}
             loading={query.isFetching}
             onClick={() => query.refetch()}

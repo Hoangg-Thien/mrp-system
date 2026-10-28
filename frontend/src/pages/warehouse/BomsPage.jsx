@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useState } from 'react'
@@ -24,7 +25,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -134,24 +135,24 @@ export default function BomsPage() {
             Chi tiết
           </Button>
           {!r.active ? (
-            <ConfirmButton
+            <ConfirmButton disabled={activateMutation.isPending}
               type="primary"
               size="small"
               title="Kích hoạt BOM phiên bản này?"
               description="BOM đang active khác của cùng sản phẩm này sẽ tự động chuyển thành vô hiệu hóa."
               loading={activateMutation.isPending}
-              onConfirm={() => activateMutation.mutate(r.id)}
+              onConfirm={() => activateMutation.mutateAsync(r.id)}
             >
               <CheckCircleOutlined /> Kích hoạt
             </ConfirmButton>
           ) : (
-            <ConfirmButton
+            <ConfirmButton disabled={deactivateMutation.isPending}
               danger
               size="small"
               title="Vô hiệu hóa BOM này?"
               description="Sản phẩm sẽ không thể dùng BOM này để tạo kế hoạch MRP hoặc yêu cầu sản xuất mới cho đến khi có BOM active khác."
               loading={deactivateMutation.isPending}
-              onConfirm={() => deactivateMutation.mutate(r.id)}
+              onConfirm={() => deactivateMutation.mutateAsync(r.id)}
             >
               <CloseCircleOutlined /> Vô hiệu
             </ConfirmButton>
@@ -245,7 +246,7 @@ export default function BomsPage() {
       />
 
       {/* Modal tạo BOM mới */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo công thức sản phẩm (BOM)"
         open={createModalOpen}
         width={720}
@@ -353,30 +354,30 @@ export default function BomsPage() {
       </Modal>
 
       {/* Modal chi tiết BOM */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: activateMutation.isPending }} closable={!(activateMutation.isPending)} maskClosable={!(activateMutation.isPending)} okButtonProps={{ disabled: activateMutation.isPending }}
         title={`Chi tiết BOM #${detailId} – v${detailQuery.data?.version}`}
         open={!!detailId}
         width={680}
         footer={[
           detailQuery.data && !detailQuery.data.active && (
-            <ConfirmButton
+            <ConfirmButton disabled={activateMutation.isPending}
               key="activate"
               type="primary"
               title="Kích hoạt BOM phiên bản này?"
               description="BOM đang active khác của cùng sản phẩm sẽ tự chuyển sang vô hiệu."
               loading={activateMutation.isPending}
-              onConfirm={() => activateMutation.mutate(detailId)}
+              onConfirm={() => activateMutation.mutateAsync(detailId)}
             >
               Kích hoạt BOM
             </ConfirmButton>
           ),
           detailQuery.data && detailQuery.data.active && (
-            <ConfirmButton
+            <ConfirmButton disabled={deactivateMutation.isPending}
               key="deactivate"
               danger
               title="Vô hiệu hóa BOM này?"
               loading={deactivateMutation.isPending}
-              onConfirm={() => deactivateMutation.mutate(detailId)}
+              onConfirm={() => deactivateMutation.mutateAsync(detailId)}
             >
               Vô hiệu hóa BOM
             </ConfirmButton>

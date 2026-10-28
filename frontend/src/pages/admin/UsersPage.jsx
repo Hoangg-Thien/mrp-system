@@ -56,10 +56,10 @@ export default function UsersPage() {
               </Button>
             )}
             {guard(
-              <Button
+              <Button loading={actions.runAction.isPending}
                 size="small"
                 icon={row.active ? <LockOutlined /> : <UnlockOutlined />}
-                disabled={isSelf}
+                disabled={(isSelf) || (actions.runAction.isPending)}
                 danger={row.active}
                 onClick={() =>
                   confirmAction({
@@ -131,7 +131,7 @@ export default function UsersPage() {
       />
       <FormModal title="Tạo tài khoản" open={open} fields={userFields} confirmLoading={actions.create.isPending}
         onCancel={() => setOpen(false)} onSubmit={submit} />
-      <Modal
+      <Modal cancelButtonProps={{ disabled: actions.runAction.isPending }} closable={!(actions.runAction.isPending)} maskClosable={!(actions.runAction.isPending)} okButtonProps={{ disabled: actions.runAction.isPending }}
         title={`Đổi vai trò: ${roleTarget?.username || ''}`}
         open={!!roleTarget}
         onOk={changeRole}

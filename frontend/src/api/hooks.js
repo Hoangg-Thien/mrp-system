@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { useSingleMutation as useMutation } from './useSingleMutation'
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { App } from 'antd'
 import { api } from './client'
 

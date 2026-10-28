@@ -101,7 +101,7 @@ export default function MrpPlanningPage() {
           </Form.Item>
 
           <Form.Item>
-            <Button
+            <Button disabled={planQuery.isFetching}
               type="primary"
               htmlType="submit"
               icon={<CalculatorOutlined />}

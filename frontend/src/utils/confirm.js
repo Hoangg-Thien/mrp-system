@@ -1,4 +1,5 @@
 import { Modal } from 'antd'
+import { singleFlight } from '../api/singleFlight'
 
 /**
  * Hộp thoại xác nhận đăng xuất thống nhất toàn hệ thống (Modal ở giữa màn hình)
@@ -29,8 +30,15 @@ export function confirmAction({
   okText = 'Xác nhận',
   cancelText = 'Hủy',
   width = 440,
+  afterClose,
 }) {
-  return Modal.confirm({
+  const submit = singleFlight(async () => {
+    dialog.update({ okButtonProps: { danger, disabled: true }, cancelButtonProps: { disabled: true }, closable: false })
+    try { return await onOk?.() } finally {
+      dialog.update({ okButtonProps: { danger, disabled: false }, cancelButtonProps: { disabled: false } })
+    }
+  })
+  const dialog = Modal.confirm({
     title,
     content,
     okText,
@@ -38,7 +46,9 @@ export function confirmAction({
     okButtonProps: { danger },
     centered: true,
     width,
-    onOk: () => onOk?.(),
+    onOk: submit,
+    afterClose,
   })
+  return dialog
 }
 

@@ -1,4 +1,5 @@
 import { Button } from 'antd'
+import { useRef } from 'react'
 import { confirmAction } from '../utils/confirm'
 
 /** Nút thao tác có hộp thoại xác nhận Modal ở giữa màn hình; chống bấm đúp nhờ loading/disabled. */
@@ -17,8 +18,11 @@ export default function ConfirmButton({
   onConfirm,
   ...rest
 }) {
+  const confirming = useRef(false)
   const handleClick = (e) => {
     e?.stopPropagation?.()
+    if (confirming.current || loading || disabled) return
+    confirming.current = true
     confirmAction({
       title,
       content: description,
@@ -26,6 +30,7 @@ export default function ConfirmButton({
       cancelText,
       danger,
       onOk: () => onConfirm?.(),
+      afterClose: () => { confirming.current = false },
     })
   }
 
@@ -35,7 +40,7 @@ export default function ConfirmButton({
       type={type}
       danger={danger}
       loading={loading}
-      disabled={disabled || loading}
+      disabled={(disabled || loading) || (loading)}
       icon={icon}
       onClick={handleClick}
       {...rest}

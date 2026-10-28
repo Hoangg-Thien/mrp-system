@@ -43,7 +43,7 @@ export default function FormModal({
   }, [open, initialValues, form])
 
   return (
-    <Modal
+    <Modal cancelButtonProps={{ disabled: confirmLoading }} closable={!(confirmLoading)} maskClosable={!(confirmLoading)} okButtonProps={{ disabled: confirmLoading }}
       title={title}
       open={open}
       onCancel={onCancel}

@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useEffect, useState } from 'react'
@@ -24,7 +25,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -157,13 +158,13 @@ export default function ProductionRequestsPage() {
             Kiểm tra NVL
           </Button>
           {(r.status === 'PENDING' || r.status === 'IN_PROGRESS') && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               danger
               size="small"
               title="Hủy yêu cầu sản xuất này?"
               description="Chỉ có thể hủy khi chưa có phiếu xuất NVL nào được duyệt và chưa có đợt sản xuất đang chạy."
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(r.id)}
+              onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
               <CloseOutlined /> Hủy
             </ConfirmButton>
@@ -262,7 +263,7 @@ export default function ProductionRequestsPage() {
       />
 
       {/* Modal tạo yêu cầu sản xuất */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo yêu cầu sản xuất mới"
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
@@ -320,18 +321,18 @@ export default function ProductionRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết yêu cầu sản xuất */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết yêu cầu sản xuất #${detailId}`}
         open={!!detailId}
         width={780}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Hủy yêu cầu sản xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy yêu cầu sản xuất
             </ConfirmButton>

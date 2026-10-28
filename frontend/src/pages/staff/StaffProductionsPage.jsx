@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -19,7 +20,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -132,22 +133,22 @@ export default function StaffProductionsPage() {
           </Button>
           {r.status === 'IN_PROGRESS' && (
             <>
-              <ConfirmButton
+              <ConfirmButton disabled={completeMutation.isPending}
                 type="primary"
                 size="small"
                 title="Xác nhận hoàn tất đợt sản xuất này?"
                 description="Hệ thống sẽ kiểm tra NVL đã xuất đủ theo BOM và ghi tăng thành phẩm vào kho."
                 loading={completeMutation.isPending}
-                onConfirm={() => completeMutation.mutate(r.id)}
+                onConfirm={() => completeMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Hoàn tất
               </ConfirmButton>
-              <ConfirmButton
+              <ConfirmButton disabled={cancelMutation.isPending}
                 danger
                 size="small"
                 title="Hủy đợt sản xuất này?"
                 loading={cancelMutation.isPending}
-                onConfirm={() => cancelMutation.mutate(r.id)}
+                onConfirm={() => cancelMutation.mutateAsync(r.id)}
               >
                 <CloseOutlined />
               </ConfirmButton>
@@ -235,7 +236,7 @@ export default function StaffProductionsPage() {
       />
 
       {/* Modal bắt đầu đợt sản xuất */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Bắt đầu đợt sản xuất mới"
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
@@ -277,29 +278,29 @@ export default function StaffProductionsPage() {
       </Modal>
 
       {/* Modal chi tiết đợt sản xuất */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} maskClosable={!(completeMutation.isPending)} okButtonProps={{ disabled: completeMutation.isPending }}
         title={`Chi tiết đợt sản xuất #${detailId}`}
         open={!!detailId}
         footer={[
           detailQuery.data?.status === 'IN_PROGRESS' && (
-            <ConfirmButton
+            <ConfirmButton disabled={completeMutation.isPending}
               key="complete"
               type="primary"
               title="Xác nhận hoàn tất đợt sản xuất này?"
               description="Hệ thống sẽ kiểm tra NVL xuất đủ theo BOM và ghi tăng thành phẩm vào kho."
               loading={completeMutation.isPending}
-              onConfirm={() => completeMutation.mutate(detailId)}
+              onConfirm={() => completeMutation.mutateAsync(detailId)}
             >
               Hoàn tất sản xuất
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'IN_PROGRESS' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Hủy đợt sản xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy đợt SX
             </ConfirmButton>

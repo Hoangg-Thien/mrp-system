@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useEffect, useState } from 'react'
 import {
   Alert,
@@ -23,7 +24,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -135,12 +136,12 @@ export default function StaffMaterialRequestsPage() {
             Chi tiết
           </Button>
           {r.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               danger
               size="small"
               title="Hủy phiếu đề nghị xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(r.id)}
+              onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
               <CloseOutlined /> Hủy
             </ConfirmButton>
@@ -227,7 +228,7 @@ export default function StaffMaterialRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất NVL */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất nguyên vật liệu"
         open={createModalOpen}
         width={760}
@@ -364,18 +365,18 @@ export default function StaffMaterialRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất NVL */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất NVL #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Xác nhận hủy phiếu đề xuất xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>

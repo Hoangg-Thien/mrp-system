@@ -57,7 +57,7 @@ export default function CatalogPage({ type }) {
         <Space size={4}>
           <Button size="small" onClick={() => { setEditing(row); setOpen(true) }}>Sửa</Button>
           {resource.hasActive && (
-            <Button
+            <Button disabled={actions.runAction.isPending} loading={actions.runAction.isPending}
               size="small"
               onClick={() =>
                 confirmAction({
@@ -74,7 +74,7 @@ export default function CatalogPage({ type }) {
               {row.active ? 'Vô hiệu hóa' : 'Kích hoạt'}
             </Button>
           )}
-          <Button
+          <Button disabled={actions.remove.isPending} loading={actions.remove.isPending}
             size="small"
             danger
             onClick={() =>

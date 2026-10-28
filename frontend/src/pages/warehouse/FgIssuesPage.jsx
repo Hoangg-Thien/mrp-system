@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useState } from 'react'
@@ -19,7 +20,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -117,17 +118,17 @@ export default function FgIssuesPage() {
           </Button>
           {r.status === 'PENDING' && (
             <>
-              <ConfirmButton
+              <ConfirmButton disabled={approveMutation.isPending}
                 type="primary"
                 size="small"
                 title="Duyệt xuất kho thành phẩm này?"
                 description="Hệ thống sẽ trừ tồn kho thành phẩm. Nếu kho thiếu tồn, thao tác sẽ bị chặn."
                 loading={approveMutation.isPending}
-                onConfirm={() => approveMutation.mutate(r.id)}
+                onConfirm={() => approveMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Duyệt
               </ConfirmButton>
-              <Button
+              <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
                 danger
                 size="small"
                 icon={<CloseOutlined />}
@@ -210,25 +211,25 @@ export default function FgIssuesPage() {
       />
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} maskClosable={!(approveMutation.isPending)} okButtonProps={{ disabled: approveMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={approveMutation.isPending}
               key="approve"
               type="primary"
               title="Xác nhận duyệt xuất thành phẩm này?"
               description="Hệ thống sẽ trừ tồn kho thành phẩm qua sổ kho."
               loading={approveMutation.isPending}
-              onConfirm={() => approveMutation.mutate(detailId)}
+              onConfirm={() => approveMutation.mutateAsync(detailId)}
             >
               Duyệt xuất kho
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <Button
+            <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
               key="reject"
               danger
               onClick={() => setRejectId(detailId)}

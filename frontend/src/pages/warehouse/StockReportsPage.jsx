@@ -256,7 +256,7 @@ export default function StockReportsPage() {
           )}
 
           <Form.Item>
-            <Button
+            <Button disabled={reportQuery.isFetching}
               type="primary"
               htmlType="submit"
               icon={<BarChartOutlined />}

@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useAllPages } from '../../api/useAllPages'
 import QueryError from '../../components/QueryError'
 import { useState } from 'react'
@@ -24,7 +25,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -118,12 +119,12 @@ export default function StaffFgRequestsPage() {
             Chi tiết
           </Button>
           {r.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               danger
               size="small"
               title="Hủy phiếu đề xuất xuất bán này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(r.id)}
+              onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
               <CloseOutlined /> Hủy
             </ConfirmButton>
@@ -203,7 +204,7 @@ export default function StaffFgRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất bán TP */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất bán thành phẩm"
         open={createModalOpen}
         width={720}
@@ -309,18 +310,18 @@ export default function StaffFgRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={720}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Hủy phiếu đề xuất xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>
