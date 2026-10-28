@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Col, Row, Space, Statistic, Table, Tabs, Typography } from 'antd'
 import {
@@ -39,6 +40,8 @@ function StatCard({ item }) {
     queryKey: [item.key, 'wm-count'],
     queryFn: ({ signal }) => api.get(item.path, { page: 0, size: 1, ...(item.query || {}) }, signal),
   })
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Card
       className="stat-card"
@@ -82,6 +85,8 @@ function PendingMirTable() {
     },
   ]
 
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Table
       size="small"
@@ -121,6 +126,8 @@ function PendingFgTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -166,6 +173,8 @@ function RecentMovementsTable() {
     { title: 'Người ghi', dataIndex: 'createdByUsername', width: 120, render: (v) => v || '—' },
     { title: 'Thời gian', dataIndex: 'createdAt', width: 150, render: dateTime },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table

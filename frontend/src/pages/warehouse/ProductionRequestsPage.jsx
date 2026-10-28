@@ -206,7 +206,7 @@ export default function ProductionRequestsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={prQuery}
         filters={(
           <Space wrap>
             <Select

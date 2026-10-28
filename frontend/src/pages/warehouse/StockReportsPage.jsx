@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useMemo, useState } from 'react'
 import {
   Button,
@@ -173,6 +174,8 @@ export default function StockReportsPage() {
     URL.revokeObjectURL(url)
     message.success('Đã tải xuống file báo cáo CSV thành công')
   }
+
+  if (reportQuery.isError) return <QueryError query={reportQuery} />
 
   return (
     <>

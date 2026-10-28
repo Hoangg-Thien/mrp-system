@@ -148,7 +148,7 @@ export default function MaterialIssuesPage() {
         subtitle="Kiểm tra tồn kho và phê duyệt xuất NVL cho các yêu cầu sản xuất"
       />
 
-      <PagedTable
+      <PagedTable query={mirQuery}
         filters={(
           <Space wrap>
             <InputNumber

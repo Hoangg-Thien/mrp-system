@@ -154,7 +154,7 @@ export default function FgIssuesPage() {
         subtitle="Kiểm tra tồn kho thành phẩm và phê duyệt đơn hàng xuất bán do nhân viên lập"
       />
 
-      <PagedTable
+      <PagedTable query={fgQuery}
         filters={(
           <Space wrap>
             <Select

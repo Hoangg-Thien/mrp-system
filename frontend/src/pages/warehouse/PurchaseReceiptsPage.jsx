@@ -244,7 +244,7 @@ export default function PurchaseReceiptsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={receiptsQuery}
         filters={(
           <Space wrap>
             <Select

@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useMemo, useState } from 'react'
 import { Alert, Button, Card, Input, Space, Table, Tag, Typography } from 'antd'
 import { PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons'
@@ -47,6 +48,8 @@ export default function StaffPage() {
       render: () => <Tag className="erp-tag erp-tag-approved">Đang làm việc</Tag>,
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <>

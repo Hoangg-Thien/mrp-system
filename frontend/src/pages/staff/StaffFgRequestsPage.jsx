@@ -167,7 +167,7 @@ export default function StaffFgRequestsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={fgQuery}
         filters={(
           <Space wrap>
             <Select

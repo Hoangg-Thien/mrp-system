@@ -109,7 +109,7 @@ export default function CatalogPage({ type }) {
     <>
       <PageHeader title={resource.title} subtitle={resource.subtitle}
         extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditing(null); setOpen(true) }}>Thêm mới</Button>} />
-      <PagedTable
+      <PagedTable query={listQuery}
         filters={(
           <>
             {resource.filters.map((filter) => (

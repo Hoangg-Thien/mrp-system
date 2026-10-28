@@ -191,7 +191,7 @@ export default function StaffMaterialRequestsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={mirQuery}
         filters={(
           <Space wrap>
             <Select

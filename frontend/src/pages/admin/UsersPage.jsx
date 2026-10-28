@@ -104,7 +104,7 @@ export default function UsersPage() {
     <>
       <PageHeader title="Tài khoản" subtitle="Tạo và phân quyền Quản trị viên / Quản lý kho / Nhân viên xưởng"
         extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>Tạo tài khoản</Button>} />
-      <PagedTable
+      <PagedTable query={listQuery}
         filters={(
           <>
             <Input.Search allowClear style={{ width: 260 }} placeholder="Tìm username / họ tên / email…"

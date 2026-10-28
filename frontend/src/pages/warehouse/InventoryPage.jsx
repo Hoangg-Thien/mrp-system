@@ -110,7 +110,7 @@ function StockTable({ kind, onAdjustItem }) {
   ))
 
   return (
-    <PagedTable
+    <PagedTable query={query}
       rowKey={isMaterial ? 'materialId' : 'productId'}
       filters={(
         <Space wrap>

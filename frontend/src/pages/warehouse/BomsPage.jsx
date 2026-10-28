@@ -196,7 +196,7 @@ export default function BomsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={bomsQuery}
         filters={(
           <Space wrap>
             <Select

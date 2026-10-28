@@ -199,7 +199,7 @@ export default function StaffProductionsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={prodQuery}
         filters={(
           <Space wrap>
             <Select

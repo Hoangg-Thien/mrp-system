@@ -69,7 +69,7 @@ export default function MovementsPage() {
       <QueryError query={materialsQuery} />
       <QueryError query={productsQuery} />
       <PageHeader title="Sổ kho" subtitle="Lịch sử nhập / xuất / điều chỉnh – chỉ đọc, không sửa xóa" />
-      <PagedTable
+      <PagedTable query={query}
         filters={(
           <Space wrap>
             <Select

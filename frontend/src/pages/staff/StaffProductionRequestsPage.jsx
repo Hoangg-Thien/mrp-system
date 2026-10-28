@@ -140,7 +140,7 @@ export default function StaffProductionRequestsPage() {
         subtitle="Danh sách các lệnh và yêu cầu sản xuất được Quản lý kho giao cho bạn"
       />
 
-      <PagedTable
+      <PagedTable query={prQuery}
         filters={(
           <Space wrap>
             <Select

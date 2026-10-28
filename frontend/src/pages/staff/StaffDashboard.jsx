@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Col, Progress, Row, Space, Statistic, Table, Tabs, Typography } from 'antd'
 import {
@@ -64,6 +65,8 @@ function StaffRecentPrTable() {
     },
   ]
 
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Table
       size="small"
@@ -108,6 +111,8 @@ function StaffActiveProductionsTable() {
     },
   ]
 
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Table
       size="small"
@@ -145,6 +150,8 @@ function StaffRecentMirTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
