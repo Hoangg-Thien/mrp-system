@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,6 +16,15 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    ProblemDetail busy(Exception ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Hệ thống đang bận, vui lòng thử lại");
+    }
+
+    private boolean concurrencySqlState(Exception ex) {
+        String state = extractSqlState(ex);
+        return "40P01".equals(state) || "40001".equals(state);
+    }
     @ExceptionHandler(BadRequestException.class)
     ProblemDetail badRequest(BadRequestException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -64,6 +74,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail conflict(Exception ex) {
+        if (concurrencySqlState(ex)) return busy(ex);
         String sqlState = extractSqlState(ex);
         if (sqlState != null && !CONFLICT_SQL_STATES.contains(sqlState)) {
             log.error("Unhandled SQL data integrity error (SQLState={}): ", sqlState, ex);
@@ -84,6 +95,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ProblemDetail unexpected(Exception ex) {
+        if (concurrencySqlState(ex)) return busy(ex);
         log.error("Unhandled internal server error: ", ex);
         return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi không mong muốn");
     }

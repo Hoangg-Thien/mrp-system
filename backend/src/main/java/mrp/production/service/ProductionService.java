@@ -510,7 +510,7 @@ public class ProductionService {
     public ProductionViews.MaterialIssueRequestDetailView createMaterialIssueRequest(
             ProductionRequests.CreateMaterialIssueRequest req, CurrentUser actor) {
 
-        ProductionRequest pr = prRepo.findById(req.productionRequestId())
+        ProductionRequest pr = prRepo.findByIdForUpdate(req.productionRequestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + req.productionRequestId()));
 
         // Phải là người được giao (D11 / trigger trg_mir_actor)
@@ -791,7 +791,7 @@ public class ProductionService {
     public ProductionViews.ProductionExecutionView createProduction(
             ProductionRequests.CreateProductionExecutionRequest req, CurrentUser actor) {
 
-        ProductionRequest pr = prRepo.findById(req.productionRequestId())
+        ProductionRequest pr = prRepo.findByIdForUpdate(req.productionRequestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + req.productionRequestId()));
 
         // Phải đúng nhân viên được giao (D11 / trigger trg_prod_actor)
