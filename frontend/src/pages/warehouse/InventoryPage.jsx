@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -169,28 +171,32 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
   const [targetType, setTargetType] = useState('material')
   const [selectedItemId, setSelectedItemId] = useState(null)
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-select'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    path: '/api/materials',
+    params: { active: true },
     enabled: open,
   })
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['active-products-select'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
     enabled: open,
   })
 
   // Current stock inventory for materials and products
-  const invMaterialsQuery = useQuery({
+  const invMaterialsQuery = useAllPages({
     queryKey: ['inv-materials-for-modal'],
-    queryFn: () => api.get('/api/inventories/materials', { size: 200 }),
+    path: '/api/inventories/materials',
+    params: {  },
     enabled: open && targetType === 'material',
   })
 
-  const invProductsQuery = useQuery({
+  const invProductsQuery = useAllPages({
     queryKey: ['inv-products-for-modal'],
-    queryFn: () => api.get('/api/inventories/products', { size: 200 }),
+    path: '/api/inventories/products',
+    params: {  },
     enabled: open && targetType === 'product',
   })
 
@@ -265,6 +271,10 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
       okText="Lưu điều chỉnh"
       cancelText="Hủy"
     >
+      <QueryError query={materialsQuery} />
+      <QueryError query={productsQuery} />
+      <QueryError query={invMaterialsQuery} />
+      <QueryError query={invProductsQuery} />
       <Alert
         type="info"
         showIcon

@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -30,9 +32,10 @@ export default function MrpPlanningPage() {
   const [form] = Form.useForm()
   const [planParams, setPlanParams] = useState(null)
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-mrp'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const planQuery = useQuery({
@@ -55,6 +58,7 @@ export default function MrpPlanningPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Kế hoạch MRP (Material Requirements Planning)"
         subtitle="Tính toán nhu cầu sản xuất thành phẩm và dự toán thiếu hụt nguyên vật liệu theo định mức BOM"

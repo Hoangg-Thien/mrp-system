@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Button,
@@ -74,9 +76,10 @@ export default function PurchaseReceiptsPage() {
     queryFn: () => api.get('/api/suppliers', { size: 100 }),
   })
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-all'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    path: '/api/materials',
+    params: { active: true },
   })
 
   const detailQuery = useQuery({
@@ -223,6 +226,7 @@ export default function PurchaseReceiptsPage() {
 
   return (
     <>
+      <QueryError query={materialsQuery} />
       <PageHeader
         title="Phiếu nhập kho nguyên vật liệu"
         subtitle="Quản lý và hoàn tất nhập kho từ nhà cung cấp"

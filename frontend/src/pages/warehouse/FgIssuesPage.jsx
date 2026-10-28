@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -45,9 +47,10 @@ export default function FgIssuesPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-fg-filter'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const staffQuery = useQuery({
@@ -145,6 +148,7 @@ export default function FgIssuesPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Duyệt phiếu xuất thành phẩm để bán"
         subtitle="Kiểm tra tồn kho thành phẩm và phê duyệt đơn hàng xuất bán do nhân viên lập"

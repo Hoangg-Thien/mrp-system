@@ -1,9 +1,11 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import { Button, DatePicker, Select, Space } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
+
 import dayjs from 'dayjs'
-import { api } from '../../api/client'
+
 import { usePagedQuery } from '../../api/hooks'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
@@ -23,14 +25,16 @@ export default function MovementsPage() {
     ...filters, ...sort, page, size: PAGE_SIZE,
   })
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['materials-for-movements-filter'],
-    queryFn: () => api.get('/api/materials', { size: 200 }),
+    path: '/api/materials',
+    params: {  },
   })
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-movements-filter'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const columns = [
@@ -62,6 +66,8 @@ export default function MovementsPage() {
 
   return (
     <>
+      <QueryError query={materialsQuery} />
+      <QueryError query={productsQuery} />
       <PageHeader title="Sổ kho" subtitle="Lịch sử nhập / xuất / điều chỉnh – chỉ đọc, không sửa xóa" />
       <PagedTable
         filters={(

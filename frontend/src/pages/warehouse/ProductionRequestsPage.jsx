@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -63,9 +65,10 @@ export default function ProductionRequestsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-pr'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const staffQuery = useQuery({
@@ -185,6 +188,7 @@ export default function ProductionRequestsPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Yêu cầu sản xuất (Production Requests)"
         subtitle="Tạo và theo dõi tiến độ sản xuất, kiểm tra định mức nguyên vật liệu"

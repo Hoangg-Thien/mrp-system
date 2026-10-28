@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -50,9 +52,10 @@ export default function StaffFgRequestsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-staff-fg-select'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const detailQuery = useQuery({
@@ -146,6 +149,7 @@ export default function StaffFgRequestsPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Đề nghị xuất bán thành phẩm"
         subtitle="Lập phiếu xin xuất kho thành phẩm phục vụ các đơn hàng bán cho khách"

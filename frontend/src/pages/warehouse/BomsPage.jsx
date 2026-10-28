@@ -1,3 +1,5 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Button,
@@ -49,14 +51,16 @@ export default function BomsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-bom'],
-    queryFn: () => api.get('/api/products', { size: 200 }),
+    path: '/api/products',
+    params: {  },
   })
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-for-bom'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 200 }),
+    path: '/api/materials',
+    params: { active: true },
   })
 
   const detailQuery = useQuery({
@@ -173,6 +177,8 @@ export default function BomsPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
+      <QueryError query={materialsQuery} />
       <PageHeader
         title="Công thức sản phẩm (BOM)"
         subtitle="Quản lý định mức nguyên vật liệu cấu thành 1 đơn vị thành phẩm"
