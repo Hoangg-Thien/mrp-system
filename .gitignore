@@ -10,8 +10,19 @@ dist/
 
 # Environment Configuration
 .env
+.env.e2e
 .env*.local
 !.env.example
+
+# Local reports and working documentation
+/docs/
+/docx/
+
+# Only distribute the schema, diagram, and database integrity suite
+/database/*
+!/database/mrp.sql
+!/database/mrp.png
+!/database/test_proper.sql
 
 ### STS ###
 .apt_generated
