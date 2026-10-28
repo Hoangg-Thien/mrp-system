@@ -10,7 +10,7 @@ export default function RejectModal({ open, confirmLoading, onCancel, onSubmit, 
   }, [open, form])
 
   return (
-    <Modal cancelButtonProps={{ disabled: confirmLoading }} closable={!(confirmLoading)} maskClosable={!(confirmLoading)}
+    <Modal forceRender cancelButtonProps={{ disabled: confirmLoading }} closable={!(confirmLoading)} mask={{ closable: !(confirmLoading) }}
       title={title}
       open={open}
       onCancel={onCancel}

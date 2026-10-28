@@ -16,10 +16,11 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
-import { confirmLogout } from '../utils/confirm'
+import { useConfirm } from '../utils/confirm'
 
 /** Khu vực ADMIN – tách biệt hoàn toàn với /warehouse và /staff (plan mục 3.1). */
 export default function AdminLayout() {
+  const { confirmLogout } = useConfirm()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()

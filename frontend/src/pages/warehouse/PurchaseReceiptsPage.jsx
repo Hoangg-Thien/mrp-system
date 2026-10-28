@@ -16,7 +16,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -41,6 +41,7 @@ import { purchaseStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function PurchaseReceiptsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -303,7 +304,7 @@ export default function PurchaseReceiptsPage() {
       />
 
       {/* Modal tạo phiếu nhập mới */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo phiếu nhập kho NVL"
         open={createModalOpen}
         width={760}
@@ -426,7 +427,7 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal sửa dòng phiếu nhập (khi PENDING) */}
-      <Modal cancelButtonProps={{ disabled: updateMutation.isPending }} closable={!(updateMutation.isPending)} maskClosable={!(updateMutation.isPending)} okButtonProps={{ disabled: updateMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: updateMutation.isPending }} closable={!(updateMutation.isPending)} mask={{ closable: !(updateMutation.isPending) }} okButtonProps={{ disabled: updateMutation.isPending }}
         title={`Chỉnh sửa phiếu nhập #${editItem?.id}`}
         open={!!editItem}
         width={760}
@@ -548,7 +549,7 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu nhập */}
-      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} maskClosable={!(completeMutation.isPending)} okButtonProps={{ disabled: completeMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} mask={{ closable: !(completeMutation.isPending) }} okButtonProps={{ disabled: completeMutation.isPending }}
         title={`Chi tiết phiếu nhập #${detailId}`}
         open={!!detailId}
         width={720}

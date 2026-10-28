@@ -15,7 +15,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckCircleOutlined,
@@ -37,6 +37,7 @@ import { dateTime, quantity } from '../../utils/format'
 const PAGE_SIZE = 15
 
 export default function BomsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -246,7 +247,7 @@ export default function BomsPage() {
       />
 
       {/* Modal tạo BOM mới */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo công thức sản phẩm (BOM)"
         open={createModalOpen}
         width={720}
@@ -354,7 +355,7 @@ export default function BomsPage() {
       </Modal>
 
       {/* Modal chi tiết BOM */}
-      <Modal cancelButtonProps={{ disabled: activateMutation.isPending }} closable={!(activateMutation.isPending)} maskClosable={!(activateMutation.isPending)} okButtonProps={{ disabled: activateMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: activateMutation.isPending }} closable={!(activateMutation.isPending)} mask={{ closable: !(activateMutation.isPending) }} okButtonProps={{ disabled: activateMutation.isPending }}
         title={`Chi tiết BOM #${detailId} – v${detailQuery.data?.version}`}
         open={!!detailId}
         width={680}

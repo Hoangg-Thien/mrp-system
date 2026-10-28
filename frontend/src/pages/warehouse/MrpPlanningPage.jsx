@@ -118,7 +118,7 @@ export default function MrpPlanningPage() {
           type="error"
           showIcon
           className="mrp-alert"
-          message="Không thể tính toán kế hoạch MRP"
+          title="Không thể tính toán kế hoạch MRP"
           description={planQuery.error.message || 'Sản phẩm này có thể chưa có BOM active hoặc gặp lỗi tính toán.'}
         />
       )}
@@ -261,7 +261,7 @@ export default function MrpPlanningPage() {
                 <Alert
                   type="info"
                   showIcon
-                  message={`Cần sản xuất thêm ${result.toProduce} ${selectedProduct?.unit || 'sản phẩm'}`}
+                  title={`Cần sản xuất thêm ${result.toProduce} ${selectedProduct?.unit || 'sản phẩm'}`}
                   description="Bấm nút bên dưới để chuyển sang màn hình Tạo yêu cầu sản xuất cho nhân viên."
                   action={
                     <Button
@@ -279,7 +279,7 @@ export default function MrpPlanningPage() {
                 <Alert
                   type="warning"
                   showIcon
-                  message="Cần đặt hàng mua bổ sung nguyên vật liệu thiếu hụt"
+                  title="Cần đặt hàng mua bổ sung nguyên vật liệu thiếu hụt"
                   description="Một số nguyên vật liệu trong kho không đủ để sản xuất sản lượng này. Bạn nên lập phiếu nhập kho NVL từ nhà cung cấp."
                   action={
                     <Button
@@ -296,7 +296,7 @@ export default function MrpPlanningPage() {
                 <Alert
                   type="success"
                   showIcon
-                  message="Không cần hành động bổ sung"
+                  title="Không cần hành động bổ sung"
                   description="Kho hiện tại đã có đủ sản phẩm khả dụng đáp ứng mục tiêu đề ra."
                 />
               )}

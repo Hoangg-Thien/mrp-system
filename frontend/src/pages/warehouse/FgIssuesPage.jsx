@@ -12,7 +12,7 @@ import {
   Space,
   Table,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -34,6 +34,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function FgIssuesPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -211,7 +212,7 @@ export default function FgIssuesPage() {
       />
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} maskClosable={!(approveMutation.isPending)} okButtonProps={{ disabled: approveMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} mask={{ closable: !(approveMutation.isPending) }} okButtonProps={{ disabled: approveMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={760}
@@ -271,7 +272,7 @@ export default function FgIssuesPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo thiếu tồn kho thành phẩm"
+                title="Cảnh báo thiếu tồn kho thành phẩm"
                 description={detailQuery.data.warning || 'Có sản phẩm trong phiếu có số lượng yêu cầu vượt quá tồn kho thực tế! Khi duyệt hệ thống sẽ báo lỗi và chặn trừ kho.'}
               />
             )}

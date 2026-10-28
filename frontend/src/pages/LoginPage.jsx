@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       <Card className="login-card" title="Đăng nhập hệ thống">
-        {error && <Alert type="error" showIcon message={error} className="login-alert" />}
+        {error && <Alert type="error" showIcon title={error} className="login-alert" />}
         <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false}>
           <Form.Item name="username" label="Tên đăng nhập" rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}>
             <Input prefix={<UserOutlined />} placeholder="Nhập tên tài khoản hoặc mã nhân viên" autoComplete="username" size="large" />

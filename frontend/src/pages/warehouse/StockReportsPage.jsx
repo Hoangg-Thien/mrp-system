@@ -12,7 +12,7 @@ import {
   Statistic,
   Table,
   Typography,
-  message,
+  App,
 } from 'antd'
 import { BarChartOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
@@ -36,6 +36,7 @@ const currentMonth = new Date().getMonth() + 1
 const currentQuarter = Math.ceil(currentMonth / 3)
 
 export default function StockReportsPage() {
+  const { message } = App.useApp()
   const [form] = Form.useForm()
   const [granularity, setGranularity] = useState('MONTH')
   const [kind, setKind] = useState('MATERIAL')
@@ -283,7 +284,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng nhập trong kỳ"
               value={quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: 'var(--status-approved-text)' }}
+              styles={{ content: { color: 'var(--status-approved-text)' } }}
             />
           </Card>
         </Col>
@@ -292,7 +293,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng xuất trong kỳ"
               value={quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: 'var(--status-rejected-text)' }}
+              styles={{ content: { color: 'var(--status-rejected-text)' } }}
             />
           </Card>
         </Col>
@@ -301,7 +302,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (+)"
               value={quantity(totals.adjIn, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: 'var(--status-progress-text)' }}
+              styles={{ content: { color: 'var(--status-progress-text)' } }}
             />
           </Card>
         </Col>
@@ -310,7 +311,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (-)"
               value={quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: 'var(--status-pending-text)' }}
+              styles={{ content: { color: 'var(--status-pending-text)' } }}
             />
           </Card>
         </Col>
@@ -319,7 +320,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng tồn cuối kỳ"
               value={quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: 'var(--status-approved-text)', fontWeight: 700 }}
+              styles={{ content: { color: 'var(--status-approved-text)', fontWeight: 700 } }}
             />
           </Card>
         </Col>

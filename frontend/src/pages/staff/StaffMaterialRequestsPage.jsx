@@ -15,7 +15,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CloseOutlined,
@@ -38,6 +38,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function StaffMaterialRequestsPage() {
+  const { message } = App.useApp()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
@@ -228,7 +229,7 @@ export default function StaffMaterialRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất NVL */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất nguyên vật liệu"
         open={createModalOpen}
         width={760}
@@ -265,7 +266,7 @@ export default function StaffMaterialRequestsPage() {
               type="info"
               showIcon
               style={{ marginBottom: 16 }}
-              message={`Định mức NVL cho: ${prRequirementsQuery.data.productName} (SL: ${prRequirementsQuery.data.quantity})`}
+              title={`Định mức NVL cho: ${prRequirementsQuery.data.productName} (SL: ${prRequirementsQuery.data.quantity})`}
               description={(
                 <div style={{ marginTop: 6 }}>
                   {prRequirementsQuery.data.materials?.map((m) => (
@@ -365,7 +366,7 @@ export default function StaffMaterialRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất NVL */}
-      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} mask={{ closable: !(cancelMutation.isPending) }} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất NVL #${detailId}`}
         open={!!detailId}
         width={760}
@@ -418,7 +419,7 @@ export default function StaffMaterialRequestsPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo tồn kho"
+                title="Cảnh báo tồn kho"
                 description={detailQuery.data.warning || 'Kho hiện tại không đủ tồn cho một số NVL trong phiếu này.'}
               />
             )}

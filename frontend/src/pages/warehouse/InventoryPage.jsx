@@ -14,7 +14,7 @@ import {
   Space,
   Tabs,
   Typography,
-  message,
+  App,
 } from 'antd'
 import { PlusCircleOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -167,6 +167,7 @@ function StockTable({ kind, onAdjustItem }) {
 }
 
 function StockAdjustmentModal({ open, onClose, defaultItem }) {
+  const { message } = App.useApp()
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const [targetType, setTargetType] = useState('material')
@@ -261,7 +262,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
   }
 
   return (
-    <Modal cancelButtonProps={{ disabled: adjustMutation.isPending }} closable={!(adjustMutation.isPending)} maskClosable={!(adjustMutation.isPending)} okButtonProps={{ disabled: adjustMutation.isPending }}
+    <Modal forceRender cancelButtonProps={{ disabled: adjustMutation.isPending }} closable={!(adjustMutation.isPending)} mask={{ closable: !(adjustMutation.isPending) }} okButtonProps={{ disabled: adjustMutation.isPending }}
       title="Điều chỉnh tồn kho (Kiểm kê)"
       open={open}
       onCancel={onClose}
@@ -280,7 +281,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
-        message="Mọi điều chỉnh tồn sẽ được ghi vào sổ kho (ADJUST_IN / ADJUST_OUT). Không thể sửa xóa sau khi lưu."
+        title="Mọi điều chỉnh tồn sẽ được ghi vào sổ kho (ADJUST_IN / ADJUST_OUT). Không thể sửa xóa sau khi lưu."
       />
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item name="targetType" label="Loại đối tượng" initialValue="material">

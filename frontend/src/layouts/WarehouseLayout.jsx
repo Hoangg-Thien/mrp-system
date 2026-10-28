@@ -22,10 +22,11 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
-import { confirmLogout } from '../utils/confirm'
+import { useConfirm } from '../utils/confirm'
 
 /** Khu vực QUẢN LÝ KHO (WM) – tách biệt với ADMIN và STAFF (plan mục 3.2). */
 export default function WarehouseLayout() {
+  const { confirmLogout } = useConfirm()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()

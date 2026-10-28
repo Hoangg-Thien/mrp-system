@@ -9,13 +9,14 @@ import PagedTable from '../../components/PagedTable'
 import FormModal from '../../components/FormModal'
 import FilterControl from '../../components/FilterControl'
 import StatusTag from '../../components/StatusTag'
-import { confirmAction } from '../../utils/confirm'
+import { useConfirm } from '../../utils/confirm'
 import { resources } from './resources'
 
 const PAGE_SIZE = 10
 
 /** Màn hình CRUD danh mục dùng chung cho W2: danh mục, sản phẩm, NCC, nguyên vật liệu. */
 export default function CatalogPage({ type }) {
+  const { confirmAction } = useConfirm()
   const resource = resources[type]
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -92,7 +93,7 @@ export default function CatalogPage({ type }) {
         </Space>
       ),
     }]
-  }, [resource, categoryNames, sort, actions])
+  }, [resource, categoryNames, sort, actions, confirmAction])
 
   const submit = async (values) => {
     try {

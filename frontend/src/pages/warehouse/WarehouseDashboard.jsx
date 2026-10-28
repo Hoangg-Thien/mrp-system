@@ -53,7 +53,7 @@ function StatCard({ item }) {
       <Statistic
         title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{item.icon} {item.label}</span>}
         value={query.data?.totalElements ?? 0}
-        valueStyle={item.highlight ? { color: 'var(--status-pending-text)', fontWeight: 700 } : {}}
+        styles={{ content: item.highlight ? { color: 'var(--status-pending-text)', fontWeight: 700 } : {} }}
       />
     </Card>
   )
@@ -279,7 +279,7 @@ export default function WarehouseDashboard() {
 
         <Col xs={24} xl={8}>
           <Card title="Phím tắt chức năng Kho" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Button block type="primary" onClick={() => navigate('/warehouse/planning')}>
                 <CalculatorOutlined /> Lập kế hoạch MRP cho sản phẩm
               </Button>

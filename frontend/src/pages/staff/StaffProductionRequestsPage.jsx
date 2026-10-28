@@ -74,7 +74,7 @@ export default function StaffProductionRequestsPage() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 12, color: '#6b7280' }}>
               Đã xong {r.completedQuantity || 0}/{r.quantity} {r.productUnit || ''}

@@ -16,7 +16,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CloseOutlined,
@@ -39,6 +39,7 @@ import { productionRequestStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function ProductionRequestsPage() {
+  const { message } = App.useApp()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
@@ -127,7 +128,7 @@ export default function ProductionRequestsPage() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 12, color: '#6b7280' }}>
               Đã xong {r.completedQuantity || 0}/{r.quantity} {r.productUnit || ''}
@@ -263,7 +264,7 @@ export default function ProductionRequestsPage() {
       />
 
       {/* Modal tạo yêu cầu sản xuất */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo yêu cầu sản xuất mới"
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
@@ -321,7 +322,7 @@ export default function ProductionRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết yêu cầu sản xuất */}
-      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} mask={{ closable: !(cancelMutation.isPending) }} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết yêu cầu sản xuất #${detailId}`}
         open={!!detailId}
         width={780}

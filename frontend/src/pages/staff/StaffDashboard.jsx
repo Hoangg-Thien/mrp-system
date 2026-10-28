@@ -43,7 +43,7 @@ function StaffRecentPrTable() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 11, color: '#6b7280' }}>
               Xong {r.completedQuantity || 0}/{r.quantity}
@@ -252,7 +252,7 @@ export default function StaffDashboard() {
               title="Yêu cầu đang làm"
               value={activePrQuery.data?.totalElements ?? 0}
               prefix={<FieldTimeOutlined />}
-              valueStyle={{ color: 'var(--status-progress-text)' }}
+              styles={{ content: { color: 'var(--status-progress-text)' } }}
             />
           </Card>
         </Col>
@@ -268,7 +268,7 @@ export default function StaffDashboard() {
               title="Đợt SX đang chạy"
               value={prodQuery.data?.totalElements ?? 0}
               prefix={<ToolOutlined />}
-              valueStyle={{ color: '#d97706' }}
+              styles={{ content: { color: '#d97706' } }}
             />
           </Card>
         </Col>
@@ -284,7 +284,7 @@ export default function StaffDashboard() {
               title="Xuất NVL chờ duyệt"
               value={mirPendingQuery.data?.totalElements ?? 0}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#059669' }}
+              styles={{ content: { color: '#059669' } }}
             />
           </Card>
         </Col>
@@ -300,7 +300,7 @@ export default function StaffDashboard() {
               title="Xuất bán TP chờ duyệt"
               value={fgPendingQuery.data?.totalElements ?? 0}
               prefix={<ShoppingCartOutlined />}
-              valueStyle={{ color: '#7c3aed' }}
+              styles={{ content: { color: '#7c3aed' } }}
             />
           </Card>
         </Col>
@@ -354,7 +354,7 @@ export default function StaffDashboard() {
 
         <Col xs={24} xl={8}>
           <Card title="Truy cập nhanh" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Button block type="primary" onClick={() => navigate('/staff/requests')}>
                 <AuditOutlined /> Danh sách yêu cầu sản xuất được giao
               </Button>

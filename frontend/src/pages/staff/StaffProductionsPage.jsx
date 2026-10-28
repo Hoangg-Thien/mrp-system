@@ -11,7 +11,7 @@ import {
   Space,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -34,6 +34,7 @@ import { productionStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function StaffProductionsPage() {
+  const { message } = App.useApp()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
@@ -236,7 +237,7 @@ export default function StaffProductionsPage() {
       />
 
       {/* Modal bắt đầu đợt sản xuất */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Bắt đầu đợt sản xuất mới"
         open={createModalOpen}
         onCancel={() => setCreateModalOpen(false)}
@@ -278,7 +279,7 @@ export default function StaffProductionsPage() {
       </Modal>
 
       {/* Modal chi tiết đợt sản xuất */}
-      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} maskClosable={!(completeMutation.isPending)} okButtonProps={{ disabled: completeMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} mask={{ closable: !(completeMutation.isPending) }} okButtonProps={{ disabled: completeMutation.isPending }}
         title={`Chi tiết đợt sản xuất #${detailId}`}
         open={!!detailId}
         footer={[

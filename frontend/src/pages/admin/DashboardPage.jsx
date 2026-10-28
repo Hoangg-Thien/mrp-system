@@ -71,7 +71,7 @@ function RecentProductionTable() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 11, color: '#6b7280' }}>
               Xong {r.completedQuantity || 0}/{r.quantity}
@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
         <Col xs={24} xl={8}>
           <Card title="Phím tắt chức năng Quản trị" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Button block type="primary" onClick={() => navigate('/admin/users')}>
                 <TeamOutlined /> Quản lý tài khoản & Phân quyền
               </Button>

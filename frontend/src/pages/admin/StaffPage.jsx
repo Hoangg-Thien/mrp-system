@@ -72,7 +72,7 @@ export default function StaffPage() {
         showIcon
         icon={<TeamOutlined />}
         style={{ marginBottom: 16 }}
-        message="Quản lý hồ sơ nhân viên trong hệ thống MRP"
+        title="Quản lý hồ sơ nhân viên trong hệ thống MRP"
         description="Hồ sơ nhân viên (staff) được tạo tự động khi bạn tạo tài khoản người dùng có vai trò là NHÂN VIÊN (STAFF) tại mục Quản lý Tài khoản. Quản lý kho sẽ dùng mã hồ sơ nhân viên này để phân công các Yêu cầu sản xuất (Production Requests)."
       />
 

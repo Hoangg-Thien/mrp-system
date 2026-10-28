@@ -1,12 +1,12 @@
-import { Modal } from 'antd'
+import { App } from 'antd'
 import { singleFlight } from '../api/singleFlight'
 
 /**
  * Hộp thoại xác nhận đăng xuất thống nhất toàn hệ thống (Modal ở giữa màn hình)
  * @param {Function} onConfirm - Callback thực thi khi người dùng bấm Đăng xuất
  */
-export function confirmLogout(onConfirm) {
-  Modal.confirm({
+function confirmLogout(modal, onConfirm) {
+  modal.confirm({
     title: 'Xác nhận đăng xuất',
     content: 'Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc hiện tại không?',
     okText: 'Đăng xuất',
@@ -22,7 +22,7 @@ export function confirmLogout(onConfirm) {
  * Hộp thoại xác nhận thao tác quan trọng (thống nhất kiểu Modal giữa màn hình)
  * @param {Object} options - { title, content, onOk, danger, okText, cancelText, width }
  */
-export function confirmAction({
+function confirmAction(modal, {
   title = 'Xác nhận thao tác?',
   content,
   onOk,
@@ -38,7 +38,7 @@ export function confirmAction({
       dialog.update({ okButtonProps: { danger, disabled: false }, cancelButtonProps: { disabled: false } })
     }
   })
-  const dialog = Modal.confirm({
+  const dialog = modal.confirm({
     title,
     content,
     okText,
@@ -52,3 +52,11 @@ export function confirmAction({
   return dialog
 }
 
+
+export function useConfirm() {
+  const { modal } = App.useApp()
+  return {
+    confirmAction: (options) => confirmAction(modal, options),
+    confirmLogout: (onConfirm) => confirmLogout(modal, onConfirm),
+  }
+}

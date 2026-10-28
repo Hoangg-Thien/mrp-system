@@ -15,10 +15,11 @@ import {
 } from '@ant-design/icons'
 import { useAuth } from '../auth/context'
 import { roleLabels } from '../utils/statusMap'
-import { confirmLogout } from '../utils/confirm'
+import { useConfirm } from '../utils/confirm'
 
 /** Khu vực NHÂN VIÊN (STAFF) – tách biệt hoàn toàn với ADMIN và WM (plan mục 3.3). */
 export default function StaffLayout() {
+  const { confirmLogout } = useConfirm()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()

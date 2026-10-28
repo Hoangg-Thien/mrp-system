@@ -16,7 +16,7 @@ import {
   Space,
   Table,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CloseOutlined,
@@ -38,6 +38,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function StaffFgRequestsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -204,7 +205,7 @@ export default function StaffFgRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất bán TP */}
-      <Modal cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} maskClosable={!(createMutation.isPending)} okButtonProps={{ disabled: createMutation.isPending }}
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất bán thành phẩm"
         open={createModalOpen}
         width={720}
@@ -310,7 +311,7 @@ export default function StaffFgRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} maskClosable={!(cancelMutation.isPending)} okButtonProps={{ disabled: cancelMutation.isPending }}
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} mask={{ closable: !(cancelMutation.isPending) }} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={720}
@@ -357,7 +358,7 @@ export default function StaffFgRequestsPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo tồn kho"
+                title="Cảnh báo tồn kho"
                 description={detailQuery.data.warning || 'Kho hiện tại không đủ tồn cho một số sản phẩm trong phiếu.'}
               />
             )}

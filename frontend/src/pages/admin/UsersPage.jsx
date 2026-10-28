@@ -7,7 +7,7 @@ import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import FormModal from '../../components/FormModal'
 import StatusTag, { RoleTag } from '../../components/StatusTag'
-import { confirmAction } from '../../utils/confirm'
+import { useConfirm } from '../../utils/confirm'
 import { activeOptions, emptyText, roleOptions } from '../../utils/statusMap'
 import { dateTime } from '../../utils/format'
 import { directionOptions, sortOptions, userFields } from './userFields'
@@ -16,6 +16,7 @@ const PAGE_SIZE = 10
 
 /** W1 – Quản lý tài khoản: tạo, khóa/mở khóa, đổi vai trò, xóa (backend là nguồn sự thật). */
 export default function UsersPage() {
+  const { confirmAction } = useConfirm()
   const { user: me } = useAuth()
   const [filters, setFilters] = useState({ sort: 'createdAt', direction: 'desc' })
   const [page, setPage] = useState(0)
@@ -131,7 +132,7 @@ export default function UsersPage() {
       />
       <FormModal title="Tạo tài khoản" open={open} fields={userFields} confirmLoading={actions.create.isPending}
         onCancel={() => setOpen(false)} onSubmit={submit} />
-      <Modal cancelButtonProps={{ disabled: actions.runAction.isPending }} closable={!(actions.runAction.isPending)} maskClosable={!(actions.runAction.isPending)} okButtonProps={{ disabled: actions.runAction.isPending }}
+      <Modal cancelButtonProps={{ disabled: actions.runAction.isPending }} closable={!(actions.runAction.isPending)} mask={{ closable: !(actions.runAction.isPending) }} okButtonProps={{ disabled: actions.runAction.isPending }}
         title={`Đổi vai trò: ${roleTarget?.username || ''}`}
         open={!!roleTarget}
         onOk={changeRole}
