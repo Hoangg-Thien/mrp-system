@@ -1,0 +1,210 @@
+{
+  "name": "UIFIX1793193357652",
+  "steps": [
+    "category",
+    "supplier",
+    "material",
+    "product",
+    "receipt",
+    "receiptCompleted",
+    "bom",
+    "plan",
+    "productionRequest",
+    "materialIssue",
+    "materialApproved",
+    "production",
+    "productionCompleted",
+    "fgIssue",
+    "fgApproved",
+    "report"
+  ],
+  "category": {
+    "id": 10,
+    "name": "UIFIX1793193357652",
+    "description": null
+  },
+  "supplier": {
+    "id": 8,
+    "name": "UIFIX1793193357652",
+    "phone": null,
+    "email": null,
+    "address": null
+  },
+  "material": {
+    "id": 18,
+    "code": "UIFIX1793193357652",
+    "name": "UIFIX1793193357652",
+    "unit": "kg",
+    "standardCost": 5,
+    "active": true,
+    "createdAt": "2026-10-28T20:16:09.5488621"
+  },
+  "product": {
+    "id": 20,
+    "categoryId": 10,
+    "name": "UIFIX1793193357652",
+    "description": null,
+    "unit": "cái",
+    "sellingPrice": 100,
+    "active": true,
+    "createdAt": "2026-10-28T20:16:12.6716565"
+  },
+  "receipt": {
+    "id": 12,
+    "supplierId": 8,
+    "supplierName": "UIFIX1793193357652",
+    "warehouseManagerId": 2,
+    "warehouseManagerName": "E2E WAREHOUSE_MANAGER",
+    "receiptDate": "2026-10-28T20:16:17.148039",
+    "status": "PENDING",
+    "totalAmount": 50,
+    "items": [
+      {
+        "materialId": 18,
+        "materialCode": "UIFIX1793193357652",
+        "materialName": "UIFIX1793193357652",
+        "unit": "kg",
+        "quantity": 10,
+        "unitPrice": 5,
+        "amount": 50
+      }
+    ]
+  },
+  "receiptCompleted": {
+    "quantity": 10
+  },
+  "bom": {
+    "id": 21,
+    "productId": 20,
+    "productName": "UIFIX1793193357652",
+    "productUnit": "cái",
+    "version": 1,
+    "active": true,
+    "createdAt": "2026-10-28T20:16:24.2672403",
+    "items": [
+      {
+        "id": 63,
+        "materialId": 18,
+        "materialCode": "UIFIX1793193357652",
+        "materialName": "UIFIX1793193357652",
+        "materialUnit": "kg",
+        "quantity": 2
+      }
+    ]
+  },
+  "plan": {
+    "productId": 20,
+    "targetQuantity": 3,
+    "fgOnHand": 0,
+    "fgReserved": 0,
+    "fgIncoming": 0,
+    "available": 0,
+    "toProduce": 3,
+    "materials": [
+      {
+        "materialId": 18,
+        "materialCode": "UIFIX1793193357652",
+        "materialName": "UIFIX1793193357652",
+        "unit": "kg",
+        "bomQuantity": 2,
+        "gross": 6,
+        "onHand": 10,
+        "committed": 0,
+        "usable": 10,
+        "shortage": 0
+      }
+    ]
+  },
+  "productionRequest": {
+    "id": 12,
+    "productId": 20,
+    "productName": "UIFIX1793193357652",
+    "productUnit": "cái",
+    "bomId": 21,
+    "bomVersion": 1,
+    "quantity": 3,
+    "completedQuantity": 0,
+    "inProgressQuantity": 0,
+    "warehouseManagerId": 2,
+    "warehouseManagerName": "E2E WAREHOUSE_MANAGER",
+    "assignedTo": 3,
+    "assignedStaffName": "E2E STAFF_A",
+    "status": "PENDING",
+    "createdAt": "2026-10-28T20:16:30.0495264",
+    "note": null,
+    "productions": [],
+    "issueRequests": []
+  },
+  "materialIssue": {
+    "id": 13,
+    "productionRequestId": 12,
+    "requestedBy": 3,
+    "requestedByName": "E2E STAFF_A",
+    "reviewedBy": null,
+    "reviewedByName": null,
+    "status": "PENDING",
+    "requestedAt": "2026-10-28T20:16:34.2985751",
+    "reviewedAt": null,
+    "note": null,
+    "hasStockShortage": false,
+    "warning": null,
+    "items": [
+      {
+        "id": 20,
+        "materialId": 18,
+        "materialCode": "UIFIX1793193357652",
+        "materialName": "UIFIX1793193357652",
+        "unit": "kg",
+        "quantity": 6,
+        "currentStock": 10
+      }
+    ]
+  },
+  "materialApproved": {
+    "quantity": 4
+  },
+  "production": {
+    "id": 12,
+    "productionRequestId": 12,
+    "quantity": 3,
+    "producedBy": 3,
+    "producedByName": "E2E STAFF_A",
+    "status": "IN_PROGRESS",
+    "startedAt": "2026-10-28T20:16:39.6625826",
+    "completedAt": null,
+    "note": null
+  },
+  "productionCompleted": {
+    "quantity": 3
+  },
+  "fgIssue": {
+    "id": 17,
+    "requestedBy": 3,
+    "requestedByName": "E2E STAFF_A",
+    "reviewedBy": null,
+    "reviewedByName": null,
+    "status": "PENDING",
+    "requestedAt": "2026-10-28T20:16:45.4618628",
+    "reviewedAt": null,
+    "note": "UIFIX1793193357652",
+    "hasStockShortage": false,
+    "warning": null,
+    "items": [
+      {
+        "id": 18,
+        "productId": 20,
+        "productName": "UIFIX1793193357652",
+        "productUnit": "cái",
+        "quantity": 3,
+        "currentStock": 3
+      }
+    ]
+  },
+  "fgApproved": {
+    "quantity": 0
+  },
+  "report": {
+    "visibleRow": "18\tUIFIX1793193357652\tUIFIX1793193357652\tkg\t0\t+10\t-6\t0\t0\t4"
+  },
+  "consoleErrors": []
+}
