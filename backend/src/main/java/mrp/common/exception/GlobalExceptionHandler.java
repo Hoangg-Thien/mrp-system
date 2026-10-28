@@ -16,6 +16,16 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    ProblemDetail missingRoute(Exception ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Không tìm thấy tài nguyên");
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    ProblemDetail unsupportedMethod(Exception ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.METHOD_NOT_ALLOWED, "Phương thức không được hỗ trợ");
+    }
+
     @ExceptionHandler(ConcurrencyFailureException.class)
     ProblemDetail busy(Exception ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Hệ thống đang bận, vui lòng thử lại");

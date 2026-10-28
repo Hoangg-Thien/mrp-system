@@ -121,4 +121,15 @@ class E2eFindingsIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT quantity FROM material_issue_request_items WHERE material_id=?",
                 java.math.BigDecimal.class, material)).isEqualByComparingTo("0.125");
     }
+
+    @Test void missingWriteRoutesReturn404AndUnsupportedMethodsReturn405() throws Exception {
+        for (String path : List.of("/api/stock-movements/1", "/api/inventories/materials/1")) {
+            assertThat(mvc.perform(asStaff(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(path))
+                    .contentType("application/json").content("{}"))
+                    .andReturn().getResponse().getStatus()).isEqualTo(404);
+        }
+        assertThat(mvc.perform(asStaff(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/stock-movements"))
+                .contentType("application/json").content("{}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(405);
+    }
 }
