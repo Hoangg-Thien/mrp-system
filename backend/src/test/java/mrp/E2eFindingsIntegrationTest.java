@@ -99,4 +99,26 @@ class E2eFindingsIntegrationTest {
         race("/api/productions", "{\"productionRequestId\":"+request+",\"quantity\":1}");
         assertThat(jdbc.queryForObject("SELECT sum(quantity) FROM productions WHERE production_request_id=?", Integer.class, request)).isEqualTo(1);
     }
+
+    @Test void fractionalFinishedGoodsAndProductionQuantitiesAreRejected() throws Exception {
+        assertThat(mvc.perform(asStaff(post("/api/fg-issue-requests")).contentType("application/json")
+                .content("{\"items\":[{\"productId\":"+product+",\"quantity\":1.5}]}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(400);
+        assertThat(mvc.perform(asStaff(post("/api/productions")).contentType("application/json")
+                .content("{\"productionRequestId\":"+request+",\"quantity\":1.5}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(400);
+        assertThat(mvc.perform(post("/api/production-requests")
+                .with(jwt().jwt(j -> j.claim("uid", managerUser).claim("pid", manager).claim("role", "WAREHOUSE_MANAGER"))
+                        .authorities(new SimpleGrantedAuthority("ROLE_WAREHOUSE_MANAGER")))
+                .contentType("application/json").content("{\"productId\":"+product+",\"assignedStaffId\":"+staff+",\"quantity\":1.5}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(400);
+    }
+
+    @Test void materialQuantitiesKeepThreeDecimalPlaces() throws Exception {
+        assertThat(mvc.perform(asStaff(post("/api/material-issue-requests")).contentType("application/json")
+                .content("{\"productionRequestId\":"+request+",\"items\":[{\"materialId\":"+material+",\"quantity\":0.125}]}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(200);
+        assertThat(jdbc.queryForObject("SELECT quantity FROM material_issue_request_items WHERE material_id=?",
+                java.math.BigDecimal.class, material)).isEqualByComparingTo("0.125");
+    }
 }
