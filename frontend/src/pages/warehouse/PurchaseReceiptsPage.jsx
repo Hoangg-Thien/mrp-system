@@ -1,3 +1,6 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Button,
@@ -13,7 +16,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -24,7 +27,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -38,6 +41,7 @@ import { purchaseStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function PurchaseReceiptsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -74,9 +78,10 @@ export default function PurchaseReceiptsPage() {
     queryFn: () => api.get('/api/suppliers', { size: 100 }),
   })
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-all'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
+    path: '/api/materials',
+    params: { active: true },
   })
 
   const detailQuery = useQuery({
@@ -165,23 +170,23 @@ export default function PurchaseReceiptsPage() {
               >
                 Sửa
               </Button>
-              <ConfirmButton
+              <ConfirmButton disabled={completeMutation.isPending}
                 type="primary"
                 size="small"
                 title="Hoàn tất phiếu nhập này?"
                 description="Hệ thống sẽ cập nhật tăng tồn kho NVL. Hành động này không thể hoàn tác."
                 loading={completeMutation.isPending}
-                onConfirm={() => completeMutation.mutate(r.id)}
+                onConfirm={() => completeMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Hoàn tất
               </ConfirmButton>
-              <ConfirmButton
+              <ConfirmButton disabled={cancelMutation.isPending}
                 danger
                 size="small"
                 title="Hủy phiếu nhập kho này?"
                 description="Phiếu sẽ bị hủy và không ghi nhận tồn kho."
                 loading={cancelMutation.isPending}
-                onConfirm={() => cancelMutation.mutate(r.id)}
+                onConfirm={() => cancelMutation.mutateAsync(r.id)}
               >
                 <CloseOutlined />
               </ConfirmButton>
@@ -223,6 +228,7 @@ export default function PurchaseReceiptsPage() {
 
   return (
     <>
+      <QueryError query={materialsQuery} />
       <PageHeader
         title="Phiếu nhập kho nguyên vật liệu"
         subtitle="Quản lý và hoàn tất nhập kho từ nhà cung cấp"
@@ -240,7 +246,7 @@ export default function PurchaseReceiptsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={receiptsQuery}
         filters={(
           <Space wrap>
             <Select
@@ -298,7 +304,7 @@ export default function PurchaseReceiptsPage() {
       />
 
       {/* Modal tạo phiếu nhập mới */}
-      <Modal
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo phiếu nhập kho NVL"
         open={createModalOpen}
         width={760}
@@ -325,7 +331,7 @@ export default function PurchaseReceiptsPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Typography.Title level={5} style={{ margin: 0 }}>Danh sách dòng nguyên vật liệu</Typography.Title>
-            <Tag color="green" style={{ fontSize: 13, padding: '2px 8px' }}>
+            <Tag className="erp-tag erp-tag-approved">
               Tạm tính: <strong>{money(createEstimatedTotal)} đ</strong>
             </Tag>
           </div>
@@ -421,7 +427,7 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal sửa dòng phiếu nhập (khi PENDING) */}
-      <Modal
+      <Modal forceRender cancelButtonProps={{ disabled: updateMutation.isPending }} closable={!(updateMutation.isPending)} mask={{ closable: !(updateMutation.isPending) }} okButtonProps={{ disabled: updateMutation.isPending }}
         title={`Chỉnh sửa phiếu nhập #${editItem?.id}`}
         open={!!editItem}
         width={760}
@@ -447,7 +453,7 @@ export default function PurchaseReceiptsPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Typography.Title level={5} style={{ margin: 0 }}>Danh sách dòng nguyên vật liệu</Typography.Title>
-            <Tag color="green" style={{ fontSize: 13, padding: '2px 8px' }}>
+            <Tag className="erp-tag erp-tag-approved">
               Tạm tính: <strong>{money(editEstimatedTotal)} đ</strong>
             </Tag>
           </div>
@@ -543,30 +549,30 @@ export default function PurchaseReceiptsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu nhập */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: completeMutation.isPending }} closable={!(completeMutation.isPending)} mask={{ closable: !(completeMutation.isPending) }} okButtonProps={{ disabled: completeMutation.isPending }}
         title={`Chi tiết phiếu nhập #${detailId}`}
         open={!!detailId}
         width={720}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={completeMutation.isPending}
               key="complete"
               type="primary"
               title="Xác nhận hoàn tất phiếu nhập này?"
               description="Hệ thống sẽ cập nhật tăng tồn kho NVL. Không thể hoàn tác."
               loading={completeMutation.isPending}
-              onConfirm={() => completeMutation.mutate(detailId)}
+              onConfirm={() => completeMutation.mutateAsync(detailId)}
             >
               Hoàn tất phiếu nhập
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Xác nhận hủy phiếu nhập này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>
@@ -611,7 +617,7 @@ export default function PurchaseReceiptsPage() {
                     <Table.Summary.Cell index={0} colSpan={5} style={{ textAlign: 'right', fontWeight: 600 }}>
                       Tổng cộng:
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} style={{ fontWeight: 700, color: '#16653a' }}>
+                    <Table.Summary.Cell index={1} style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
                       {money(total)} đ
                     </Table.Summary.Cell>
                   </Table.Summary.Row>

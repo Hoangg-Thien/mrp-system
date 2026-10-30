@@ -26,4 +26,7 @@ public class WarehouseManager {
     protected WarehouseManager() { }
     public WarehouseManager(Long userId, String fullName, String email, String phone, String address) { this.userId=userId; this.fullName=fullName; this.email=email; this.phone=phone; this.address=address; }
     public Long getId(){return id;} public Long getUserId(){return userId;} public String getFullName(){return fullName;} public String getEmail(){return email;} public String getPhone(){return phone;} public String getAddress(){return address;}
+    public void updateProfile(String fullName, String email, String phone, String address) {
+        this.fullName = fullName; this.email = email; this.phone = phone; this.address = address;
+    }
 }

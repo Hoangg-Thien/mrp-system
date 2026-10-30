@@ -1,6 +1,8 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
-  Badge,
   Button,
   Card,
   Descriptions,
@@ -11,8 +13,9 @@ import {
   Select,
   Space,
   Table,
+  Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckCircleOutlined,
@@ -22,7 +25,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -34,6 +37,7 @@ import { dateTime, quantity } from '../../utils/format'
 const PAGE_SIZE = 15
 
 export default function BomsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -49,14 +53,16 @@ export default function BomsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-bom'],
-    queryFn: () => api.get('/api/products', { size: 100 }),
+    path: '/api/products',
+    params: {  },
   })
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-for-bom'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
+    path: '/api/materials',
+    params: { active: true },
   })
 
   const detailQuery = useQuery({
@@ -105,7 +111,7 @@ export default function BomsPage() {
       dataIndex: 'version',
       sorter: true,
       width: 110,
-      render: (v) => <Badge count={`v${v}`} style={{ backgroundColor: '#108ee9' }} />,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">v{v}</Tag>,
     },
     {
       title: 'Trạng thái',
@@ -130,24 +136,24 @@ export default function BomsPage() {
             Chi tiết
           </Button>
           {!r.active ? (
-            <ConfirmButton
+            <ConfirmButton disabled={activateMutation.isPending}
               type="primary"
               size="small"
               title="Kích hoạt BOM phiên bản này?"
               description="BOM đang active khác của cùng sản phẩm này sẽ tự động chuyển thành vô hiệu hóa."
               loading={activateMutation.isPending}
-              onConfirm={() => activateMutation.mutate(r.id)}
+              onConfirm={() => activateMutation.mutateAsync(r.id)}
             >
               <CheckCircleOutlined /> Kích hoạt
             </ConfirmButton>
           ) : (
-            <ConfirmButton
+            <ConfirmButton disabled={deactivateMutation.isPending}
               danger
               size="small"
               title="Vô hiệu hóa BOM này?"
               description="Sản phẩm sẽ không thể dùng BOM này để tạo kế hoạch MRP hoặc yêu cầu sản xuất mới cho đến khi có BOM active khác."
               loading={deactivateMutation.isPending}
-              onConfirm={() => deactivateMutation.mutate(r.id)}
+              onConfirm={() => deactivateMutation.mutateAsync(r.id)}
             >
               <CloseCircleOutlined /> Vô hiệu
             </ConfirmButton>
@@ -173,6 +179,8 @@ export default function BomsPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
+      <QueryError query={materialsQuery} />
       <PageHeader
         title="Công thức sản phẩm (BOM)"
         subtitle="Quản lý định mức nguyên vật liệu cấu thành 1 đơn vị thành phẩm"
@@ -190,7 +198,7 @@ export default function BomsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={bomsQuery}
         filters={(
           <Space wrap>
             <Select
@@ -239,7 +247,7 @@ export default function BomsPage() {
       />
 
       {/* Modal tạo BOM mới */}
-      <Modal
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Tạo công thức sản phẩm (BOM)"
         open={createModalOpen}
         width={720}
@@ -347,30 +355,30 @@ export default function BomsPage() {
       </Modal>
 
       {/* Modal chi tiết BOM */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: activateMutation.isPending }} closable={!(activateMutation.isPending)} mask={{ closable: !(activateMutation.isPending) }} okButtonProps={{ disabled: activateMutation.isPending }}
         title={`Chi tiết BOM #${detailId} – v${detailQuery.data?.version}`}
         open={!!detailId}
         width={680}
         footer={[
           detailQuery.data && !detailQuery.data.active && (
-            <ConfirmButton
+            <ConfirmButton disabled={activateMutation.isPending}
               key="activate"
               type="primary"
               title="Kích hoạt BOM phiên bản này?"
               description="BOM đang active khác của cùng sản phẩm sẽ tự chuyển sang vô hiệu."
               loading={activateMutation.isPending}
-              onConfirm={() => activateMutation.mutate(detailId)}
+              onConfirm={() => activateMutation.mutateAsync(detailId)}
             >
               Kích hoạt BOM
             </ConfirmButton>
           ),
           detailQuery.data && detailQuery.data.active && (
-            <ConfirmButton
+            <ConfirmButton disabled={deactivateMutation.isPending}
               key="deactivate"
               danger
               title="Vô hiệu hóa BOM này?"
               loading={deactivateMutation.isPending}
-              onConfirm={() => deactivateMutation.mutate(detailId)}
+              onConfirm={() => deactivateMutation.mutateAsync(detailId)}
             >
               Vô hiệu hóa BOM
             </ConfirmButton>

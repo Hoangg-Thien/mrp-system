@@ -1,0 +1,222 @@
+{
+  "date": "2026-10-29T12:49:56.478Z",
+  "browser": "156.0.8078.4",
+  "checks": [
+    {
+      "name": "01-report-material-name",
+      "pass": true,
+      "detail": "Trục X hiển thị tên NVL thay vì chỉ số 0",
+      "screenshot": "01-report-material-name.png"
+    },
+    {
+      "name": "02-report-product-name",
+      "pass": true,
+      "detail": "Trục X hiển thị tên thành phẩm",
+      "screenshot": "02-report-product-name.png"
+    },
+    {
+      "name": "03-reset-material-search",
+      "pass": true,
+      "detail": "Đặt lại xóa ô nhập và filter; Enter sau đặt lại vẫn có dữ liệu",
+      "screenshot": "03-reset-material-search.png"
+    },
+    {
+      "name": "03-reset-product-search",
+      "pass": true,
+      "detail": "Đặt lại xóa ô nhập và filter; Enter sau đặt lại vẫn có dữ liệu",
+      "screenshot": "03-reset-product-search.png"
+    },
+    {
+      "name": "04-shortage-no-unhandled-error",
+      "pass": true,
+      "detail": "HTTP 409; modal giữ mở, thông báo đúng, không pageerror, bấm hai lần chỉ gửi 1 POST",
+      "screenshot": "04-shortage-no-unhandled-error.png"
+    },
+    {
+      "name": "05-retry-after-shortage",
+      "pass": true,
+      "detail": "Có thể thử lại sau lỗi, không bị khóa nút và không pageerror",
+      "screenshot": "05-retry-after-shortage.png"
+    },
+    {
+      "name": "06-cancel-and-reopen",
+      "pass": true,
+      "detail": "Hủy modal sau lỗi và mở lại được",
+      "screenshot": "06-cancel-and-reopen.png"
+    },
+    {
+      "name": "07-confirm-success-closes-modal",
+      "pass": true,
+      "detail": "Duyệt thật khi đủ tồn: modal đóng, trạng thái Đã duyệt, không pageerror",
+      "screenshot": "07-confirm-success-closes-modal.png"
+    }
+  ],
+  "pageErrors": [],
+  "network": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/categories",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/products",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/4/approve",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/4/approve",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/products",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/stock-adjustments",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/4/approve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    }
+  ]
+}

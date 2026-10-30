@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Col, Progress, Row, Space, Statistic, Table, Tabs, Typography } from 'antd'
 import {
@@ -42,7 +43,7 @@ function StaffRecentPrTable() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 11, color: '#6b7280' }}>
               Xong {r.completedQuantity || 0}/{r.quantity}
@@ -63,6 +64,8 @@ function StaffRecentPrTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -87,13 +90,12 @@ function StaffActiveProductionsTable() {
 
   const columns = [
     { title: 'Mã đợt SX', dataIndex: 'id', width: 95, render: (v) => <Typography.Text code>#{v}</Typography.Text> },
-    { title: 'Mã PR', dataIndex: 'productionRequestId', width: 90, render: (v) => `PR #${v}` },
-    { title: 'Sản phẩm', dataIndex: 'productName', ellipsis: true },
+    { title: 'Yêu cầu SX', dataIndex: 'productionRequestId', width: 110, render: (v) => <Typography.Text strong>PR #{v}</Typography.Text> },
     {
       title: 'Số lượng SX',
       dataIndex: 'quantity',
-      width: 120,
-      render: (v, r) => `${quantity(v)} ${r.productUnit || ''}`,
+      width: 130,
+      render: (v) => <Typography.Text strong>{quantity(v, 0)} sản phẩm</Typography.Text>,
     },
     { title: 'Thời gian bắt đầu', dataIndex: 'startedAt', width: 150, render: dateTime },
     { title: 'Trạng thái', dataIndex: 'status', width: 120, render: (v) => <DocStatusTag status={v} /> },
@@ -108,6 +110,8 @@ function StaffActiveProductionsTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -146,6 +150,8 @@ function StaffRecentMirTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -246,7 +252,7 @@ export default function StaffDashboard() {
               title="Yêu cầu đang làm"
               value={activePrQuery.data?.totalElements ?? 0}
               prefix={<FieldTimeOutlined />}
-              valueStyle={{ color: '#2563eb' }}
+              styles={{ content: { color: 'var(--status-progress-text)' } }}
             />
           </Card>
         </Col>
@@ -262,7 +268,7 @@ export default function StaffDashboard() {
               title="Đợt SX đang chạy"
               value={prodQuery.data?.totalElements ?? 0}
               prefix={<ToolOutlined />}
-              valueStyle={{ color: '#d97706' }}
+              styles={{ content: { color: '#d97706' } }}
             />
           </Card>
         </Col>
@@ -278,7 +284,7 @@ export default function StaffDashboard() {
               title="Xuất NVL chờ duyệt"
               value={mirPendingQuery.data?.totalElements ?? 0}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#059669' }}
+              styles={{ content: { color: '#059669' } }}
             />
           </Card>
         </Col>
@@ -294,7 +300,7 @@ export default function StaffDashboard() {
               title="Xuất bán TP chờ duyệt"
               value={fgPendingQuery.data?.totalElements ?? 0}
               prefix={<ShoppingCartOutlined />}
-              valueStyle={{ color: '#7c3aed' }}
+              styles={{ content: { color: '#7c3aed' } }}
             />
           </Card>
         </Col>
@@ -348,7 +354,7 @@ export default function StaffDashboard() {
 
         <Col xs={24} xl={8}>
           <Card title="Truy cập nhanh" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Button block type="primary" onClick={() => navigate('/staff/requests')}>
                 <AuditOutlined /> Danh sách yêu cầu sản xuất được giao
               </Button>

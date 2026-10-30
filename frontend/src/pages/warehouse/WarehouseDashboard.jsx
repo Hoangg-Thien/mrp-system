@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Col, Row, Space, Statistic, Table, Tabs, Typography } from 'antd'
 import {
@@ -39,18 +40,20 @@ function StatCard({ item }) {
     queryKey: [item.key, 'wm-count'],
     queryFn: ({ signal }) => api.get(item.path, { page: 0, size: 1, ...(item.query || {}) }, signal),
   })
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Card
       className="stat-card"
       loading={query.isPending}
       onClick={() => navigate(item.to)}
       hoverable
-      style={item.highlight ? { borderColor: '#d97706', background: '#fffbeb' } : {}}
+      style={item.highlight ? { borderColor: 'var(--status-pending-border)', background: 'var(--status-pending-bg)' } : {}}
     >
       <Statistic
         title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{item.icon} {item.label}</span>}
         value={query.data?.totalElements ?? 0}
-        valueStyle={item.highlight ? { color: '#b45309', fontWeight: 700 } : {}}
+        styles={{ content: item.highlight ? { color: 'var(--status-pending-text)', fontWeight: 700 } : {} }}
       />
     </Card>
   )
@@ -82,6 +85,8 @@ function PendingMirTable() {
     },
   ]
 
+  if (query.isError) return <QueryError query={query} />
+
   return (
     <Table
       size="small"
@@ -105,10 +110,10 @@ function PendingFgTable() {
 
   const columns = [
     { title: 'Mã phiếu', dataIndex: 'id', width: 85, render: (v) => <Typography.Text code>#{v}</Typography.Text> },
-    { title: 'Thành phẩm', dataIndex: 'productName', ellipsis: true },
-    { title: 'Số lượng', dataIndex: 'quantity', width: 110, render: (v, r) => `${quantity(v)} ${r.productUnit || ''}` },
-    { title: 'Khách hàng', dataIndex: 'customerName', width: 140, ellipsis: true },
-    { title: 'Thời gian', dataIndex: 'requestedAt', width: 150, render: dateTime },
+    { title: 'Nhân viên yêu cầu', dataIndex: 'requestedByName', width: 150, ellipsis: true },
+    { title: 'Số mặt hàng', dataIndex: 'itemCount', width: 110, render: (v) => `${v} SP` },
+    { title: 'Tổng số lượng', dataIndex: 'totalQuantity', width: 120, render: (v) => <Typography.Text strong>{v}</Typography.Text> },
+    { title: 'Thời gian gửi', dataIndex: 'requestedAt', width: 150, render: dateTime },
     { title: 'Trạng thái', dataIndex: 'status', width: 120, render: (v) => <DocStatusTag status={v} /> },
     {
       title: 'Thao tác',
@@ -121,6 +126,8 @@ function PendingFgTable() {
       ),
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -166,6 +173,8 @@ function RecentMovementsTable() {
     { title: 'Người ghi', dataIndex: 'createdByUsername', width: 120, render: (v) => v || '—' },
     { title: 'Thời gian', dataIndex: 'createdAt', width: 150, render: dateTime },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <Table
@@ -270,7 +279,7 @@ export default function WarehouseDashboard() {
 
         <Col xs={24} xl={8}>
           <Card title="Phím tắt chức năng Kho" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Button block type="primary" onClick={() => navigate('/warehouse/planning')}>
                 <CalculatorOutlined /> Lập kế hoạch MRP cho sản phẩm
               </Button>

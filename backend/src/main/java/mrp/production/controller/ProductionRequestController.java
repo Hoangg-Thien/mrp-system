@@ -40,7 +40,7 @@ public class ProductionRequestController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'WAREHOUSE_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'WAREHOUSE_MANAGER')")
     public Page<ProductionViews.ProductionRequestView> list(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) ProductionRequestStatus status,
@@ -56,7 +56,7 @@ public class ProductionRequestController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'WAREHOUSE_MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'WAREHOUSE_MANAGER')")
     public ProductionViews.ProductionRequestDetailView detail(
             @PathVariable Long id,
             Authentication auth) {

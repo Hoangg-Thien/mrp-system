@@ -56,5 +56,6 @@ public class User {
     public boolean isActive() { return active; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setRole(UserRole role) { this.role = role; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setActive(boolean active) { this.active = active; }
 }

@@ -4,6 +4,9 @@ package mrp.auth.service;
 import mrp.auth.dto.LoginRequest;
 import mrp.auth.dto.LoginResponse;
 import mrp.auth.dto.UserView;
+import mrp.auth.dto.UpdateProfileRequest;
+import mrp.auth.dto.ChangePasswordRequest;
+import mrp.common.exception.BadRequestException;
 import mrp.common.exception.BusinessException;
 import mrp.common.exception.InvalidCredentialsException;
 import mrp.user.entity.User;
@@ -62,4 +65,44 @@ public class AuthService {
     }
 
     private Long profileId(User user) { return view(user).profileId(); }
+
+    @Transactional
+    public UserView updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = activeUserForUpdate(userId);
+        String name = request.fullName().trim();
+        String email = clean(request.email()), phone = clean(request.phone()), address = clean(request.address());
+        switch (user.getRole()) {
+            case ADMIN -> admins.findByUserId(userId).orElseThrow().updateProfile(name, email, phone, address);
+            case STAFF -> staff.findByUserId(userId).orElseThrow().updateProfile(name, email, phone, address);
+            case WAREHOUSE_MANAGER -> managers.findByUserId(userId).orElseThrow().updateProfile(name, email, phone, address);
+        }
+        return view(user);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = activeUserForUpdate(userId);
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu hiện tại không đúng");
+        }
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BadRequestException("Nhập lại mật khẩu mới không khớp");
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        // BCrypt only processes up to 72 bytes; reject instead of silently truncating.
+        if (request.newPassword().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw new BadRequestException("Mật khẩu mới tối đa 72 byte UTF-8");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+    }
+
+    private User activeUserForUpdate(Long userId) {
+        User user = users.findByIdForUpdate(userId).orElseThrow(() -> new InvalidCredentialsException("Tài khoản không còn tồn tại"));
+        if (!user.isActive()) throw new InvalidCredentialsException("Tài khoản đã bị khóa");
+        return user;
+    }
+
+    private static String clean(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 }

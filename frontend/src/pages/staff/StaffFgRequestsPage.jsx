@@ -1,3 +1,6 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -13,7 +16,7 @@ import {
   Space,
   Table,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CloseOutlined,
@@ -22,7 +25,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -35,6 +38,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function StaffFgRequestsPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -50,9 +54,10 @@ export default function StaffFgRequestsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-staff-fg-select'],
-    queryFn: () => api.get('/api/products', { size: 100 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const detailQuery = useQuery({
@@ -115,12 +120,12 @@ export default function StaffFgRequestsPage() {
             Chi tiết
           </Button>
           {r.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               danger
               size="small"
               title="Hủy phiếu đề xuất xuất bán này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(r.id)}
+              onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
               <CloseOutlined /> Hủy
             </ConfirmButton>
@@ -146,6 +151,7 @@ export default function StaffFgRequestsPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Đề nghị xuất bán thành phẩm"
         subtitle="Lập phiếu xin xuất kho thành phẩm phục vụ các đơn hàng bán cho khách"
@@ -163,7 +169,7 @@ export default function StaffFgRequestsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={fgQuery}
         filters={(
           <Space wrap>
             <Select
@@ -199,7 +205,7 @@ export default function StaffFgRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất bán TP */}
-      <Modal
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất bán thành phẩm"
         open={createModalOpen}
         width={720}
@@ -305,18 +311,18 @@ export default function StaffFgRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} mask={{ closable: !(cancelMutation.isPending) }} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={720}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Hủy phiếu đề xuất xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>
@@ -352,7 +358,7 @@ export default function StaffFgRequestsPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo tồn kho"
+                title="Cảnh báo tồn kho"
                 description={detailQuery.data.warning || 'Kho hiện tại không đủ tồn cho một số sản phẩm trong phiếu.'}
               />
             )}

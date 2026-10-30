@@ -1,3 +1,6 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -11,10 +14,10 @@ import {
   Space,
   Tabs,
   Typography,
-  message,
+  App,
 } from 'antd'
 import { PlusCircleOutlined, ReloadOutlined } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import PageHeader from '../../components/PageHeader'
@@ -27,6 +30,7 @@ const PAGE_SIZE = 15
 function StockTable({ kind, onAdjustItem }) {
   const isMaterial = kind === 'materials'
   const [filters, setFilters] = useState({ positiveOnly: false })
+  const [searchValue, setSearchValue] = useState('')
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState({ sort: 'name', direction: 'asc' })
 
@@ -108,7 +112,7 @@ function StockTable({ kind, onAdjustItem }) {
   ))
 
   return (
-    <PagedTable
+    <PagedTable query={query}
       rowKey={isMaterial ? 'materialId' : 'productId'}
       filters={(
         <Space wrap>
@@ -116,6 +120,8 @@ function StockTable({ kind, onAdjustItem }) {
             allowClear
             style={{ width: 240 }}
             placeholder={isMaterial ? 'Tìm mã / tên NVL' : 'Tìm tên sản phẩm'}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             onSearch={(v) => { setPage(0); setFilters((f) => ({ ...f, keyword: v?.trim() || undefined })) }}
           />
           {!isMaterial && (
@@ -142,7 +148,7 @@ function StockTable({ kind, onAdjustItem }) {
             options={[{ value: 'no', label: 'Tất cả tồn' }, { value: 'yes', label: 'Chỉ tồn > 0' }]}
             onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, positiveOnly: v === 'yes' })) }}
           />
-          <Button icon={<ReloadOutlined />} onClick={() => { setFilters({ positiveOnly: false }); setPage(0) }}>Đặt lại</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => { setSearchValue(''); setFilters({ positiveOnly: false }); setPage(0) }}>Đặt lại</Button>
         </Space>
       )}
       columns={withSort}
@@ -164,33 +170,38 @@ function StockTable({ kind, onAdjustItem }) {
 }
 
 function StockAdjustmentModal({ open, onClose, defaultItem }) {
+  const { message } = App.useApp()
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const [targetType, setTargetType] = useState('material')
   const [selectedItemId, setSelectedItemId] = useState(null)
 
-  const materialsQuery = useQuery({
+  const materialsQuery = useAllPages({
     queryKey: ['active-materials-select'],
-    queryFn: () => api.get('/api/materials', { active: true, size: 100 }),
+    path: '/api/materials',
+    params: { active: true },
     enabled: open,
   })
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['active-products-select'],
-    queryFn: () => api.get('/api/products', { size: 100 }),
+    path: '/api/products',
+    params: {  },
     enabled: open,
   })
 
   // Current stock inventory for materials and products
-  const invMaterialsQuery = useQuery({
+  const invMaterialsQuery = useAllPages({
     queryKey: ['inv-materials-for-modal'],
-    queryFn: () => api.get('/api/inventories/materials', { size: 200 }),
+    path: '/api/inventories/materials',
+    params: {  },
     enabled: open && targetType === 'material',
   })
 
-  const invProductsQuery = useQuery({
+  const invProductsQuery = useAllPages({
     queryKey: ['inv-products-for-modal'],
-    queryFn: () => api.get('/api/inventories/products', { size: 200 }),
+    path: '/api/inventories/products',
+    params: {  },
     enabled: open && targetType === 'product',
   })
 
@@ -254,7 +265,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
   }
 
   return (
-    <Modal
+    <Modal forceRender cancelButtonProps={{ disabled: adjustMutation.isPending }} closable={!(adjustMutation.isPending)} mask={{ closable: !(adjustMutation.isPending) }} okButtonProps={{ disabled: adjustMutation.isPending }}
       title="Điều chỉnh tồn kho (Kiểm kê)"
       open={open}
       onCancel={onClose}
@@ -265,11 +276,15 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
       okText="Lưu điều chỉnh"
       cancelText="Hủy"
     >
+      <QueryError query={materialsQuery} />
+      <QueryError query={productsQuery} />
+      <QueryError query={invMaterialsQuery} />
+      <QueryError query={invProductsQuery} />
       <Alert
         type="info"
         showIcon
         style={{ marginBottom: 16 }}
-        message="Mọi điều chỉnh tồn sẽ được ghi vào sổ kho (ADJUST_IN / ADJUST_OUT). Không thể sửa xóa sau khi lưu."
+        title="Mọi điều chỉnh tồn sẽ được ghi vào sổ kho (ADJUST_IN / ADJUST_OUT). Không thể sửa xóa sau khi lưu."
       />
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item name="targetType" label="Loại đối tượng" initialValue="material">
@@ -316,8 +331,8 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
         </Form.Item>
 
         {currentStockInfo && (
-          <div style={{ marginBottom: 16, background: '#f0fdf4', padding: '8px 12px', borderRadius: 6, border: '1px solid #bbf7d0' }}>
-            <span style={{ fontSize: 13, color: '#16653a' }}>
+          <div style={{ marginBottom: 16, background: 'var(--status-approved-bg)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--status-approved-border)' }}>
+            <span style={{ fontSize: 13, color: 'var(--status-approved-text)' }}>
               Tồn kho hiện tại: <strong>{quantity(currentStockInfo.quantity, targetType === 'product' ? 0 : 3)} {currentStockInfo.unit}</strong>
             </span>
           </div>
@@ -383,8 +398,8 @@ export default function InventoryPage() {
   return (
     <>
       <PageHeader
-        title="Tồn kho"
-        subtitle="Tồn hiện tại do backend tính qua sổ kho; frontend chỉ hiển thị và gửi lệnh điều chỉnh"
+        title="Tồn kho &amp; Kiểm kê"
+        subtitle="Theo dõi số lượng tồn kho thực tế, định mức khả dụng và thực hiện điều chỉnh kiểm kê"
         extra={(
           <Button
             type="primary"

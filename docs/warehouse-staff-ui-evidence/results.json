@@ -1,0 +1,1150 @@
+{
+  "date": "2026-10-29",
+  "environment": {
+    "ui": "http://127.0.0.1:15173",
+    "api": "http://127.0.0.1:18080",
+    "database": "mrp_ui_qa",
+    "container": "mrp-ui-qa-20261029",
+    "browser": "156.0.8078.4"
+  },
+  "fixture": {
+    "product": "UI QA Product",
+    "material": "UI QA Material",
+    "receipt": 1,
+    "productionRequest": 1,
+    "materialRequest": 1,
+    "production": 1,
+    "fg": 1
+  },
+  "results": [
+    {
+      "name": "01-warehouse-dashboard",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse",
+      "screenshot": "01-warehouse-dashboard.png"
+    },
+    {
+      "name": "03-receipt-created",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "03-receipt-created.png"
+    },
+    {
+      "name": "04-receipt-completed",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "04-receipt-completed.png"
+    },
+    {
+      "name": "05-bom-created",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/boms",
+      "screenshot": "05-bom-created.png"
+    },
+    {
+      "name": "06-mrp-plan",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/planning",
+      "screenshot": "06-mrp-plan.png"
+    },
+    {
+      "name": "07-production-request",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/production-requests",
+      "screenshot": "07-production-request.png"
+    },
+    {
+      "name": "08-staff-dashboard",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff",
+      "screenshot": "08-staff-dashboard.png"
+    },
+    {
+      "name": "09-staff-assigned-request",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/requests",
+      "screenshot": "09-staff-assigned-request.png"
+    },
+    {
+      "name": "10-staff-material-request",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/material-requests",
+      "screenshot": "10-staff-material-request.png"
+    },
+    {
+      "name": "11-warehouse-material-approved",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/material-issues",
+      "screenshot": "11-warehouse-material-approved.png"
+    },
+    {
+      "name": "12-staff-production-started",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/productions",
+      "screenshot": "12-staff-production-started.png"
+    },
+    {
+      "name": "13-staff-production-completed",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/productions",
+      "screenshot": "13-staff-production-completed.png"
+    },
+    {
+      "name": "14-staff-fg-request",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/fg-requests",
+      "screenshot": "14-staff-fg-request.png"
+    },
+    {
+      "name": "15-warehouse-fg-approved",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/fg-issues",
+      "screenshot": "15-warehouse-fg-approved.png"
+    },
+    {
+      "name": "16-material-stock-report",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "16-material-stock-report.png"
+    },
+    {
+      "name": "17-product-stock-report",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "17-product-stock-report.png"
+    },
+    {
+      "name": "18-inventory-material-4",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/inventory",
+      "screenshot": "18-inventory-material-4.png"
+    },
+    {
+      "name": "19-stock-adjust-in",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/inventory",
+      "screenshot": "19-stock-adjust-in.png"
+    },
+    {
+      "name": "20-stock-adjust-out",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/inventory",
+      "screenshot": "20-stock-adjust-out.png"
+    },
+    {
+      "name": "21-stock-ledger",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/movements",
+      "screenshot": "21-stock-ledger.png"
+    },
+    {
+      "name": "22-quarterly-report",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "22-quarterly-report.png"
+    },
+    {
+      "name": "23-yearly-report",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "23-yearly-report.png"
+    },
+    {
+      "name": "24-report-csv-export",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "24-report-csv-export.png"
+    },
+    {
+      "name": "25-fg-shortage-warning",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/fg-requests",
+      "screenshot": "25-fg-shortage-warning.png"
+    },
+    {
+      "name": "26-approve-insufficient-stock-blocked",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/fg-issues",
+      "screenshot": "26-approve-insufficient-stock-blocked.png"
+    },
+    {
+      "name": "27-warehouse-reject-fg",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/fg-issues",
+      "screenshot": "27-warehouse-reject-fg.png"
+    },
+    {
+      "name": "28-staff-cancel-fg",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/fg-requests",
+      "screenshot": "28-staff-cancel-fg.png"
+    },
+    {
+      "name": "29-staff-warehouse-route-blocked",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff",
+      "screenshot": "29-staff-warehouse-route-blocked.png"
+    },
+    {
+      "name": "30-warehouse-staff-route-blocked",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse",
+      "screenshot": "30-warehouse-staff-route-blocked.png"
+    },
+    {
+      "name": "31-staff-profile",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/profile",
+      "screenshot": "31-staff-profile.png"
+    },
+    {
+      "name": "32-warehouse-profile",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/profile",
+      "screenshot": "32-warehouse-profile.png"
+    },
+    {
+      "name": "33-warehouse-load-error",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "33-warehouse-load-error.png"
+    },
+    {
+      "name": "34-warehouse-retry-recovered",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "34-warehouse-retry-recovered.png"
+    },
+    {
+      "name": "33-staff-load-error",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/material-requests",
+      "screenshot": "33-staff-load-error.png"
+    },
+    {
+      "name": "34-staff-retry-recovered",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/staff/material-requests",
+      "screenshot": "34-staff-retry-recovered.png"
+    },
+    {
+      "name": "02-receipt-validation",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "02-receipt-validation.png"
+    },
+    {
+      "name": "35-receipt-edited",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "35-receipt-edited.png"
+    },
+    {
+      "name": "36-receipt-cancelled",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/receipts",
+      "screenshot": "36-receipt-cancelled.png"
+    },
+    {
+      "name": "37-bom-deactivated",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/boms",
+      "screenshot": "37-bom-deactivated.png"
+    },
+    {
+      "name": "38-bom-reactivated",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/boms",
+      "screenshot": "38-bom-reactivated.png"
+    },
+    {
+      "name": "39-inventory-empty-filter",
+      "pass": true,
+      "url": "http://127.0.0.1:15173/warehouse/inventory",
+      "screenshot": "39-inventory-empty-filter.png"
+    },
+    {
+      "name": "40-inventory-filter-reset",
+      "pass": false,
+      "url": "http://127.0.0.1:15173/warehouse/inventory",
+      "screenshot": "40-inventory-filter-reset.png"
+    },
+    {
+      "name": "41-report-chart-label-defect",
+      "pass": false,
+      "url": "http://127.0.0.1:15173/warehouse/reports",
+      "screenshot": "41-report-chart-label-defect.png"
+    },
+    {
+      "name": "unhandled-error-on-409",
+      "pass": false,
+      "defect": "UI-02"
+    }
+  ],
+  "defects": [
+    {
+      "id": "UI-01",
+      "severity": "minor",
+      "title": "Nhãn trục X báo cáo là chỉ số 0 thay vì tên vật tư",
+      "expected": "UI QA Material",
+      "actual": "Ảnh chụp hiển thị nhãn 0 ở trục X thay vì UI QA Material; JSX dùng XAxis dataIndex=\"name\".",
+      "source": "frontend/src/pages/warehouse/StockReportsPage.jsx:336",
+      "screenshot": "41-report-chart-label-defect.png"
+    },
+    {
+      "id": "UI-02",
+      "severity": "minor",
+      "title": "Unhandled JavaScript rejection khi duyệt phiếu thiếu tồn",
+      "actual": [
+        "Tồn kho thành phẩm #1 không đủ để xuất kho (hiện có: 0.000, yêu cầu: 1)"
+      ],
+      "expected": "Hiện thông báo nghiệp vụ và không phát sinh pageerror",
+      "screenshot": "26-approve-insufficient-stock-blocked.png"
+    },
+    {
+      "id": "UI-03",
+      "severity": "minor",
+      "title": "Đặt lại bộ lọc tồn kho không xóa từ khóa hiển thị",
+      "expected": "Ô tìm kiếm trống sau Đặt lại",
+      "actual": "Dữ liệu trở lại nhưng ô tìm kiếm vẫn NO_SUCH_UI_QA",
+      "source": "frontend/src/pages/warehouse/InventoryPage.jsx:118",
+      "screenshot": "40-inventory-filter-reset.png"
+    }
+  ],
+  "errors": [
+    "Tồn kho thành phẩm #1 không đủ để xuất kho (hiện có: 0.000, yêu cầu: 1)"
+  ],
+  "responses": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/stock-movements",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/suppliers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/purchase-receipts/1/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/mrp/plan",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests/1/requirements",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/material-issue-requests/1/approve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/productions/1/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/1/approve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/stock-adjustments",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/stock-adjustments",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/stock-movements",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/2/approve",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/2/reject",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/fg-issue-requests/3/cancel",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/productions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/fg-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/stock-movements",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/suppliers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/api/production-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/api/material-issue-requests",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/suppliers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts/2",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/purchase-receipts/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts/2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/purchase-receipts/2/cancel",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/purchase-receipts/2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/boms/1/deactivate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/boms/1/activate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/boms",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/inventories/materials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/stock",
+      "status": 200
+    }
+  ],
+  "notes": [
+    "44 checkpoints (bao gồm kiểm tra trang và ảnh), không phải 44 test case độc lập.",
+    "Danh mục và tài khoản được tạo qua API trên DB test; các thao tác nghiệp vụ được thực hiện qua UI Playwright.",
+    "Các lỗi selector/timeout trong quá trình viết kịch bản đã được đọc lại UI và chạy lại; không tính là lỗi sản phẩm.",
+    "Lỗi 503 được giả lập có chủ đích để kiểm tra Thử lại; 409 thiếu tồn là phản hồi mong đợi."
+  ]
+}

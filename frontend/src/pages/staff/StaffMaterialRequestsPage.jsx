@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useEffect, useState } from 'react'
 import {
   Alert,
@@ -14,7 +15,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CloseOutlined,
@@ -23,7 +24,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
@@ -37,6 +38,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function StaffMaterialRequestsPage() {
+  const { message } = App.useApp()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
@@ -113,7 +115,7 @@ export default function StaffMaterialRequestsPage() {
       dataIndex: 'productionRequestId',
       sorter: true,
       width: 120,
-      render: (v) => <Tag color="blue">PR #{v}</Tag>,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">PR #{v}</Tag>,
     },
     {
       title: 'Số dòng NVL',
@@ -135,12 +137,12 @@ export default function StaffMaterialRequestsPage() {
             Chi tiết
           </Button>
           {r.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               danger
               size="small"
               title="Hủy phiếu đề nghị xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(r.id)}
+              onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
               <CloseOutlined /> Hủy
             </ConfirmButton>
@@ -191,7 +193,7 @@ export default function StaffMaterialRequestsPage() {
         )}
       />
 
-      <PagedTable
+      <PagedTable query={mirQuery}
         filters={(
           <Space wrap>
             <Select
@@ -227,7 +229,7 @@ export default function StaffMaterialRequestsPage() {
       />
 
       {/* Modal lập phiếu xuất NVL */}
-      <Modal
+      <Modal forceRender cancelButtonProps={{ disabled: createMutation.isPending }} closable={!(createMutation.isPending)} mask={{ closable: !(createMutation.isPending) }} okButtonProps={{ disabled: createMutation.isPending }}
         title="Lập phiếu đề nghị xuất nguyên vật liệu"
         open={createModalOpen}
         width={760}
@@ -264,11 +266,11 @@ export default function StaffMaterialRequestsPage() {
               type="info"
               showIcon
               style={{ marginBottom: 16 }}
-              message={`Định mức NVL cho: ${prRequirementsQuery.data.productName} (SL: ${prRequirementsQuery.data.quantity})`}
+              title={`Định mức NVL cho: ${prRequirementsQuery.data.productName} (SL: ${prRequirementsQuery.data.quantity})`}
               description={(
                 <div style={{ marginTop: 6 }}>
                   {prRequirementsQuery.data.materials?.map((m) => (
-                    <Tag key={m.materialId} color={m.remainingAllowed > 0 ? 'blue' : 'default'} style={{ marginBottom: 4 }}>
+                    <Tag key={m.materialId} className={`erp-tag ${m.remainingAllowed > 0 ? 'erp-tag-progress' : 'erp-tag-neutral'}`} style={{ marginBottom: 4 }}>
                       {m.materialName}: còn được xin {quantity(m.remainingAllowed)} {m.unit} (tồn kho: {quantity(m.onHand)})
                     </Tag>
                   ))}
@@ -364,18 +366,18 @@ export default function StaffMaterialRequestsPage() {
       </Modal>
 
       {/* Modal chi tiết phiếu xuất NVL */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: cancelMutation.isPending }} closable={!(cancelMutation.isPending)} mask={{ closable: !(cancelMutation.isPending) }} okButtonProps={{ disabled: cancelMutation.isPending }}
         title={`Chi tiết phiếu xuất NVL #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={cancelMutation.isPending}
               key="cancel"
               danger
               title="Xác nhận hủy phiếu đề xuất xuất này?"
               loading={cancelMutation.isPending}
-              onConfirm={() => cancelMutation.mutate(detailId)}
+              onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >
               Hủy phiếu
             </ConfirmButton>
@@ -393,7 +395,7 @@ export default function StaffMaterialRequestsPage() {
                 <DocStatusTag status={detailQuery.data.status} />
               </Descriptions.Item>
               <Descriptions.Item label="Yêu cầu SX liên quan">
-                <Tag color="blue">PR #{detailQuery.data.productionRequestId}</Tag>
+                <Tag className="erp-tag erp-tag-neutral">PR #{detailQuery.data.productionRequestId}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Người yêu cầu">
                 {detailQuery.data.requestedByName}
@@ -417,7 +419,7 @@ export default function StaffMaterialRequestsPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo tồn kho"
+                title="Cảnh báo tồn kho"
                 description={detailQuery.data.warning || 'Kho hiện tại không đủ tồn cho một số NVL trong phiếu này.'}
               />
             )}

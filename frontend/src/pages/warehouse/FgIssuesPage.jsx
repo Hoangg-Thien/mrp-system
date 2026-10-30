@@ -1,3 +1,6 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
@@ -8,9 +11,8 @@ import {
   Select,
   Space,
   Table,
-  Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -18,7 +20,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -32,6 +34,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function FgIssuesPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -46,9 +49,10 @@ export default function FgIssuesPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-fg-filter'],
-    queryFn: () => api.get('/api/products', { size: 100 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const staffQuery = useQuery({
@@ -115,17 +119,17 @@ export default function FgIssuesPage() {
           </Button>
           {r.status === 'PENDING' && (
             <>
-              <ConfirmButton
+              <ConfirmButton disabled={approveMutation.isPending}
                 type="primary"
                 size="small"
                 title="Duyệt xuất kho thành phẩm này?"
                 description="Hệ thống sẽ trừ tồn kho thành phẩm. Nếu kho thiếu tồn, thao tác sẽ bị chặn."
                 loading={approveMutation.isPending}
-                onConfirm={() => approveMutation.mutate(r.id)}
+                onConfirm={() => approveMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Duyệt
               </ConfirmButton>
-              <Button
+              <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
                 danger
                 size="small"
                 icon={<CloseOutlined />}
@@ -146,12 +150,13 @@ export default function FgIssuesPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Duyệt phiếu xuất thành phẩm để bán"
         subtitle="Kiểm tra tồn kho thành phẩm và phê duyệt đơn hàng xuất bán do nhân viên lập"
       />
 
-      <PagedTable
+      <PagedTable query={fgQuery}
         filters={(
           <Space wrap>
             <Select
@@ -207,25 +212,25 @@ export default function FgIssuesPage() {
       />
 
       {/* Modal chi tiết phiếu xuất thành phẩm */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} mask={{ closable: !(approveMutation.isPending) }} okButtonProps={{ disabled: approveMutation.isPending }}
         title={`Chi tiết phiếu xuất thành phẩm #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={approveMutation.isPending}
               key="approve"
               type="primary"
               title="Xác nhận duyệt xuất thành phẩm này?"
               description="Hệ thống sẽ trừ tồn kho thành phẩm qua sổ kho."
               loading={approveMutation.isPending}
-              onConfirm={() => approveMutation.mutate(detailId)}
+              onConfirm={() => approveMutation.mutateAsync(detailId)}
             >
               Duyệt xuất kho
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <Button
+            <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
               key="reject"
               danger
               onClick={() => setRejectId(detailId)}
@@ -267,7 +272,7 @@ export default function FgIssuesPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo thiếu tồn kho thành phẩm"
+                title="Cảnh báo thiếu tồn kho thành phẩm"
                 description={detailQuery.data.warning || 'Có sản phẩm trong phiếu có số lượng yêu cầu vượt quá tồn kho thực tế! Khi duyệt hệ thống sẽ báo lỗi và chặn trừ kho.'}
               />
             )}
@@ -302,9 +307,9 @@ export default function FgIssuesPage() {
                     const reqQty = Number(r.quantity) || 0
                     const curStock = Number(r.currentStock) || 0
                     return curStock >= reqQty ? (
-                      <Tag color="green">Đủ tồn kho</Tag>
+                      <span className="erp-tag erp-tag-approved">Đủ tồn kho</span>
                     ) : (
-                      <Tag color="red">Thiếu {reqQty - curStock}</Tag>
+                      <span className="erp-tag erp-tag-rejected">Thiếu {reqQty - curStock}</span>
                     )
                   },
                 },

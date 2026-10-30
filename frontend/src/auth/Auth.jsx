@@ -31,8 +31,8 @@ export function AuthProvider({ children }) {
   if (token && me.isError) {
     return (
       <div className="center-screen">
-        <Alert type="error" showIcon message="Không tải được thông tin đăng nhập" description={me.error.message}
-          action={<Space direction="vertical"><Button size="small" onClick={() => me.refetch()}>Thử lại</Button><Button size="small" onClick={logout}>Đăng xuất</Button></Space>} />
+        <Alert type="error" showIcon title="Không tải được thông tin đăng nhập" description={me.error.message}
+          action={<Space orientation="vertical"><Button size="small" onClick={() => me.refetch()}>Thử lại</Button><Button size="small" onClick={logout}>Đăng xuất</Button></Space>} />
       </div>
     )
   }

@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -47,8 +45,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class FgIssueService {
-
-    private static final Logger log = LoggerFactory.getLogger(FgIssueService.class);
 
     private final FinishedGoodsIssueRequestRepository requestRepo;
     private final FinishedGoodsIssueRequestItemRepository itemRepo;
@@ -127,8 +123,6 @@ public class FgIssueService {
             itemRepo.save(item);
         }
         itemRepo.flush();
-        log.info("Created finished goods issue request #{} with {} items by staff #{}",
-                fgir.getId(), req.items().size(), actor.profileId());
 
         String warning = hasShortage ? "Số lượng xuất yêu cầu vượt quá tồn kho khả dụng hiện tại" : null;
         return detail(fgir.getId(), actor, hasShortage, warning);
@@ -306,7 +300,6 @@ public class FgIssueService {
                 "Xuất thành phẩm theo phiếu xuất #" + fgir.getId()
             );
         }
-        log.info("Approved finished goods issue request #{} with {} items posted to stock by manager #{}", id, items.size(), actor.profileId());
 
         return detail(id, actor);
     }
@@ -328,7 +321,6 @@ public class FgIssueService {
         String originalNote = fgir.getNote() != null && !fgir.getNote().isBlank() ? fgir.getNote().trim() + " " : "";
         fgir.setNote(originalNote + "[TỪ CHỐI] " + req.reason().trim());
         requestRepo.saveAndFlush(fgir);
-        log.info("Rejected finished goods issue request #{} by manager #{}", id, actor.profileId());
 
         return detail(id, actor);
     }
@@ -348,7 +340,6 @@ public class FgIssueService {
 
         fgir.setStatus(FgIssueRequestStatus.CANCELLED);
         requestRepo.saveAndFlush(fgir);
-        log.info("Cancelled finished goods issue request #{} by staff #{}", id, actor.profileId());
 
         return detail(id, actor);
     }

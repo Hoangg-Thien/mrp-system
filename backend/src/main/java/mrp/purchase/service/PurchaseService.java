@@ -34,18 +34,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service phiếu nhập kho NVL (P4). Quy tắc:
+ * <ul>
+ *   <li>Tạo / sửa dòng chỉ khi PENDING; COMPLETED / CANCELLED là trạng thái cuối
+ *       (trigger {@code trg_final_immutable} + {@code trg_freeze_items} là backstop DB).</li>
+ *   <li>{@code amount = round(quantity × unit_price, 2)} tính server [DB {@code ck_pri_amount}];
+ *       {@code total_amount = Σ amount} [SVC].</li>
+ *   <li>{@code complete}: đặt COMPLETED, flush, rồi post movement IN từng dòng qua {@link StockLedger#post}.
+ *       {@code created_by} = {@code actor.userId()} [users.id], khác {@code warehouse_manager_id} [profile id].
+ *       Trigger {@code fn_sm_validate} yêu cầu receipt COMPLETED + số lượng khớp dòng → flush trước khi post.</li>
+ *   <li>{@link PurchaseReceiptRepository#findByIdForUpdate} khóa bi quan [D12] serialize complete / cancel / replace-items.</li>
+ *   <li>Material phải active khi tạo dòng và khi complete (gọi {@link CatalogService#requireActiveMaterial}) [P3].</li>
+ * </ul>
+ */
 @Service
 @Transactional(readOnly = true)
 public class PurchaseService {
-    private static final Logger log = LoggerFactory.getLogger(PurchaseService.class);
     private static final Set<String> SORT_FIELDS = Set.of("id", "receiptDate", "totalAmount", "status");
 
     private final PurchaseReceiptRepository receipts;
@@ -74,7 +85,6 @@ public class PurchaseService {
         receipts.saveAndFlush(receipt);
         for (PurchaseReceiptItem it : newItems) { it.setPurchaseReceiptId(receipt.getId()); items.save(it); }
         items.flush();
-        log.info("Created purchase receipt #{} for supplier #{} with {} items by user #{}", receipt.getId(), request.supplierId(), newItems.size(), actor.userId());
         return detailView(receipt);
     }
 
@@ -105,7 +115,6 @@ public class PurchaseService {
         receipt.setSupplierId(request.supplierId());
         receipt.setTotalAmount(total);
         receipts.saveAndFlush(receipt);
-        log.info("Replaced items in purchase receipt #{} with {} items", id, newItems.size());
         return detailView(receipt);
     }
 
@@ -123,7 +132,6 @@ public class PurchaseService {
             ledger.post(MovementType.IN, item.getMaterialId(), null, item.getQuantity(),
                     receipt.getId(), null, null, null, actor.userId(), note);
         }
-        log.info("Completed purchase receipt #{} with {} items posted to stock by user #{}", id, rows.size(), actor.userId());
         return detailView(receipt);
     }
 
@@ -134,7 +142,6 @@ public class PurchaseService {
             throw new BusinessException("Chỉ hủy phiếu đang PENDING");
         receipt.setStatus(PurchaseReceiptStatus.CANCELLED);
         receipts.saveAndFlush(receipt);
-        log.info("Cancelled purchase receipt #{}", id);
         return detailView(receipt);
     }
 

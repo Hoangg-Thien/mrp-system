@@ -1,19 +1,17 @@
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { useState } from 'react'
 import {
   Alert,
   Button,
   Card,
-  Col,
   Descriptions,
   Divider,
   Form,
   InputNumber,
-  Row,
   Select,
-  Space,
   Statistic,
   Table,
-  Tag,
   Typography,
 } from 'antd'
 import {
@@ -34,9 +32,10 @@ export default function MrpPlanningPage() {
   const [form] = Form.useForm()
   const [planParams, setPlanParams] = useState(null)
 
-  const productsQuery = useQuery({
+  const productsQuery = useAllPages({
     queryKey: ['products-for-mrp'],
-    queryFn: () => api.get('/api/products', { size: 100 }),
+    path: '/api/products',
+    params: {  },
   })
 
   const planQuery = useQuery({
@@ -59,18 +58,19 @@ export default function MrpPlanningPage() {
 
   return (
     <>
+      <QueryError query={productsQuery} />
       <PageHeader
         title="Kế hoạch MRP (Material Requirements Planning)"
         subtitle="Tính toán nhu cầu sản xuất thành phẩm và dự toán thiếu hụt nguyên vật liệu theo định mức BOM"
       />
 
-      <Card style={{ marginBottom: 20 }}>
+      <Card className="mrp-filter-card">
         <Form form={form} layout="inline" onFinish={handleCalculate}>
           <Form.Item
             name="productId"
             label="Sản phẩm mục tiêu"
             rules={[{ required: true, message: 'Vui lòng chọn sản phẩm' }]}
-            style={{ minWidth: 320 }}
+            className="mrp-select-product"
           >
             <Select
               showSearch
@@ -91,11 +91,17 @@ export default function MrpPlanningPage() {
               { type: 'number', min: 1, message: 'Tối thiểu 1' },
             ]}
           >
-            <InputNumber min={1} step={1} precision={0} placeholder="Số lượng" style={{ width: 140 }} />
+            <InputNumber
+              min={1}
+              step={1}
+              precision={0}
+              placeholder="Số lượng"
+              className="mrp-input-qty"
+            />
           </Form.Item>
 
           <Form.Item>
-            <Button
+            <Button disabled={planQuery.isFetching}
               type="primary"
               htmlType="submit"
               icon={<CalculatorOutlined />}
@@ -111,63 +117,75 @@ export default function MrpPlanningPage() {
         <Alert
           type="error"
           showIcon
-          style={{ marginBottom: 20 }}
-          message="Không thể tính toán kế hoạch MRP"
+          className="mrp-alert"
+          title="Không thể tính toán kế hoạch MRP"
           description={planQuery.error.message || 'Sản phẩm này có thể chưa có BOM active hoặc gặp lỗi tính toán.'}
         />
       )}
 
       {result && (
-        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+        <div className="mrp-results-container">
           {/* 1. Phần Thành phẩm */}
           <Card title={`1. Phân tích Thành phẩm: ${selectedProduct?.name || ''}`}>
-            <Row gutter={[16, 16]}>
-              <Col xs={12} sm={8} md={4}>
-                <Statistic title="Mục tiêu cần có" value={result.targetQuantity} suffix={selectedProduct?.unit} />
-              </Col>
-              <Col xs={12} sm={8} md={4}>
-                <Statistic title="Tồn kho thực tế" value={quantity(result.fgOnHand, 0)} suffix={selectedProduct?.unit} />
-              </Col>
-              <Col xs={12} sm={8} md={4}>
-                <Statistic title="Đã giữ cho đơn bán" value={quantity(result.fgReserved, 0)} suffix={selectedProduct?.unit} valueStyle={{ color: '#d97706' }} />
-              </Col>
-              <Col xs={12} sm={8} md={4}>
-                <Statistic title="Đang sản xuất (PR)" value={quantity(result.fgIncoming, 0)} suffix={selectedProduct?.unit} valueStyle={{ color: '#2563eb' }} />
-              </Col>
-              <Col xs={12} sm={8} md={4}>
+            <div className="mrp-kpi-grid">
+              <div className="mrp-kpi-cell kpi-val-neutral">
+                <Statistic
+                  title="Mục tiêu cần có"
+                  value={result.targetQuantity}
+                  suffix={selectedProduct?.unit}
+                />
+              </div>
+              <div className="mrp-kpi-cell kpi-val-neutral">
+                <Statistic
+                  title="Tồn kho thực tế"
+                  value={quantity(result.fgOnHand, 0)}
+                  suffix={selectedProduct?.unit}
+                />
+              </div>
+              <div className="mrp-kpi-cell kpi-val-warning">
+                <Statistic
+                  title="Đã giữ cho đơn bán"
+                  value={quantity(result.fgReserved, 0)}
+                  suffix={selectedProduct?.unit}
+                />
+              </div>
+              <div className="mrp-kpi-cell kpi-val-progress">
+                <Statistic
+                  title="Đang sản xuất (PR)"
+                  value={quantity(result.fgIncoming, 0)}
+                  suffix={selectedProduct?.unit}
+                />
+              </div>
+              <div className={`mrp-kpi-cell ${result.available > 0 ? 'kpi-val-success' : 'kpi-val-neutral'}`}>
                 <Statistic
                   title="Tồn khả dụng"
                   value={quantity(result.available, 0)}
                   suffix={selectedProduct?.unit}
-                  valueStyle={{ color: result.available > 0 ? '#16653a' : '#4b5563', fontWeight: 600 }}
                 />
-              </Col>
-              <Col xs={12} sm={8} md={4}>
+              </div>
+              <div className={`mrp-kpi-cell ${result.toProduce > 0 ? 'kpi-val-danger' : 'kpi-val-success'}`}>
                 <Statistic
                   title="Cần sản xuất thêm"
                   value={result.toProduce}
                   suffix={selectedProduct?.unit}
-                  valueStyle={{ color: result.toProduce > 0 ? '#dc2626' : '#16653a', fontWeight: 700 }}
                 />
-              </Col>
-            </Row>
+              </div>
+            </div>
 
-            <Divider style={{ margin: '16px 0 12px' }} />
+            <Divider className="mrp-divider" />
 
             <Descriptions size="small" column={1}>
               <Descriptions.Item label="Công thức tính tồn khả dụng">
-                <code>Khả dụng = Tồn thực ({quantity(result.fgOnHand, 0)}) - Đã giữ ({quantity(result.fgReserved, 0)}) + Đang SX ({quantity(result.fgIncoming, 0)}) = {quantity(result.available, 0)}</code>
+                <div className="mrp-formula-box">
+                  Khả dụng = Tồn thực ({quantity(result.fgOnHand, 0)}) - Đã giữ ({quantity(result.fgReserved, 0)}) + Đang SX ({quantity(result.fgIncoming, 0)}) = {quantity(result.available, 0)}
+                </div>
               </Descriptions.Item>
               <Descriptions.Item label="Kết luận nhu cầu sản xuất">
-                {result.toProduce > 0 ? (
-                  <Tag color="volcano" style={{ fontSize: 13, padding: '4px 8px' }}>
-                    Cần lập yêu cầu sản xuất {result.toProduce} {selectedProduct?.unit}
-                  </Tag>
-                ) : (
-                  <Tag color="green" style={{ fontSize: 13, padding: '4px 8px' }}>
-                    Tồn khả dụng đã đủ đáp ứng mục tiêu, không cần sản xuất thêm
-                  </Tag>
-                )}
+                <span className={result.toProduce > 0 ? 'erp-tag erp-tag-rejected' : 'erp-tag erp-tag-approved'}>
+                  {result.toProduce > 0
+                    ? `Cần lập yêu cầu sản xuất ${result.toProduce} ${selectedProduct?.unit || ''}`
+                    : 'Tồn khả dụng đã đủ đáp ứng mục tiêu, không cần sản xuất thêm'}
+                </span>
               </Descriptions.Item>
             </Descriptions>
           </Card>
@@ -177,18 +195,19 @@ export default function MrpPlanningPage() {
             title="2. Nhu cầu Nguyên vật liệu theo công thức BOM"
             extra={
               hasShortage ? (
-                <Tag icon={<ExclamationCircleOutlined />} color="error">
-                  Phát hiện thiếu hụt nguyên vật liệu!
-                </Tag>
+                <span className="erp-tag erp-tag-rejected">
+                  <ExclamationCircleOutlined /> Phát hiện thiếu hụt nguyên vật liệu!
+                </span>
               ) : (
-                <Tag icon={<CheckCircleOutlined />} color="success">
-                  Nguyên vật liệu đủ cho kế hoạch
-                </Tag>
+                <span className="erp-tag erp-tag-approved">
+                  <CheckCircleOutlined /> Nguyên vật liệu đủ cho kế hoạch
+                </span>
               )
             }
           >
             <Table
-              size="middle"
+              size="small"
+              bordered
               rowKey="materialId"
               pagination={false}
               dataSource={result.materials || []}
@@ -214,7 +233,7 @@ export default function MrpPlanningPage() {
                   title: 'Dùng được (Usable)',
                   dataIndex: 'usable',
                   width: 120,
-                  render: (v) => <Typography.Text type={v > 0 ? 'success' : 'secondary'}>{quantity(v)}</Typography.Text>,
+                  render: (v) => quantity(v),
                 },
                 {
                   title: 'Thiếu hụt (Shortage)',
@@ -223,11 +242,11 @@ export default function MrpPlanningPage() {
                   render: (v) => {
                     const num = Number(v) || 0
                     return num > 0 ? (
-                      <Tag color="red" style={{ fontWeight: 600 }}>
+                      <span className="erp-tag erp-tag-rejected">
                         Thiếu: {quantity(num)}
-                      </Tag>
+                      </span>
                     ) : (
-                      <Tag color="green">Đủ</Tag>
+                      <span className="erp-tag erp-tag-approved">Đủ</span>
                     )
                   },
                 },
@@ -235,14 +254,14 @@ export default function MrpPlanningPage() {
             />
           </Card>
 
-          {/* 3. Hành động đề xuất */}
+          {/* 3. Hành động đề xuất từ hệ thống */}
           <Card title="3. Hành động đề xuất từ hệ thống">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <div className="mrp-action-stack">
               {result.toProduce > 0 && (
                 <Alert
                   type="info"
                   showIcon
-                  message={`Cần sản xuất thêm ${result.toProduce} ${selectedProduct?.unit || 'sản phẩm'}`}
+                  title={`Cần sản xuất thêm ${result.toProduce} ${selectedProduct?.unit || 'sản phẩm'}`}
                   description="Bấm nút bên dưới để chuyển sang màn hình Tạo yêu cầu sản xuất cho nhân viên."
                   action={
                     <Button
@@ -260,7 +279,7 @@ export default function MrpPlanningPage() {
                 <Alert
                   type="warning"
                   showIcon
-                  message="Cần đặt hàng mua bổ sung nguyên vật liệu thiếu hụt"
+                  title="Cần đặt hàng mua bổ sung nguyên vật liệu thiếu hụt"
                   description="Một số nguyên vật liệu trong kho không đủ để sản xuất sản lượng này. Bạn nên lập phiếu nhập kho NVL từ nhà cung cấp."
                   action={
                     <Button
@@ -277,13 +296,13 @@ export default function MrpPlanningPage() {
                 <Alert
                   type="success"
                   showIcon
-                  message="Không cần hành động bổ sung"
+                  title="Không cần hành động bổ sung"
                   description="Kho hiện tại đã có đủ sản phẩm khả dụng đáp ứng mục tiêu đề ra."
                 />
               )}
-            </Space>
+            </div>
           </Card>
-        </Space>
+        </div>
       )}
     </>
   )

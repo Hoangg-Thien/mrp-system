@@ -1,3 +1,4 @@
+import { useSingleMutation as useMutation } from '../../api/useSingleMutation'
 import { useState } from 'react'
 import {
   Alert,
@@ -11,7 +12,7 @@ import {
   Table,
   Tag,
   Typography,
-  message,
+  App,
 } from 'antd'
 import {
   CheckOutlined,
@@ -19,7 +20,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import ConfirmButton from '../../components/ConfirmButton'
@@ -33,6 +34,7 @@ import { issueStatusOptions } from '../../utils/statusMap'
 const PAGE_SIZE = 15
 
 export default function MaterialIssuesPage() {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -88,7 +90,7 @@ export default function MaterialIssuesPage() {
       dataIndex: 'productionRequestId',
       sorter: true,
       width: 110,
-      render: (v) => <Tag color="blue">PR #{v}</Tag>,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">PR #{v}</Tag>,
     },
     { title: 'Nhân viên yêu cầu', dataIndex: 'requestedByName', width: 150 },
     {
@@ -112,17 +114,17 @@ export default function MaterialIssuesPage() {
           </Button>
           {r.status === 'PENDING' && (
             <>
-              <ConfirmButton
+              <ConfirmButton disabled={approveMutation.isPending}
                 type="primary"
                 size="small"
                 title="Duyệt phiếu xuất NVL này?"
                 description="Hệ thống sẽ trừ tồn kho NVL. Nếu kho không đủ tồn, thao tác sẽ bị chặn."
                 loading={approveMutation.isPending}
-                onConfirm={() => approveMutation.mutate(r.id)}
+                onConfirm={() => approveMutation.mutateAsync(r.id)}
               >
                 <CheckOutlined /> Duyệt
               </ConfirmButton>
-              <Button
+              <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
                 danger
                 size="small"
                 icon={<CloseOutlined />}
@@ -148,7 +150,7 @@ export default function MaterialIssuesPage() {
         subtitle="Kiểm tra tồn kho và phê duyệt xuất NVL cho các yêu cầu sản xuất"
       />
 
-      <PagedTable
+      <PagedTable query={mirQuery}
         filters={(
           <Space wrap>
             <InputNumber
@@ -201,25 +203,25 @@ export default function MaterialIssuesPage() {
       />
 
       {/* Modal chi tiết phiếu xuất NVL */}
-      <Modal
+      <Modal cancelButtonProps={{ disabled: approveMutation.isPending }} closable={!(approveMutation.isPending)} mask={{ closable: !(approveMutation.isPending) }} okButtonProps={{ disabled: approveMutation.isPending }}
         title={`Chi tiết phiếu xuất NVL #${detailId}`}
         open={!!detailId}
         width={760}
         footer={[
           detailQuery.data?.status === 'PENDING' && (
-            <ConfirmButton
+            <ConfirmButton disabled={approveMutation.isPending}
               key="approve"
               type="primary"
               title="Xác nhận duyệt xuất NVL này?"
               description="Hệ thống sẽ trừ tồn kho NVL qua sổ kho."
               loading={approveMutation.isPending}
-              onConfirm={() => approveMutation.mutate(detailId)}
+              onConfirm={() => approveMutation.mutateAsync(detailId)}
             >
               Duyệt xuất kho
             </ConfirmButton>
           ),
           detailQuery.data?.status === 'PENDING' && (
-            <Button
+            <Button disabled={rejectMutation.isPending} loading={rejectMutation.isPending}
               key="reject"
               danger
               onClick={() => setRejectId(detailId)}
@@ -240,7 +242,7 @@ export default function MaterialIssuesPage() {
                 <DocStatusTag status={detailQuery.data.status} />
               </Descriptions.Item>
               <Descriptions.Item label="Yêu cầu SX liên quan">
-                <Tag color="blue">PR #{detailQuery.data.productionRequestId}</Tag>
+                <Tag className="erp-tag erp-tag-neutral">PR #{detailQuery.data.productionRequestId}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Nhân viên đề nghị">
                 {detailQuery.data.requestedByName}
@@ -264,7 +266,7 @@ export default function MaterialIssuesPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                message="Cảnh báo tồn kho"
+                title="Cảnh báo tồn kho"
                 description={detailQuery.data.warning || 'Có nguyên vật liệu trong phiếu có số lượng yêu cầu vượt quá tồn kho thực tế! Khi duyệt hệ thống sẽ báo lỗi và chặn trừ kho.'}
               />
             )}
@@ -300,9 +302,9 @@ export default function MaterialIssuesPage() {
                     const reqQty = Number(r.quantity) || 0
                     const curStock = Number(r.currentStock) || 0
                     return curStock >= reqQty ? (
-                      <Tag color="green">Đủ tồn kho</Tag>
+                      <span className="erp-tag erp-tag-approved">Đủ tồn kho</span>
                     ) : (
-                      <Tag color="red">Thiếu {quantity(reqQty - curStock)}</Tag>
+                      <span className="erp-tag erp-tag-rejected">Thiếu {quantity(reqQty - curStock)}</span>
                     )
                   },
                 },

@@ -8,9 +8,9 @@ import PageHeader from '../components/PageHeader'
 export default function PendingPage({ area, items }) {
   return (
     <>
-      <PageHeader title={`Khu vực ${area}`} subtitle="Đang chờ backend hoàn thiện API tương ứng" />
-      <Alert type="warning" showIcon className="inline-alert" message="Chưa có dữ liệu để hiển thị"
-        description="Frontend không giả lập số liệu. Các màn hình dưới đây sẽ được xây dựng ngay khi backend triển khai xong phase liên quan." />
+      <PageHeader title={`Khu vực ${area}`} subtitle="Chức năng đang được tích hợp theo kế hoạch triển khai" />
+      <Alert type="warning" showIcon className="inline-alert" title="Chưa có dữ liệu để hiển thị"
+        description="Dữ liệu thực tế của phân hệ đang được đồng bộ và sẽ sẵn sàng khi hoàn tất quy trình thiết lập." />
       <Card title="Lộ trình còn lại">
         <Timeline
           items={items.map((item) => ({

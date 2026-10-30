@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Button, Popconfirm, Space } from 'antd'
+import { Button, Space } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/client'
@@ -9,12 +9,14 @@ import PagedTable from '../../components/PagedTable'
 import FormModal from '../../components/FormModal'
 import FilterControl from '../../components/FilterControl'
 import StatusTag from '../../components/StatusTag'
+import { useConfirm } from '../../utils/confirm'
 import { resources } from './resources'
 
 const PAGE_SIZE = 10
 
 /** Màn hình CRUD danh mục dùng chung cho W2: danh mục, sản phẩm, NCC, nguyên vật liệu. */
 export default function CatalogPage({ type }) {
+  const { confirmAction } = useConfirm()
   const resource = resources[type]
   const [filters, setFilters] = useState({})
   const [page, setPage] = useState(0)
@@ -56,18 +58,42 @@ export default function CatalogPage({ type }) {
         <Space size={4}>
           <Button size="small" onClick={() => { setEditing(row); setOpen(true) }}>Sửa</Button>
           {resource.hasActive && (
-            <Button size="small" onClick={() => actions.runAction.mutate({ id: row.id, name: row.active ? 'deactivate' : 'activate' })}>
+            <Button disabled={actions.runAction.isPending} loading={actions.runAction.isPending}
+              size="small"
+              onClick={() =>
+                confirmAction({
+                  title: row.active ? 'Xác nhận vô hiệu hóa?' : 'Xác nhận kích hoạt?',
+                  content: row.active
+                    ? 'Bản ghi sẽ không thể được sử dụng trong các nghiệp vụ mới. Bạn có chắc chắn muốn vô hiệu hóa?'
+                    : 'Bản ghi sẽ sẵn sàng cho các nghiệp vụ tiếp theo trong hệ thống.',
+                  okText: row.active ? 'Vô hiệu hóa' : 'Kích hoạt',
+                  danger: row.active,
+                  onOk: () => actions.runAction.mutateAsync({ id: row.id, name: row.active ? 'deactivate' : 'activate' }),
+                })
+              }
+            >
               {row.active ? 'Vô hiệu hóa' : 'Kích hoạt'}
             </Button>
           )}
-          <Popconfirm title="Xóa bản ghi này?" okText="Xóa" cancelText="Hủy" okButtonProps={{ danger: true }}
-            onConfirm={() => actions.remove.mutateAsync(row.id).catch(() => undefined)}>
-            <Button size="small" danger>Xóa</Button>
-          </Popconfirm>
+          <Button disabled={actions.remove.isPending} loading={actions.remove.isPending}
+            size="small"
+            danger
+            onClick={() =>
+              confirmAction({
+                title: 'Xác nhận xóa bản ghi?',
+                content: `Bạn có chắc chắn muốn xóa bản ghi "${row.name || row.code || `#${row.id}`}"? Thao tác này không thể hoàn tác.`,
+                okText: 'Xóa bản ghi',
+                danger: true,
+                onOk: () => actions.remove.mutateAsync(row.id),
+              })
+            }
+          >
+            Xóa
+          </Button>
         </Space>
       ),
     }]
-  }, [resource, categoryNames, sort, actions])
+  }, [resource, categoryNames, sort, actions, confirmAction])
 
   const submit = async (values) => {
     try {
@@ -84,7 +110,7 @@ export default function CatalogPage({ type }) {
     <>
       <PageHeader title={resource.title} subtitle={resource.subtitle}
         extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditing(null); setOpen(true) }}>Thêm mới</Button>} />
-      <PagedTable
+      <PagedTable query={listQuery}
         filters={(
           <>
             {resource.filters.map((filter) => (

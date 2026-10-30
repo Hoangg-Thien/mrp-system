@@ -377,7 +377,7 @@ class ProductionServiceTest {
         Long prId = 100L;
         Long staffId = 5L;
         ProductionRequest pr = createPr(prId, 10L, 1L, 10, 2L, staffId, ProductionRequestStatus.PENDING);
-        when(prRepo.findById(prId)).thenReturn(Optional.of(pr));
+        when(prRepo.findByIdForUpdate(prId)).thenReturn(Optional.of(pr));
 
         BomItem item = createBomItem(1001L, 1L, 101L, new BigDecimal("2.000")); // Quota: 2 * 10 = 20
         when(bomItemRepo.findByBomIdOrderByMaterialIdAsc(1L)).thenReturn(List.of(item));
@@ -407,7 +407,7 @@ class ProductionServiceTest {
         Long prId = 100L;
         Long staffId = 5L;
         ProductionRequest pr = createPr(prId, 10L, 1L, 10, 2L, staffId, ProductionRequestStatus.PENDING);
-        when(prRepo.findById(prId)).thenReturn(Optional.of(pr));
+        when(prRepo.findByIdForUpdate(prId)).thenReturn(Optional.of(pr));
 
         BomItem item = createBomItem(1001L, 1L, 101L, new BigDecimal("2.000")); // Quota: 20
         when(bomItemRepo.findByBomIdOrderByMaterialIdAsc(1L)).thenReturn(List.of(item));
@@ -487,7 +487,7 @@ class ProductionServiceTest {
         Long prId = 100L;
         Long staffId = 5L;
         ProductionRequest pr = createPr(prId, 10L, 1L, 10, 2L, staffId, ProductionRequestStatus.PENDING);
-        when(prRepo.findById(prId)).thenReturn(Optional.of(pr));
+        when(prRepo.findByIdForUpdate(prId)).thenReturn(Optional.of(pr));
         when(prodRepo.findByProductionRequestIdAndStatusNot(prId, ProductionStatus.CANCELLED)).thenReturn(List.of());
 
         Production savedProd = createProd(500L, prId, 4, staffId, ProductionStatus.IN_PROGRESS);
@@ -510,7 +510,7 @@ class ProductionServiceTest {
         Long prId = 100L;
         Long staffId = 5L;
         ProductionRequest pr = createPr(prId, 10L, 1L, 10, 2L, staffId, ProductionRequestStatus.IN_PROGRESS);
-        when(prRepo.findById(prId)).thenReturn(Optional.of(pr));
+        when(prRepo.findByIdForUpdate(prId)).thenReturn(Optional.of(pr));
 
         Production prodExisting = createProd(500L, prId, 8, staffId, ProductionStatus.IN_PROGRESS);
         when(prodRepo.findByProductionRequestIdAndStatusNot(prId, ProductionStatus.CANCELLED)).thenReturn(List.of(prodExisting));

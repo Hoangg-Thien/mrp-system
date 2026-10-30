@@ -1,3 +1,4 @@
+import QueryError from '../../components/QueryError'
 import { useMemo, useState } from 'react'
 import {
   Button,
@@ -11,7 +12,7 @@ import {
   Statistic,
   Table,
   Typography,
-  message,
+  App,
 } from 'antd'
 import { BarChartOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
@@ -35,6 +36,7 @@ const currentMonth = new Date().getMonth() + 1
 const currentQuarter = Math.ceil(currentMonth / 3)
 
 export default function StockReportsPage() {
+  const { message } = App.useApp()
   const [form] = Form.useForm()
   const [granularity, setGranularity] = useState('MONTH')
   const [kind, setKind] = useState('MATERIAL')
@@ -138,7 +140,7 @@ export default function StockReportsPage() {
       dataIndex: 'closingBalance',
       width: 130,
       render: (v) => (
-        <Typography.Text strong style={{ color: '#16653a' }}>
+        <Typography.Text strong style={{ color: 'var(--status-approved-text)' }}>
           {quantity(v, kind === 'PRODUCT' ? 0 : 3)}
         </Typography.Text>
       ),
@@ -173,6 +175,8 @@ export default function StockReportsPage() {
     URL.revokeObjectURL(url)
     message.success('Đã tải xuống file báo cáo CSV thành công')
   }
+
+  if (reportQuery.isError) return <QueryError query={reportQuery} />
 
   return (
     <>
@@ -253,7 +257,7 @@ export default function StockReportsPage() {
           )}
 
           <Form.Item>
-            <Button
+            <Button disabled={reportQuery.isFetching}
               type="primary"
               htmlType="submit"
               icon={<BarChartOutlined />}
@@ -280,7 +284,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng nhập trong kỳ"
               value={quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#16653a' }}
+              styles={{ content: { color: 'var(--status-approved-text)' } }}
             />
           </Card>
         </Col>
@@ -289,7 +293,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng xuất trong kỳ"
               value={quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#dc2626' }}
+              styles={{ content: { color: 'var(--status-rejected-text)' } }}
             />
           </Card>
         </Col>
@@ -298,7 +302,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (+)"
               value={quantity(totals.adjIn, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#0891b2' }}
+              styles={{ content: { color: 'var(--status-progress-text)' } }}
             />
           </Card>
         </Col>
@@ -307,7 +311,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Điều chỉnh (-)"
               value={quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#c026d3' }}
+              styles={{ content: { color: 'var(--status-pending-text)' } }}
             />
           </Card>
         </Col>
@@ -316,7 +320,7 @@ export default function StockReportsPage() {
             <Statistic
               title="Tổng tồn cuối kỳ"
               value={quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
-              valueStyle={{ color: '#047857', fontWeight: 700 }}
+              styles={{ content: { color: 'var(--status-approved-text)', fontWeight: 700 } }}
             />
           </Card>
         </Col>
@@ -329,14 +333,14 @@ export default function StockReportsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataIndex="name" angle={-15} textAnchor="end" interval={0} height={50} />
+                <XAxis dataKey="name" angle={-15} textAnchor="end" interval={0} height={50} />
                 <YAxis />
                 <Tooltip />
                 <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="Tồn đầu" fill="#9ca3af" />
-                <Bar dataKey="Nhập kho" fill="#16a34a" />
-                <Bar dataKey="Xuất kho" fill="#ef4444" />
-                <Bar dataKey="Tồn cuối" fill="#0284c7" />
+                <Bar dataKey="Tồn đầu" fill="#94a3b8" />
+                <Bar dataKey="Nhập kho" fill="#166534" />
+                <Bar dataKey="Xuất kho" fill="#b91c1c" />
+                <Bar dataKey="Tồn cuối" fill="#1d4ed8" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -362,10 +366,10 @@ export default function StockReportsPage() {
               <Table.Summary.Cell index={1}>
                 {quantity(totals.opening, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={2} style={{ color: '#16653a' }}>
+              <Table.Summary.Cell index={2} style={{ color: 'var(--status-approved-text)' }}>
                 +{quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={3} style={{ color: '#dc2626' }}>
+              <Table.Summary.Cell index={3} style={{ color: 'var(--status-rejected-text)' }}>
                 -{quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
               <Table.Summary.Cell index={4}>
@@ -374,7 +378,7 @@ export default function StockReportsPage() {
               <Table.Summary.Cell index={5}>
                 {quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={6} style={{ color: '#047857', fontWeight: 700 }}>
+              <Table.Summary.Cell index={6} style={{ color: 'var(--status-approved-text)', fontWeight: 700 }}>
                 {quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
               </Table.Summary.Cell>
             </Table.Summary.Row>

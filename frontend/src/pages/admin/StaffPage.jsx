@@ -1,6 +1,7 @@
+import QueryError from '../../components/QueryError'
 import { useMemo, useState } from 'react'
-import { Alert, Button, Card, Input, Space, Table, Tag, Typography } from 'antd'
-import { PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons'
+import { Button, Card, Input, Space, Table, Tag, Typography } from 'antd'
+import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../api/client'
@@ -38,21 +39,23 @@ export default function StaffPage() {
       title: 'Vai trò trong hệ thống',
       key: 'role',
       width: 200,
-      render: () => <Tag color="green">Nhân viên sản xuất (STAFF)</Tag>,
+      render: () => <Tag className="erp-tag erp-tag-role">Nhân viên sản xuất (STAFF)</Tag>,
     },
     {
       title: 'Trạng thái hoạt động',
       key: 'status',
       width: 180,
-      render: () => <Tag color="success">Đang làm việc</Tag>,
+      render: () => <Tag className="erp-tag erp-tag-approved">Đang làm việc</Tag>,
     },
   ]
+
+  if (query.isError) return <QueryError query={query} />
 
   return (
     <>
       <PageHeader
-        title="Nhân viên (giao việc)"
-        subtitle="Danh sách nhân viên (STAFF) đang hoạt động dùng cho Quản lý kho phân công sản xuất"
+        title="Nhân viên sản xuất"
+        subtitle="Danh sách nhân viên xưởng đang hoạt động dùng cho phân công lệnh sản xuất"
         extra={(
           <Button
             type="primary"
@@ -64,8 +67,6 @@ export default function StaffPage() {
         )}
       />
 
-      
-
       <Card>
         <Space style={{ marginBottom: 16 }} wrap>
           <Input.Search
@@ -75,7 +76,7 @@ export default function StaffPage() {
             onSearch={setKeyword}
             onChange={(e) => !e.target.value && setKeyword('')}
           />
-          <Button
+          <Button disabled={query.isFetching}
             icon={<ReloadOutlined />}
             loading={query.isFetching}
             onClick={() => query.refetch()}

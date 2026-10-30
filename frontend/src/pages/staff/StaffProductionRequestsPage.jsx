@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Badge,
   Button,
   Descriptions,
   Divider,
@@ -75,7 +74,7 @@ export default function StaffProductionRequestsPage() {
       render: (_, r) => {
         const percent = Math.min(100, Math.round(((r.completedQuantity || 0) / (r.quantity || 1)) * 100))
         return (
-          <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={2} style={{ width: '100%' }}>
             <Progress percent={percent} size="small" status={r.status === 'COMPLETED' ? 'success' : 'active'} />
             <span style={{ fontSize: 12, color: '#6b7280' }}>
               Đã xong {r.completedQuantity || 0}/{r.quantity} {r.productUnit || ''}
@@ -88,7 +87,7 @@ export default function StaffProductionRequestsPage() {
       title: 'BOM',
       dataIndex: 'bomVersion',
       width: 80,
-      render: (v) => <Badge count={`v${v}`} style={{ backgroundColor: '#108ee9' }} />,
+      render: (v) => <Tag className="erp-tag erp-tag-neutral">v{v}</Tag>,
     },
     { title: 'Người giao (WM)', dataIndex: 'warehouseManagerName', width: 140 },
     { title: 'Trạng thái', dataIndex: 'status', sorter: true, width: 120, render: (v) => <DocStatusTag status={v} /> },
@@ -141,7 +140,7 @@ export default function StaffProductionRequestsPage() {
         subtitle="Danh sách các lệnh và yêu cầu sản xuất được Quản lý kho giao cho bạn"
       />
 
-      <PagedTable
+      <PagedTable query={prQuery}
         filters={(
           <Space wrap>
             <Select
@@ -300,7 +299,11 @@ export default function StaffProductionRequestsPage() {
                   width: 100,
                   render: (v) => {
                     const num = Number(v) || 0
-                    return num > 0 ? <Tag color="red">Thiếu: {quantity(num)}</Tag> : <Tag color="green">Đủ</Tag>
+                    return num > 0 ? (
+                      <span className="erp-tag erp-tag-rejected">Thiếu: {quantity(num)}</span>
+                    ) : (
+                      <span className="erp-tag erp-tag-approved">Đủ</span>
+                    )
                   },
                 },
               ]}
