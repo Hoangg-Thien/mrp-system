@@ -3,13 +3,10 @@ import { useMemo, useState } from 'react'
 import {
   Button,
   Card,
-  Col,
   Form,
   InputNumber,
   Radio,
-  Row,
   Select,
-  Statistic,
   Table,
   Typography,
   App,
@@ -29,17 +26,26 @@ import {
 import { api } from '../../api/client'
 import PageHeader from '../../components/PageHeader'
 import { quantity } from '../../utils/format'
+import { groupStockTotals, stockReportCsv, stockReportDigits, topStockItems } from '../../utils/stockReport'
 import { reportGranularityOptions } from '../../utils/statusMap'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
 const currentQuarter = Math.ceil(currentMonth / 3)
+const summaryMetrics = [
+  { field: 'openingBalance', title: 'Tồn đầu kỳ' },
+  { field: 'inQuantity', title: 'Nhập trong kỳ', color: 'var(--status-approved-text)' },
+  { field: 'outQuantity', title: 'Xuất trong kỳ', color: 'var(--status-rejected-text)' },
+  { field: 'adjustInQuantity', title: 'Điều chỉnh (+)', color: 'var(--status-progress-text)' },
+  { field: 'adjustOutQuantity', title: 'Điều chỉnh (-)', color: 'var(--status-pending-text)' },
+  { field: 'closingBalance', title: 'Tồn cuối kỳ', color: 'var(--status-approved-text)' },
+]
 
 export default function StockReportsPage() {
   const { message } = App.useApp()
   const [form] = Form.useForm()
   const [granularity, setGranularity] = useState('MONTH')
-  const [kind, setKind] = useState('MATERIAL')
+  const [chartUnit, setChartUnit] = useState()
 
   const [queryParams, setQueryParams] = useState({
     kind: 'MATERIAL',
@@ -50,8 +56,9 @@ export default function StockReportsPage() {
 
   const reportQuery = useQuery({
     queryKey: ['stock-report', queryParams],
-    queryFn: () => api.get('/api/reports/stock', queryParams),
+    queryFn: ({ signal }) => api.get('/api/reports/stock', queryParams, signal),
     enabled: !!queryParams,
+    staleTime: 0,
   })
 
   const handleSearch = (values) => {
@@ -61,47 +68,43 @@ export default function StockReportsPage() {
       year: values.year,
       ...(values.granularity !== 'YEAR' ? { period: values.period } : {}),
     }
+    if (params.kind === queryParams.kind && params.granularity === queryParams.granularity
+        && params.year === queryParams.year && params.period === queryParams.period) {
+      void reportQuery.refetch()
+      return
+    }
     setQueryParams(params)
   }
 
   const items = useMemo(() => reportQuery.data || [], [reportQuery.data])
+  const kind = queryParams.kind
+  const leadingColumnCount = kind === 'MATERIAL' ? 4 : 3
+  const digits = stockReportDigits(kind)
+  const unitTotals = useMemo(() => groupStockTotals(items, kind), [items, kind])
+  const selectedChartUnit = unitTotals.some((group) => group.unit === chartUnit)
+    ? chartUnit : unitTotals[0]?.unit
 
-  // Quick summary metrics
-  const totals = useMemo(() => {
-    return items.reduce(
-      (acc, item) => ({
-        opening: acc.opening + (Number(item.openingBalance) || 0),
-        inQty: acc.inQty + (Number(item.inQuantity) || 0),
-        outQty: acc.outQty + (Number(item.outQuantity) || 0),
-        adjIn: acc.adjIn + (Number(item.adjustInQuantity) || 0),
-        adjOut: acc.adjOut + (Number(item.adjustOutQuantity) || 0),
-        closing: acc.closing + (Number(item.closingBalance) || 0),
-      }),
-      { opening: 0, inQty: 0, outQty: 0, adjIn: 0, adjOut: 0, closing: 0 },
-    )
-  }, [items])
-
-  // Chart data: Top items by activity
   const chartData = useMemo(() => {
-    return items.slice(0, 10).map((item) => ({
+    return topStockItems(items, selectedChartUnit).map((item) => ({
       name: item.name?.length > 14 ? `${item.name.substring(0, 12)}...` : item.name,
+      fullName: item.name,
       'Tồn đầu': Number(item.openingBalance) || 0,
       'Nhập kho': Number(item.inQuantity) || 0,
       'Xuất kho': Number(item.outQuantity) || 0,
       'Tồn cuối': Number(item.closingBalance) || 0,
     }))
-  }, [items])
+  }, [items, selectedChartUnit])
 
   const columns = [
     { title: 'ID', dataIndex: 'id', width: 70 },
-    { title: 'Mã', dataIndex: 'code', width: 100, render: (v) => v || '—' },
+    ...(kind === 'MATERIAL' ? [{ title: 'Mã', dataIndex: 'code', width: 100, render: (v) => v || '—' }] : []),
     { title: 'Tên đối tượng', dataIndex: 'name' },
     { title: 'ĐVT', dataIndex: 'unit', width: 70 },
     {
       title: 'Tồn đầu kỳ',
       dataIndex: 'openingBalance',
       width: 120,
-      render: (v) => quantity(v, kind === 'PRODUCT' ? 0 : 3),
+      render: (v) => quantity(v, digits),
     },
     {
       title: 'Nhập trong kỳ',
@@ -109,7 +112,7 @@ export default function StockReportsPage() {
       width: 130,
       render: (v) => (
         <Typography.Text type={v > 0 ? 'success' : undefined} strong={v > 0}>
-          +{quantity(v, kind === 'PRODUCT' ? 0 : 3)}
+          +{quantity(v, digits)}
         </Typography.Text>
       ),
     },
@@ -119,7 +122,7 @@ export default function StockReportsPage() {
       width: 130,
       render: (v) => (
         <Typography.Text type={v > 0 ? 'danger' : undefined} strong={v > 0}>
-          -{quantity(v, kind === 'PRODUCT' ? 0 : 3)}
+          -{quantity(v, digits)}
         </Typography.Text>
       ),
     },
@@ -127,13 +130,13 @@ export default function StockReportsPage() {
       title: 'Đ/c tăng (+)',
       dataIndex: 'adjustInQuantity',
       width: 110,
-      render: (v) => quantity(v, kind === 'PRODUCT' ? 0 : 3),
+      render: (v) => quantity(v, digits),
     },
     {
       title: 'Đ/c giảm (-)',
       dataIndex: 'adjustOutQuantity',
       width: 110,
-      render: (v) => quantity(v, kind === 'PRODUCT' ? 0 : 3),
+      render: (v) => quantity(v, digits),
     },
     {
       title: 'Tồn cuối kỳ',
@@ -141,7 +144,7 @@ export default function StockReportsPage() {
       width: 130,
       render: (v) => (
         <Typography.Text strong style={{ color: 'var(--status-approved-text)' }}>
-          {quantity(v, kind === 'PRODUCT' ? 0 : 3)}
+          {quantity(v, digits)}
         </Typography.Text>
       ),
     },
@@ -152,20 +155,7 @@ export default function StockReportsPage() {
       message.info('Không có dữ liệu để xuất file')
       return
     }
-    const headers = ['ID', 'Ma', 'Ten', 'DVT', 'Ton_dau_ky', 'Nhap_trong_ky', 'Xuat_trong_ky', 'Dieu_chinh_tang', 'Dieu_chinh_giam', 'Ton_cuoi_ky']
-    const rows = items.map((it) => [
-      it.id,
-      `"${it.code || ''}"`,
-      `"${it.name || ''}"`,
-      `"${it.unit || ''}"`,
-      it.openingBalance ?? 0,
-      it.inQuantity ?? 0,
-      it.outQuantity ?? 0,
-      it.adjustInQuantity ?? 0,
-      it.adjustOutQuantity ?? 0,
-      it.closingBalance ?? 0,
-    ])
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+    const csvContent = stockReportCsv(items, kind)
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -176,8 +166,6 @@ export default function StockReportsPage() {
     message.success('Đã tải xuống file báo cáo CSV thành công')
   }
 
-  if (reportQuery.isError) return <QueryError query={reportQuery} />
-
   return (
     <>
       <PageHeader
@@ -187,7 +175,7 @@ export default function StockReportsPage() {
           <Button
             icon={<DownloadOutlined />}
             onClick={handleExportCsv}
-            disabled={!items.length}
+            disabled={reportQuery.isError || reportQuery.isFetching || !items.length}
           >
             Xuất file CSV
           </Button>
@@ -195,7 +183,7 @@ export default function StockReportsPage() {
       />
 
       {/* Bộ lọc kỳ báo cáo */}
-      <Card style={{ marginBottom: 20 }}>
+      <Card className="stock-report-filters" style={{ marginBottom: 14 }}>
         <Form
           form={form}
           layout="inline"
@@ -208,7 +196,7 @@ export default function StockReportsPage() {
           onFinish={handleSearch}
         >
           <Form.Item name="kind" label="Đối tượng">
-            <Radio.Group onChange={(e) => setKind(e.target.value)}>
+            <Radio.Group>
               <Radio.Button value="MATERIAL">Nguyên vật liệu</Radio.Button>
               <Radio.Button value="PRODUCT">Thành phẩm</Radio.Button>
             </Radio.Group>
@@ -269,78 +257,69 @@ export default function StockReportsPage() {
         </Form>
       </Card>
 
-      {/* Thẻ tóm tắt số liệu */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Tổng tồn đầu kỳ"
-              value={quantity(totals.opening, kind === 'PRODUCT' ? 0 : 2)}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Tổng nhập trong kỳ"
-              value={quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
-              styles={{ content: { color: 'var(--status-approved-text)' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Tổng xuất trong kỳ"
-              value={quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
-              styles={{ content: { color: 'var(--status-rejected-text)' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Điều chỉnh (+)"
-              value={quantity(totals.adjIn, kind === 'PRODUCT' ? 0 : 2)}
-              styles={{ content: { color: 'var(--status-progress-text)' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Điều chỉnh (-)"
-              value={quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
-              styles={{ content: { color: 'var(--status-pending-text)' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} lg={4}>
-          <Card size="small">
-            <Statistic
-              title="Tổng tồn cuối kỳ"
-              value={quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
-              styles={{ content: { color: 'var(--status-approved-text)', fontWeight: 700 } }}
-            />
-          </Card>
-        </Col>
-      </Row>
+      {reportQuery.isError ? <QueryError query={reportQuery} /> : <>
+      {unitTotals.length > 0 && (
+        <Card size="small" title="Tổng số lượng theo đơn vị" className="stock-report-summary">
+          <div className="stock-report-summary-scroll" role="region" aria-label="Tổng số lượng theo đơn vị" tabIndex={0}>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Đơn vị</th>
+                  {summaryMetrics.map((metric) => <th scope="col" key={metric.field}>{metric.title}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {unitTotals.map((group) => (
+                  <tr key={group.unit}>
+                    <th scope="row">{group.unit}</th>
+                    {summaryMetrics.map((metric) => (
+                      <td key={metric.field} data-field={metric.field} style={{ color: metric.color }}>
+                        {quantity(group[metric.field], digits)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {/* Biểu đồ so sánh trực quan */}
       {chartData.length > 0 && (
-        <Card title="Biểu đồ so sánh Tồn đầu, Nhập, Xuất, Tồn cuối (Top 10 mặt hàng)" style={{ marginBottom: 20 }}>
-          <div style={{ width: '100%', height: 320 }}>
+        <Card
+          size="small"
+          className="stock-report-chart"
+          title={`Top 10 theo tồn cuối kỳ (${selectedChartUnit})`}
+          extra={
+            <div className="stock-report-chart-control">
+              <label htmlFor="stock-chart-unit">Đơn vị biểu đồ</label>
+              <Select
+                id="stock-chart-unit"
+                size="small"
+                style={{ minWidth: 90 }}
+                value={selectedChartUnit}
+                onChange={setChartUnit}
+                options={unitTotals.map((group) => ({ value: group.unit, label: group.unit }))}
+              />
+            </div>
+          }
+        >
+          <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
+              <BarChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-15} textAnchor="end" interval={0} height={50} />
-                <YAxis />
-                <Tooltip />
-                <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="Tồn đầu" fill="#94a3b8" />
-                <Bar dataKey="Nhập kho" fill="#166534" />
-                <Bar dataKey="Xuất kho" fill="#b91c1c" />
-                <Bar dataKey="Tồn cuối" fill="#1d4ed8" />
+                <XAxis dataKey="name" angle={-15} textAnchor="end" interval="preserveStartEnd" minTickGap={8} height={50} tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={kind !== 'PRODUCT'} tick={{ fontSize: 12 }} tickFormatter={(value) => quantity(value, digits)} />
+                <Tooltip
+                  labelFormatter={(label, payload) => payload?.[0]?.payload.fullName || label}
+                  formatter={(value) => `${quantity(value, digits)} ${selectedChartUnit}`}
+                />
+                <Legend verticalAlign="top" height={48} wrapperStyle={{ fontSize: 12, lineHeight: '18px' }} />
+                <Bar dataKey="Tồn đầu" fill="#94a3b8" isAnimationActive={false} />
+                <Bar dataKey="Nhập kho" fill="#166534" isAnimationActive={false} />
+                <Bar dataKey="Xuất kho" fill="#b91c1c" isAnimationActive={false} />
+                <Bar dataKey="Tồn cuối" fill="#1d4ed8" isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -348,43 +327,44 @@ export default function StockReportsPage() {
       )}
 
       {/* Bảng dữ liệu chi tiết */}
-      <Card title={`Bảng số liệu chi tiết – ${kind === 'MATERIAL' ? 'Nguyên vật liệu' : 'Thành phẩm'}`}>
+      <Card className="stock-report-detail" title={`Bảng số liệu chi tiết – ${kind === 'MATERIAL' ? 'Nguyên vật liệu' : 'Thành phẩm'}`}>
         <Table
           size="middle"
           rowKey="id"
           loading={reportQuery.isFetching}
           dataSource={items}
           columns={columns}
-          pagination={{ pageSize: 20, showSizeChanger: true }}
+          pagination={{ defaultPageSize: 10, showSizeChanger: true }}
           locale={{ emptyText: 'Không có biến động nào trong kỳ được chọn' }}
           scroll={{ x: 'max-content' }}
-          summary={() => (
-            <Table.Summary.Row style={{ background: '#f9fafb', fontWeight: 600 }}>
-              <Table.Summary.Cell index={0} colSpan={4} style={{ textAlign: 'right' }}>
-                Tổng cộng toàn kho:
+          summary={() => unitTotals.map((group) => (
+            <Table.Summary.Row key={group.unit} style={{ background: '#f9fafb', fontWeight: 600 }}>
+              <Table.Summary.Cell index={0} colSpan={leadingColumnCount} style={{ textAlign: 'right' }}>
+                Tổng ({group.unit}):
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                {quantity(totals.opening, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount}>
+                {quantity(group.openingBalance, digits)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={2} style={{ color: 'var(--status-approved-text)' }}>
-                +{quantity(totals.inQty, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount + 1} style={{ color: 'var(--status-approved-text)' }}>
+                +{quantity(group.inQuantity, digits)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={3} style={{ color: 'var(--status-rejected-text)' }}>
-                -{quantity(totals.outQty, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount + 2} style={{ color: 'var(--status-rejected-text)' }}>
+                -{quantity(group.outQuantity, digits)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={4}>
-                {quantity(totals.adjIn, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount + 3}>
+                {quantity(group.adjustInQuantity, digits)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={5}>
-                {quantity(totals.adjOut, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount + 4}>
+                {quantity(group.adjustOutQuantity, digits)}
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={6} style={{ color: 'var(--status-approved-text)', fontWeight: 700 }}>
-                {quantity(totals.closing, kind === 'PRODUCT' ? 0 : 2)}
+              <Table.Summary.Cell index={leadingColumnCount + 5} style={{ color: 'var(--status-approved-text)', fontWeight: 700 }}>
+                {quantity(group.closingBalance, digits)}
               </Table.Summary.Cell>
             </Table.Summary.Row>
-          )}
+          ))}
         />
       </Card>
+      </>}
     </>
   )
 }

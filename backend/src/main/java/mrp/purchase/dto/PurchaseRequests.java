@@ -21,5 +21,5 @@ public final class PurchaseRequests {
 
     /** Body tạo / sửa phiếu nhập (sửa chỉ khi PENDING). {@code supplierId} phải tồn tại; {@code items} phải có ≥ 1 dòng. */
     public record PurchaseReceiptRequest(@NotNull @Positive Long supplierId,
-                                         @NotEmpty List<@Valid PurchaseReceiptItemRequest> items) { }
+                                         @NotEmpty List<@NotNull @Valid PurchaseReceiptItemRequest> items) { }
 }

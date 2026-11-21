@@ -102,7 +102,7 @@ class E2eFindingsIntegrationTest {
 
     @Test void fractionalFinishedGoodsAndProductionQuantitiesAreRejected() throws Exception {
         assertThat(mvc.perform(asStaff(post("/api/fg-issue-requests")).contentType("application/json")
-                .content("{\"items\":[{\"productId\":"+product+",\"quantity\":1.5}]}"))
+                .content("{\"note\":\"Regression customer order\",\"items\":[{\"productId\":"+product+",\"quantity\":1.5}]}"))
                 .andReturn().getResponse().getStatus()).isEqualTo(400);
         assertThat(mvc.perform(asStaff(post("/api/productions")).contentType("application/json")
                 .content("{\"productionRequestId\":"+request+",\"quantity\":1.5}"))

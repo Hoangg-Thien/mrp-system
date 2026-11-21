@@ -40,6 +40,7 @@ import mrp.user.repository.WarehouseManagerRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,6 +61,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -368,9 +373,93 @@ class ProductionServiceTest {
         assertTrue(ex.getMessage().contains("đã có phiếu xuất NVL được duyệt"));
     }
 
+    @Test
+    void cancellingProductionRequestCancelsItsPendingMaterialIssuesWithoutChangingStock() {
+        ProductionRequest pr = createPr(100L, 10L, 1L, 10, 2L, 5L, ProductionRequestStatus.PENDING);
+        MaterialIssueRequest first = createMir(10L, 100L, 5L, MaterialIssueRequestStatus.PENDING);
+        MaterialIssueRequest second = createMir(11L, 100L, 5L, MaterialIssueRequestStatus.PENDING);
+        second.setNote(null);
+        when(prRepo.findByIdForUpdate(100L)).thenReturn(Optional.of(pr));
+        when(prRepo.findById(100L)).thenReturn(Optional.of(pr));
+        when(mirRepo.findByProductionRequestIdAndStatusForUpdate(100L, MaterialIssueRequestStatus.PENDING))
+                .thenReturn(List.of(first, second));
+        when(mirRepo.findByProductionRequestId(100L)).thenReturn(List.of(first, second));
+
+        ProductionViews.ProductionRequestDetailView result = service.cancelProductionRequest(100L, new CurrentUser(1L, 2L, "wm01"));
+
+        assertEquals("CANCELLED", result.status());
+        assertTrue(result.issueRequests().stream().allMatch(issue -> issue.status().equals("CANCELLED")));
+        assertTrue(first.getNote().startsWith("note "));
+        assertTrue(first.getNote().contains("[TỰ ĐỘNG HỦY]"));
+        assertTrue(second.getNote().contains("#100"));
+        assertNull(first.getReviewedBy());
+        assertNull(first.getReviewedAt());
+        verify(mirRepo).saveAllAndFlush(List.of(first, second));
+        verify(stockLedger, never()).post(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ProductionRequestStatus.class, names = {"CANCELLED", "COMPLETED"})
+    void cannotApprovePendingMaterialIssueForClosedProductionRequest(ProductionRequestStatus status) {
+        when(mirRepo.findProductionRequestIdById(10L)).thenReturn(Optional.of(100L));
+        when(prRepo.findByIdForUpdate(100L)).thenReturn(Optional.of(createPr(100L, 10L, 1L, 10, 2L, 5L, status)));
+
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> service.approveMaterialIssueRequest(10L, new CurrentUser(1L, 2L, "wm01")));
+
+        assertTrue(error.getMessage().contains(status.name()));
+        verify(mirRepo, never()).saveAndFlush(any());
+        verify(stockLedger, never()).post(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
     // =========================================================================
     // MATERIAL ISSUE REQUEST TESTS (MRP-05, MRP-06, MRP-07, MRP-08)
     // =========================================================================
+
+    @ParameterizedTest
+    @EnumSource(value = MaterialIssueRequestStatus.class, names = {"APPROVED", "REJECTED", "CANCELLED"})
+    void closedMaterialIssueDoesNotWarnAgainstCurrentStock(MaterialIssueRequestStatus status) {
+        MaterialIssueRequest mir = createMir(10L, 100L, 5L, status);
+        when(mirRepo.findById(10L)).thenReturn(Optional.of(mir));
+        when(mirItemRepo.findByRequestId(10L)).thenReturn(List.of(
+                new MaterialIssueRequestItem(10L, 101L, new BigDecimal("2000.000"))));
+        when(stockLedger.materialBalance(101L)).thenReturn(new BigDecimal("30.000"));
+
+        var detail = service.detailMaterialIssueRequest(10L, new CurrentUser(50L, 5L, "staff01"));
+
+        assertEquals(status.name(), detail.status());
+        assertFalse(detail.hasStockShortage());
+        assertNull(detail.warning());
+        assertEquals(new BigDecimal("2000.000"), detail.items().get(0).quantity());
+        assertEquals(new BigDecimal("30.000"), detail.items().get(0).currentStock());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, true", "9.999, true", "10, false", "20, false"})
+    void pendingMaterialIssueStillWarnsOnlyWhenStockIsInsufficient(String stock, boolean expected) {
+        when(mirRepo.findById(10L)).thenReturn(Optional.of(createMir(10L, 100L, 5L, MaterialIssueRequestStatus.PENDING)));
+        when(mirItemRepo.findByRequestId(10L)).thenReturn(List.of(
+                new MaterialIssueRequestItem(10L, 101L, new BigDecimal("10.000"))));
+        when(stockLedger.materialBalance(101L)).thenReturn(new BigDecimal(stock));
+
+        var detail = service.detailMaterialIssueRequest(10L, new CurrentUser(50L, 5L, "staff01"));
+
+        assertEquals(expected, detail.hasStockShortage());
+        if (expected) assertNotNull(detail.warning());
+        else assertNull(detail.warning());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"5, 6", "99, 6", "5, "})
+    void staffCannotReadAnotherOrUnassignedRequest(Long managerId, Long assignedId) {
+        ProductionRequest pr = createPr(100L, 10L, 1L, 10, managerId, assignedId, ProductionRequestStatus.PENDING);
+        when(prRepo.findById(100L)).thenReturn(Optional.of(pr));
+        when(userRepo.findById(50L)).thenReturn(Optional.of(new User("staff01", "unused", UserRole.STAFF)));
+        CurrentUser actor = new CurrentUser(50L, 5L, "staff01");
+
+        assertThrows(ResourceNotFoundException.class, () -> service.detailProductionRequest(100L, actor));
+        assertThrows(ResourceNotFoundException.class, () -> service.getRequirements(100L, actor));
+    }
 
     @Test
     void mrp05_createMaterialIssueRequestSucceedsWithinBom() {
@@ -424,16 +513,19 @@ class ProductionServiceTest {
         assertTrue(ex.getMessage().contains("vượt định mức BOM"));
     }
 
-    @Test
-    void mrp06_approveMaterialIssueRequestSufficientStock() {
+    @ParameterizedTest
+    @EnumSource(value = ProductionRequestStatus.class, names = {"PENDING", "IN_PROGRESS"})
+    void mrp06_approveMaterialIssueRequestSufficientStock(ProductionRequestStatus status) {
         Long mirId = 10L;
         MaterialIssueRequest mir = createMir(mirId, 100L, 5L, MaterialIssueRequestStatus.PENDING);
+        when(mirRepo.findProductionRequestIdById(mirId)).thenReturn(Optional.of(100L));
+        when(prRepo.findByIdForUpdate(100L)).thenReturn(Optional.of(createPr(100L, 10L, 1L, 10, 2L, 5L, status)));
         when(mirRepo.findByIdForUpdate(mirId)).thenReturn(Optional.of(mir));
 
         MaterialIssueRequestItem item = new MaterialIssueRequestItem(mirId, 101L, new BigDecimal("10.000"));
         when(mirItemRepo.findByRequestId(mirId)).thenReturn(List.of(item));
 
-        when(stockLedger.materialBalance(101L)).thenReturn(new BigDecimal("15.000"));
+        when(stockLedger.materialBalance(101L)).thenReturn(new BigDecimal("15.000"), new BigDecimal("5.000"));
         when(mirRepo.findById(mirId)).thenReturn(Optional.of(mir));
 
         CurrentUser wmActor = new CurrentUser(1L, 2L, "wm01");
@@ -441,6 +533,14 @@ class ProductionServiceTest {
 
         assertEquals("APPROVED", mir.getStatus().name());
         assertEquals(2L, mir.getReviewedBy());
+        assertFalse(res.hasStockShortage());
+        assertNull(res.warning());
+        var reopened = service.detailMaterialIssueRequest(mirId, wmActor);
+        assertFalse(reopened.hasStockShortage());
+        assertNull(reopened.warning());
+        var order = inOrder(prRepo, mirRepo);
+        order.verify(prRepo).findByIdForUpdate(100L);
+        order.verify(mirRepo).findByIdForUpdate(mirId);
         verify(stockLedger).post(eq(MovementType.OUT), eq(101L), any(), eq(new BigDecimal("10.000")), any(), eq(mirId), any(), any(), eq(1L), any());
     }
 
@@ -448,6 +548,8 @@ class ProductionServiceTest {
     void mrp07_approveMaterialIssueRequestInsufficientStockThrows409() {
         Long mirId = 10L;
         MaterialIssueRequest mir = createMir(mirId, 100L, 5L, MaterialIssueRequestStatus.PENDING);
+        when(mirRepo.findProductionRequestIdById(mirId)).thenReturn(Optional.of(100L));
+        when(prRepo.findByIdForUpdate(100L)).thenReturn(Optional.of(createPr(100L, 10L, 1L, 10, 2L, 5L, ProductionRequestStatus.PENDING)));
         when(mirRepo.findByIdForUpdate(mirId)).thenReturn(Optional.of(mir));
 
         MaterialIssueRequestItem item = new MaterialIssueRequestItem(mirId, 101L, new BigDecimal("10.000"));
@@ -545,6 +647,8 @@ class ProductionServiceTest {
         CurrentUser actor = new CurrentUser(50L, staffId, "staff01");
         BusinessException ex = assertThrows(BusinessException.class, () -> service.completeProduction(prodId, actor));
         assertTrue(ex.getMessage().contains("NVL đã xuất kho chưa đủ"));
+        assertTrue(ex.getMessage().contains("cần 8, đã xuất 6, còn thiếu 2"));
+        assertFalse(ex.getMessage().contains(".000"));
     }
 
     @Test

@@ -28,11 +28,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
+import { useOpenProductionRequests } from '../../api/useOpenProductionRequests'
+import QueryError from '../../components/QueryError'
 import ConfirmButton from '../../components/ConfirmButton'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import { DocStatusTag } from '../../components/StatusTag'
-import { dateTime, quantity } from '../../utils/format'
+import { dateTime, numberInputFormatter, quantity } from '../../utils/format'
 import { issueStatusOptions } from '../../utils/statusMap'
 
 const PAGE_SIZE = 15
@@ -50,6 +52,19 @@ export default function StaffMaterialRequestsPage() {
   const [detailId, setDetailId] = useState(null)
   const [form] = Form.useForm()
 
+  const closeCreateModal = () => {
+    setCreateModalOpen(false)
+    setSelectedPrId(null)
+    form.resetFields()
+  }
+
+  const openCreateModal = () => {
+    form.resetFields()
+    setSelectedPrId(null)
+    form.setFieldsValue({ items: [{ materialId: undefined, quantity: 1 }] })
+    setCreateModalOpen(true)
+  }
+
   // Handle prefill from PR page
   useEffect(() => {
     if (location.state?.prefillPrId) {
@@ -63,11 +78,7 @@ export default function StaffMaterialRequestsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  // Assigned PRs for staff
-  const staffPrsQuery = useQuery({
-    queryKey: ['staff-prs-for-mir-select'],
-    queryFn: () => api.get('/api/production-requests', { size: 100 }),
-  })
+  const staffPrsQuery = useOpenProductionRequests()
 
   // Requirements of selected PR
   const prRequirementsQuery = useQuery({
@@ -91,9 +102,7 @@ export default function StaffMaterialRequestsPage() {
         message.success('Tạo phiếu đề nghị xuất NVL thành công')
       }
       queryClient.invalidateQueries({ queryKey: ['staff-mir-list'] })
-      form.resetFields()
-      setSelectedPrId(null)
-      setCreateModalOpen(false)
+      closeCreateModal()
     },
     onError: (err) => message.error(err.message || 'Lỗi tạo phiếu đề nghị xuất NVL'),
   })
@@ -168,7 +177,6 @@ export default function StaffMaterialRequestsPage() {
   }
 
   const activePrOptions = staffPrsQuery.data?.content
-    ?.filter((pr) => pr.status === 'PENDING' || pr.status === 'IN_PROGRESS')
     ?.map((pr) => ({
       value: pr.id,
       label: `PR #${pr.id} – ${pr.productName} (giao ${pr.quantity} ${pr.productUnit || ''})`,
@@ -176,6 +184,7 @@ export default function StaffMaterialRequestsPage() {
 
   return (
     <>
+      <QueryError query={staffPrsQuery} />
       <PageHeader
         title="Phiếu đề nghị xuất nguyên vật liệu"
         subtitle="Lập phiếu xin xuất NVL từ kho để phục vụ các yêu cầu sản xuất được giao"
@@ -183,10 +192,7 @@ export default function StaffMaterialRequestsPage() {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => {
-              form.setFieldsValue({ items: [{ materialId: undefined, quantity: 1 }] })
-              setCreateModalOpen(true)
-            }}
+            onClick={openCreateModal}
           >
             Lập đề nghị xuất NVL mới
           </Button>
@@ -233,10 +239,7 @@ export default function StaffMaterialRequestsPage() {
         title="Lập phiếu đề nghị xuất nguyên vật liệu"
         open={createModalOpen}
         width={760}
-        onCancel={() => {
-          setCreateModalOpen(false)
-          setSelectedPrId(null)
-        }}
+        onCancel={closeCreateModal}
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
         destroyOnHidden
@@ -254,6 +257,7 @@ export default function StaffMaterialRequestsPage() {
               placeholder="Chọn yêu cầu sản xuất cần xuất NVL"
               optionFilterProp="label"
               options={activePrOptions}
+              loading={staffPrsQuery.isFetching}
               onChange={(prId) => {
                 setSelectedPrId(prId)
                 form.setFieldValue('items', [{ materialId: undefined, quantity: 1 }])
@@ -331,7 +335,7 @@ export default function StaffMaterialRequestsPage() {
                           { type: 'number', min: 0.001, message: '> 0' },
                         ]}
                       >
-                        <InputNumber min={0.001} step={0.1} precision={3} style={{ width: 160 }} />
+                        <InputNumber min={0.001} step={0.1} precision={3} formatter={numberInputFormatter} style={{ width: 160 }} />
                       </Form.Item>
 
                       <Button
@@ -414,7 +418,7 @@ export default function StaffMaterialRequestsPage() {
               </Descriptions.Item>
             </Descriptions>
 
-            {detailQuery.data.hasStockShortage && (
+            {detailQuery.data.status === 'PENDING' && detailQuery.data.hasStockShortage && (
               <Alert
                 type="warning"
                 showIcon

@@ -24,6 +24,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
+import { useOpenProductionRequests } from '../../api/useOpenProductionRequests'
+import QueryError from '../../components/QueryError'
 import ConfirmButton from '../../components/ConfirmButton'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
@@ -58,10 +60,7 @@ export default function StaffProductionsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const staffPrsQuery = useQuery({
-    queryKey: ['staff-prs-for-prod-select'],
-    queryFn: () => api.get('/api/production-requests', { size: 100 }),
-  })
+  const staffPrsQuery = useOpenProductionRequests()
 
   const detailQuery = useQuery({
     queryKey: ['staff-prod-detail', detailId],
@@ -173,7 +172,6 @@ export default function StaffProductionsPage() {
   }
 
   const activePrOptions = staffPrsQuery.data?.content
-    ?.filter((pr) => pr.status === 'PENDING' || pr.status === 'IN_PROGRESS')
     ?.map((pr) => {
       const remaining = (pr.quantity || 0) - (pr.completedQuantity || 0)
       return {
@@ -184,6 +182,7 @@ export default function StaffProductionsPage() {
 
   return (
     <>
+      <QueryError query={staffPrsQuery} />
       <PageHeader
         title="Thực hiện sản xuất (Productions)"
         subtitle="Quản lý các đợt sản xuất thực tế, báo cáo hoàn tất và nhập kho thành phẩm"
@@ -258,6 +257,7 @@ export default function StaffProductionsPage() {
               placeholder="Chọn yêu cầu sản xuất"
               optionFilterProp="label"
               options={activePrOptions}
+              loading={staffPrsQuery.isFetching}
             />
           </Form.Item>
 

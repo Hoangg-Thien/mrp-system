@@ -27,11 +27,11 @@ npm run dev
 
 ### Tài khoản đăng nhập
 
-| Vai trò | Tên đăng nhập | Mật khẩu mặc định | Khu vực giao diện |
-|---|---|---|---|
-| **ADMIN** | `admin` | `change_me_please` | `/admin/*` |
-| **WAREHOUSE_MANAGER** | `wm01` | `Password@123` | `/warehouse/*` |
-| **STAFF** | `haha123` | `haha123@` | `/staff/*` |
+| Vai trò | Khu vực giao diện |
+|---|---|
+| **ADMIN** | `/admin/*` |
+| **WAREHOUSE_MANAGER** | `/warehouse/*` |
+| **STAFF** | `/staff/*` |
 
 - Admin ban đầu được tạo tự động bởi `BootstrapAdminRunner` từ cấu hình `.env` khi bảng `users` rỗng.
 - Tài khoản `WAREHOUSE_MANAGER` và `STAFF` được Admin tạo trực tiếp tại giao diện `/admin/users`.

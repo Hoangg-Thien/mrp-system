@@ -34,7 +34,7 @@ public class ProductionRequests {
 
         @NotEmpty(message = "Danh sách nguyên vật liệu không được để trống")
         @Valid
-        List<IssueItemRequest> items,
+        List<@NotNull(message = "Dòng nguyên vật liệu không được để trống") IssueItemRequest> items,
 
         String note
     ) { }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 class AdminFunctionsIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired JdbcTemplate jdbc;
 
     JsonNode request(MockHttpServletRequestBuilder builder, int expected) throws Exception {
         var response = mvc.perform(builder).andReturn().getResponse();
@@ -103,6 +105,22 @@ class AdminFunctionsIntegrationTest {
         request(body(post("/api/suppliers"), catalogBody("suppliers", name, 0)), 200);
         assertEquals(1, request(get("/api/suppliers").param("name", name).param("phone", "090123").param("email", "qa@example.com"), 200).get("totalElements").asInt());
         assertEquals(0, request(get("/api/suppliers").param("name", name).param("phone", "99999999"), 200).get("totalElements").asInt());
+    }
+
+    @Test void invalidAccountPaginationAndDirectionAreBadRequests() throws Exception {
+        request(get("/api/admin/users").param("page", "-1"), 400);
+        request(get("/api/admin/users").param("direction", "invalid"), 400);
+    }
+
+    @Test void usedProductUnitCannotBeChanged() throws Exception {
+        long parent = category(unique());
+        String name = unique();
+        long productId = request(body(post("/api/products"), catalogBody("products", name, parent)), 200).get("id").asLong();
+        jdbc.update("insert into boms(product_id, version, is_active, created_at) values (?, 1, true, CURRENT_TIMESTAMP)", productId);
+        var changed = Map.of("name", name, "categoryId", parent, "unit", "box", "sellingPrice", 100);
+        request(body(put("/api/products/" + productId), changed), 409);
+        assertEquals("piece", request(get("/api/products/" + productId), 200).get("unit").asText());
+        request(body(put("/api/products/" + productId), catalogBody("products", name + "edit", parent)), 200);
     }
 
     @ParameterizedTest

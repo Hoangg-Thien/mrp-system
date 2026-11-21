@@ -261,7 +261,7 @@ export default function MaterialIssuesPage() {
               </Descriptions.Item>
             </Descriptions>
 
-            {detailQuery.data.hasStockShortage && (
+            {detailQuery.data.status === 'PENDING' && detailQuery.data.hasStockShortage && (
               <Alert
                 type="warning"
                 showIcon
@@ -271,7 +271,9 @@ export default function MaterialIssuesPage() {
               />
             )}
 
-            <Divider style={{ margin: '16px 0 12px' }}>Danh sách nguyên vật liệu xin xuất</Divider>
+            <Divider style={{ margin: '16px 0 12px' }}>
+              {detailQuery.data.status === 'APPROVED' ? 'Nguyên vật liệu đã xuất' : 'Danh sách nguyên vật liệu xin xuất'}
+            </Divider>
 
             <Table
               size="small"
@@ -283,19 +285,21 @@ export default function MaterialIssuesPage() {
                 { title: 'Tên nguyên vật liệu', dataIndex: 'materialName' },
                 { title: 'ĐVT', dataIndex: 'unit', width: 70 },
                 {
-                  title: 'Số lượng xin xuất',
+                  title: detailQuery.data.status === 'APPROVED' ? 'Số lượng đã xuất' : 'Số lượng xin xuất',
                   dataIndex: 'quantity',
                   width: 130,
                   render: (v) => <Typography.Text strong>{quantity(v)}</Typography.Text>,
                 },
                 {
                   title: 'Tồn kho hiện tại',
+                  hidden: detailQuery.data.status !== 'PENDING',
                   dataIndex: 'currentStock',
                   width: 130,
                   render: (v) => quantity(v),
                 },
                 {
                   title: 'Khả năng đáp ứng',
+                  hidden: detailQuery.data.status !== 'PENDING',
                   key: 'check',
                   width: 140,
                   render: (_, r) => {

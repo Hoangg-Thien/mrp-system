@@ -272,8 +272,8 @@ export default function FgIssuesPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                title="Cảnh báo thiếu tồn kho thành phẩm"
-                description={detailQuery.data.warning || 'Có sản phẩm trong phiếu có số lượng yêu cầu vượt quá tồn kho thực tế! Khi duyệt hệ thống sẽ báo lỗi và chặn trừ kho.'}
+                title="Cảnh báo thiếu thành phẩm khả dụng"
+                description={detailQuery.data.warning || 'Nhu cầu của phiếu và các phiếu đang chờ duyệt khác vượt tồn kho thành phẩm hiện tại.'}
               />
             )}
 

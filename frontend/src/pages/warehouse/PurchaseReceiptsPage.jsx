@@ -35,7 +35,7 @@ import ConfirmButton from '../../components/ConfirmButton'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import { DocStatusTag } from '../../components/StatusTag'
-import { dateTime, money, quantity } from '../../utils/format'
+import { dateTime, money, numberInputFormatter, quantity } from '../../utils/format'
 import { purchaseStatusOptions } from '../../utils/statusMap'
 
 const PAGE_SIZE = 15
@@ -73,9 +73,10 @@ export default function PurchaseReceiptsPage() {
     { ...filters, ...sort, page, size: PAGE_SIZE },
   )
 
-  const suppliersQuery = useQuery({
+  const suppliersQuery = useAllPages({
     queryKey: ['suppliers-all'],
-    queryFn: () => api.get('/api/suppliers', { size: 100 }),
+    path: '/api/suppliers',
+    params: { sort: 'id', direction: 'asc' },
   })
 
   const materialsQuery = useAllPages({
@@ -83,6 +84,11 @@ export default function PurchaseReceiptsPage() {
     path: '/api/materials',
     params: { active: true },
   })
+
+  const fillStandardCost = (targetForm, rowIndex, materialId) => {
+    const material = materialsQuery.data?.content?.find((item) => item.id === materialId)
+    targetForm.setFieldValue(['items', rowIndex, 'unitPrice'], material ? Number(material.standardCost) : undefined)
+  }
 
   const detailQuery = useQuery({
     queryKey: ['purchase-receipt-detail', detailId],
@@ -229,6 +235,7 @@ export default function PurchaseReceiptsPage() {
   return (
     <>
       <QueryError query={materialsQuery} />
+      <QueryError query={suppliersQuery} />
       <PageHeader
         title="Phiếu nhập kho nguyên vật liệu"
         subtitle="Quản lý và hoàn tất nhập kho từ nhà cung cấp"
@@ -237,7 +244,8 @@ export default function PurchaseReceiptsPage() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
-              form.setFieldsValue({ items: [{ materialId: undefined, quantity: 1, unitPrice: 0 }] })
+              form.resetFields()
+              form.setFieldsValue({ items: [{ materialId: undefined, quantity: undefined, unitPrice: undefined }] })
               setCreateModalOpen(true)
             }}
           >
@@ -256,6 +264,7 @@ export default function PurchaseReceiptsPage() {
               style={{ width: 220 }}
               placeholder="Chọn nhà cung cấp"
               options={suppliersQuery.data?.content?.map((s) => ({ value: s.id, label: s.name })) || []}
+              loading={suppliersQuery.isFetching}
               value={filters.supplierId}
               onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, supplierId: v })) }}
             />
@@ -326,6 +335,7 @@ export default function PurchaseReceiptsPage() {
               optionFilterProp="label"
               placeholder="Chọn nhà cung cấp"
               options={suppliersQuery.data?.content?.map((s) => ({ value: s.id, label: `${s.name} (${s.phone || 'Không SĐT'})` })) || []}
+              loading={suppliersQuery.isFetching}
             />
           </Form.Item>
 
@@ -368,6 +378,7 @@ export default function PurchaseReceiptsPage() {
                           showSearch
                           placeholder="Chọn NVL"
                           optionFilterProp="label"
+                          onChange={(materialId) => fillStandardCost(form, name, materialId)}
                           options={materialsQuery.data?.content?.map((m) => ({
                             value: m.id,
                             label: `[${m.code}] ${m.name} (${m.unit})`,
@@ -384,19 +395,20 @@ export default function PurchaseReceiptsPage() {
                           { type: 'number', min: 0.001, message: '> 0' },
                         ]}
                       >
-                        <InputNumber min={0.001} step={0.01} precision={3} placeholder="SL" style={{ width: 120 }} />
+                        <InputNumber min={0.001} step={0.01} precision={3} formatter={numberInputFormatter} placeholder="SL" style={{ width: 120 }} />
                       </Form.Item>
 
                       <Form.Item
                         {...restField}
                         name={[name, 'unitPrice']}
                         label="Đơn giá (VNĐ)"
+                        tooltip="Tự điền theo giá tiêu chuẩn; có thể sửa theo giá mua thực tế"
                         rules={[
                           { required: true, message: 'Nhập đơn giá' },
                           { type: 'number', min: 0, message: '≥ 0' },
                         ]}
                       >
-                        <InputNumber min={0} step={1000} precision={2} placeholder="Đơn giá" style={{ width: 140 }} />
+                        <InputNumber min={0} step={1000} precision={2} formatter={numberInputFormatter} placeholder="Đơn giá" style={{ width: 140 }} />
                       </Form.Item>
 
                       <Button
@@ -414,7 +426,7 @@ export default function PurchaseReceiptsPage() {
 
                 <Button
                   type="dashed"
-                  onClick={() => add({ materialId: undefined, quantity: 1, unitPrice: 0 })}
+                  onClick={() => add({ materialId: undefined, quantity: undefined, unitPrice: undefined })}
                   block
                   icon={<PlusOutlined />}
                 >
@@ -448,6 +460,7 @@ export default function PurchaseReceiptsPage() {
               showSearch
               optionFilterProp="label"
               options={suppliersQuery.data?.content?.map((s) => ({ value: s.id, label: s.name })) || []}
+              loading={suppliersQuery.isFetching}
             />
           </Form.Item>
 
@@ -490,6 +503,7 @@ export default function PurchaseReceiptsPage() {
                           showSearch
                           placeholder="Chọn NVL"
                           optionFilterProp="label"
+                          onChange={(materialId) => fillStandardCost(editForm, name, materialId)}
                           options={materialsQuery.data?.content?.map((m) => ({
                             value: m.id,
                             label: `[${m.code}] ${m.name} (${m.unit})`,
@@ -506,19 +520,20 @@ export default function PurchaseReceiptsPage() {
                           { type: 'number', min: 0.001, message: '> 0' },
                         ]}
                       >
-                        <InputNumber min={0.001} step={0.01} precision={3} style={{ width: 120 }} />
+                        <InputNumber min={0.001} step={0.01} precision={3} formatter={numberInputFormatter} style={{ width: 120 }} />
                       </Form.Item>
 
                       <Form.Item
                         {...restField}
                         name={[name, 'unitPrice']}
                         label="Đơn giá (VNĐ)"
+                        tooltip="Tự điền theo giá tiêu chuẩn; có thể sửa theo giá mua thực tế"
                         rules={[
                           { required: true, message: 'Nhập đơn giá' },
                           { type: 'number', min: 0, message: '≥ 0' },
                         ]}
                       >
-                        <InputNumber min={0} step={1000} precision={2} style={{ width: 140 }} />
+                        <InputNumber min={0} step={1000} precision={2} formatter={numberInputFormatter} style={{ width: 140 }} />
                       </Form.Item>
 
                       <Button
@@ -536,7 +551,7 @@ export default function PurchaseReceiptsPage() {
 
                 <Button
                   type="dashed"
-                  onClick={() => add({ materialId: undefined, quantity: 1, unitPrice: 0 })}
+                  onClick={() => add({ materialId: undefined, quantity: undefined, unitPrice: undefined })}
                   block
                   icon={<PlusOutlined />}
                 >

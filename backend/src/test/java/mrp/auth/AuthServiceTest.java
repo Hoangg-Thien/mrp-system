@@ -64,6 +64,18 @@ class AuthServiceTest {
     }
 
     @Test
+    void lockedAccountWithCorrectPasswordGetsLockedMessage() {
+        User user = new User("admin", encoder.encode("Password@123"), UserRole.ADMIN);
+        user.setActive(false);
+        when(users.findByUsername("admin")).thenReturn(java.util.Optional.of(user));
+
+        InvalidCredentialsException error = assertThrows(InvalidCredentialsException.class,
+                () -> service.login(new LoginRequest("admin", "Password@123")));
+
+        assertEquals("Tài khoản đã bị khóa", error.getMessage());
+    }
+
+    @Test
     void auth03_wrongPasswordUsesGenericUnauthorizedError() {
         User user = new User("admin", encoder.encode("Password@123"), UserRole.ADMIN);
         when(users.findByUsername("admin")).thenReturn(java.util.Optional.of(user));

@@ -12,6 +12,7 @@ dist/
 .env
 .env*.local
 !.env.example
+README_TAI_KHOAN.local.md
 
 ### STS ###
 .apt_generated
@@ -45,5 +46,8 @@ build/
 .DS_Store
 Thumbs.db
 *.log
-.gemini/
 .agents/
+.gemini/
+
+# Local QA output
+/docs/warehouse-staff-ui-fix-evidence/

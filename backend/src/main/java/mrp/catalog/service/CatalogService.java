@@ -83,7 +83,15 @@ public class CatalogService {
     @Transactional public Supplier createSupplier(SupplierRequest r) { Supplier s=new Supplier(); s.update(r); return suppliers.saveAndFlush(s); }
     @Transactional public Supplier updateSupplier(Long id, SupplierRequest r) { Supplier s=supplier(id); s.update(r); return suppliers.saveAndFlush(s); }
     @Transactional public Product createProduct(ProductRequest r) { category(r.categoryId()); Product p=new Product(); p.update(r); return products.saveAndFlush(p); }
-    @Transactional public Product updateProduct(Long id, ProductRequest r) { Product p=product(id); category(r.categoryId()); p.update(r); return products.saveAndFlush(p); }
+    @Transactional public Product updateProduct(Long id, ProductRequest r) {
+        Product p = products.findByIdForUpdate(id).orElseThrow(() -> missing("sản phẩm"));
+        if (!p.getUnit().equals(r.unit().trim()) && references.product(id)) {
+            throw new BusinessException("Không thể đổi đơn vị thành phẩm đã có BOM hoặc phát sinh chứng từ, tồn kho");
+        }
+        category(r.categoryId());
+        p.update(r);
+        return products.saveAndFlush(p);
+    }
     @Transactional public Material createMaterial(MaterialRequest r) { return saveMaterial(new Material(), r); }
     @Transactional public Material updateMaterial(Long id, MaterialRequest r) {
         Material m=materials.findByIdForUpdate(id).orElseThrow(() -> missing("nguyên vật liệu"));

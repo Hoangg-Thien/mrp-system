@@ -70,7 +70,7 @@ export default function StaffFgRequestsPage() {
     mutationFn: (body) => api.post('/api/fg-issue-requests', body),
     onSuccess: (data) => {
       if (data.hasStockShortage) {
-        message.warning(`Đã tạo phiếu #${data.id} (lưu ý: tồn kho thành phẩm hiện tại chưa đủ cho một số mặt hàng)`)
+        message.warning(`Đã tạo phiếu #${data.id} (lưu ý: nhu cầu vượt tồn kho khả dụng sau khi tính các phiếu đang chờ duyệt)`)
       } else {
         message.success('Tạo phiếu đề nghị xuất bán thành phẩm thành công')
       }
@@ -160,6 +160,7 @@ export default function StaffFgRequestsPage() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
+              form.resetFields()
               form.setFieldsValue({ items: [{ productId: undefined, quantity: 1 }] })
               setCreateModalOpen(true)
             }}
@@ -298,7 +299,12 @@ export default function StaffFgRequestsPage() {
           <Form.Item
             name="note"
             label="Thông tin khách hàng / Mã đơn hàng / Ghi chú"
-            rules={[{ required: true, message: 'Vui lòng nhập thông tin khách hàng hoặc đơn hàng' }]}
+            rules={[{
+              required: true,
+              whitespace: true,
+              transform: (value) => value?.trim(),
+              message: 'Vui lòng nhập thông tin khách hàng hoặc đơn hàng',
+            }]}
             style={{ marginTop: 16 }}
           >
             <Input.TextArea
@@ -358,8 +364,8 @@ export default function StaffFgRequestsPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
-                title="Cảnh báo tồn kho"
-                description={detailQuery.data.warning || 'Kho hiện tại không đủ tồn cho một số sản phẩm trong phiếu.'}
+                title="Cảnh báo thiếu thành phẩm khả dụng"
+                description={detailQuery.data.warning || 'Nhu cầu của phiếu và các phiếu đang chờ duyệt khác vượt tồn kho thành phẩm hiện tại.'}
               />
             )}
 

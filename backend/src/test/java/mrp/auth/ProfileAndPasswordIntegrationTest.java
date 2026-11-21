@@ -11,6 +11,7 @@ import mrp.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 @SpringBootTest(properties = {"debug=false", "logging.level.root=WARN", "logging.level.org.hibernate.SQL=WARN"})
 @AutoConfigureMockMvc
@@ -60,6 +62,33 @@ class ProfileAndPasswordIntegrationTest {
 
     Map<String, String> password(String current, String next, String confirm) {
         return Map.of("currentPassword", current, "newPassword", next, "confirmPassword", confirm);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"STAFF, ADMIN", "STAFF, WAREHOUSE_MANAGER", "ADMIN, STAFF",
+            "ADMIN, WAREHOUSE_MANAGER", "WAREHOUSE_MANAGER, STAFF", "WAREHOUSE_MANAGER, ADMIN"})
+    void roleChangesPreserveIdentityAndRevokePreviousProfiles(UserRole originalRole, UserRole nextRole) throws Exception {
+        String username = account(originalRole);
+        String originalToken = login(username, PASSWORD);
+        var originalProfile = call(auth(get("/api/auth/me"), originalToken), 200);
+        long id = originalProfile.get("id").asLong();
+        String path = "/api/admin/users/" + id + "/role";
+
+        call(body(post(path).with(user("admin").roles("ADMIN")), Map.of("role", nextRole.name())), 200);
+        call(auth(get("/api/auth/me"), originalToken), 401);
+        String nextToken = login(username, PASSWORD);
+        var nextProfile = call(auth(get("/api/auth/me"), nextToken), 200);
+        assertEquals(nextRole.name(), nextProfile.get("role").asText());
+        for (String field : new String[]{"id", "username", "fullName", "email", "phone", "address", "active"}) {
+            assertEquals(originalProfile.get(field), nextProfile.get(field), field);
+        }
+
+        call(body(post(path).with(user("admin").roles("ADMIN")), Map.of("role", originalRole.name())), 200);
+        call(auth(get("/api/auth/me"), nextToken), 401);
+        call(auth(get("/api/auth/me"), originalToken), 401);
+        var returnedProfile = call(auth(get("/api/auth/me"), login(username, PASSWORD)), 200);
+        assertEquals(originalRole.name(), returnedProfile.get("role").asText());
+        assertNotEquals(originalProfile.get("profileId"), returnedProfile.get("profileId"));
     }
 
     @ParameterizedTest @EnumSource(UserRole.class)

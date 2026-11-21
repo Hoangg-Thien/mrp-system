@@ -40,12 +40,17 @@ export default function MrpPlanningPage() {
 
   const planQuery = useQuery({
     queryKey: ['mrp-plan-result', planParams],
-    queryFn: () => api.get('/api/mrp/plan', planParams),
+    queryFn: ({ signal }) => api.get('/api/mrp/plan', planParams, signal),
     enabled: !!planParams,
+    staleTime: 0,
     retry: false,
   })
 
   const handleCalculate = (values) => {
+    if (planParams?.productId === values.productId && planParams?.quantity === values.quantity) {
+      void planQuery.refetch()
+      return
+    }
     setPlanParams({
       productId: values.productId,
       quantity: values.quantity,
@@ -55,6 +60,9 @@ export default function MrpPlanningPage() {
   const selectedProduct = productsQuery.data?.content?.find((p) => p.id === planParams?.productId)
   const result = planQuery.data
   const hasShortage = result?.materials?.some((m) => Number(m.shortage) > 0)
+  const availableNow = Number(result?.fgOnHand || 0) - Number(result?.fgReserved || 0)
+  const needsProduction = Number(result?.toProduce) > 0
+  const awaitingProduction = result && !needsProduction && availableNow < Number(result.targetQuantity)
 
   return (
     <>
@@ -151,14 +159,14 @@ export default function MrpPlanningPage() {
               </div>
               <div className="mrp-kpi-cell kpi-val-progress">
                 <Statistic
-                  title="Đang sản xuất (PR)"
+                  title="Chờ hoàn thành (PR)"
                   value={quantity(result.fgIncoming, 0)}
                   suffix={selectedProduct?.unit}
                 />
               </div>
               <div className={`mrp-kpi-cell ${result.available > 0 ? 'kpi-val-success' : 'kpi-val-neutral'}`}>
                 <Statistic
-                  title="Tồn khả dụng"
+                  title="Khả dụng dự kiến"
                   value={quantity(result.available, 0)}
                   suffix={selectedProduct?.unit}
                 />
@@ -175,16 +183,21 @@ export default function MrpPlanningPage() {
             <Divider className="mrp-divider" />
 
             <Descriptions size="small" column={1}>
-              <Descriptions.Item label="Công thức tính tồn khả dụng">
+              <Descriptions.Item label="Khả dụng hiện tại">
+                {quantity(availableNow, 0)} {selectedProduct?.unit} (tồn thực tế trừ lượng đã giữ cho đơn bán)
+              </Descriptions.Item>
+              <Descriptions.Item label="Công thức tính khả dụng dự kiến">
                 <div className="mrp-formula-box">
-                  Khả dụng = Tồn thực ({quantity(result.fgOnHand, 0)}) - Đã giữ ({quantity(result.fgReserved, 0)}) + Đang SX ({quantity(result.fgIncoming, 0)}) = {quantity(result.available, 0)}
+                  Khả dụng dự kiến = Tồn thực ({quantity(result.fgOnHand, 0)}) - Đã giữ ({quantity(result.fgReserved, 0)}) + Chờ hoàn thành ({quantity(result.fgIncoming, 0)}) = {quantity(result.available, 0)}
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="Kết luận nhu cầu sản xuất">
-                <span className={result.toProduce > 0 ? 'erp-tag erp-tag-rejected' : 'erp-tag erp-tag-approved'}>
-                  {result.toProduce > 0
+                <span className={needsProduction ? 'erp-tag erp-tag-rejected' : awaitingProduction ? 'erp-tag erp-tag-pending' : 'erp-tag erp-tag-approved'}>
+                  {needsProduction
                     ? `Cần lập yêu cầu sản xuất ${result.toProduce} ${selectedProduct?.unit || ''}`
-                    : 'Tồn khả dụng đã đủ đáp ứng mục tiêu, không cần sản xuất thêm'}
+                    : awaitingProduction
+                      ? 'Dự kiến đủ khi các yêu cầu sản xuất hoàn thành. Cần theo dõi tiến độ sản xuất.'
+                      : 'Tồn khả dụng hiện tại đã đủ đáp ứng mục tiêu'}
                 </span>
               </Descriptions.Item>
             </Descriptions>
@@ -192,16 +205,18 @@ export default function MrpPlanningPage() {
 
           {/* 2. Phần Nguyên vật liệu theo BOM */}
           <Card
-            title="2. Nhu cầu Nguyên vật liệu theo công thức BOM"
+            title="2. Nhu cầu Nguyên vật liệu cho phần cần sản xuất thêm"
             extra={
               hasShortage ? (
                 <span className="erp-tag erp-tag-rejected">
                   <ExclamationCircleOutlined /> Phát hiện thiếu hụt nguyên vật liệu!
                 </span>
-              ) : (
+              ) : needsProduction ? (
                 <span className="erp-tag erp-tag-approved">
                   <CheckCircleOutlined /> Nguyên vật liệu đủ cho kế hoạch
                 </span>
+              ) : (
+                <span className="erp-tag">Không phát sinh nhu cầu NVL bổ sung</span>
               )
             }
           >
@@ -246,7 +261,9 @@ export default function MrpPlanningPage() {
                         Thiếu: {quantity(num)}
                       </span>
                     ) : (
-                      <span className="erp-tag erp-tag-approved">Đủ</span>
+                      <span className={needsProduction ? 'erp-tag erp-tag-approved' : 'erp-tag'}>
+                        {needsProduction ? 'Đủ' : 'Không phát sinh'}
+                      </span>
                     )
                   },
                 },
@@ -292,7 +309,21 @@ export default function MrpPlanningPage() {
                 />
               )}
 
-              {result.toProduce === 0 && !hasShortage && (
+              {awaitingProduction && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  title="Cần chờ hoàn thành sản xuất để đáp ứng mục tiêu"
+                  description={`Khả dụng hiện tại là ${quantity(availableNow, 0)} ${selectedProduct?.unit || ''}, còn thiếu ${quantity(Number(result.targetQuantity) - availableNow, 0)} ${selectedProduct?.unit || ''} so với mục tiêu. Các yêu cầu sản xuất còn ${quantity(result.fgIncoming, 0)} ${selectedProduct?.unit || ''} chờ hoàn thành. Cần theo dõi tiến độ và nhập kho thành phẩm.`}
+                  action={
+                    <Button onClick={() => navigate('/warehouse/production-requests')}>
+                      Xem yêu cầu sản xuất
+                    </Button>
+                  }
+                />
+              )}
+
+              {result.toProduce === 0 && !awaitingProduction && !hasShortage && (
                 <Alert
                   type="success"
                   showIcon

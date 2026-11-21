@@ -1,5 +1,7 @@
 package mrp.fgissue.service;
 
+import static mrp.common.QuantityFormat.plain;
+
 
 import mrp.catalog.entity.Product;
 import mrp.catalog.repository.ProductRepository;
@@ -88,27 +90,8 @@ public class FgIssueService {
             }
         }
 
-        boolean hasShortage = false;
-
         for (FgIssueRequests.FgIssueItemRequest itemReq : req.items()) {
             catalogService.requireActiveProduct(itemReq.productId());
-
-            // Quyết định D5: Cảnh báo nếu số lượng xin + tổng các phiếu PENDING khác vượt tồn
-            BigDecimal onHand = stockLedger.productBalance(itemReq.productId());
-            if (onHand == null) onHand = BigDecimal.ZERO;
-
-            BigDecimal otherPending = jdbc.queryForObject("""
-                SELECT COALESCE(SUM(i.quantity), 0)
-                  FROM finished_goods_issue_request_items i
-                  JOIN finished_goods_issue_requests r ON r.id = i.request_id
-                 WHERE r.status = 'PENDING' AND i.product_id = ?
-                """, BigDecimal.class, itemReq.productId());
-            if (otherPending == null) otherPending = BigDecimal.ZERO;
-
-            BigDecimal totalRequested = otherPending.add(BigDecimal.valueOf(itemReq.quantity()));
-            if (totalRequested.compareTo(onHand) > 0) {
-                hasShortage = true;
-            }
         }
 
         // Tạo header trước
@@ -124,8 +107,8 @@ public class FgIssueService {
         }
         itemRepo.flush();
 
-        String warning = hasShortage ? "Số lượng xuất yêu cầu vượt quá tồn kho khả dụng hiện tại" : null;
-        return detail(fgir.getId(), actor, hasShortage, warning);
+        // Compute the response from persisted items using the same availability rule as GET detail.
+        return detail(fgir.getId(), actor);
     }
 
     public Page<FgIssueViews.FgIssueRequestView> list(
@@ -193,11 +176,6 @@ public class FgIssueService {
     }
 
     public FgIssueViews.FgIssueRequestDetailView detail(Long id, CurrentUser actor) {
-        return detail(id, actor, false, null);
-    }
-
-    private FgIssueViews.FgIssueRequestDetailView detail(
-            Long id, CurrentUser actor, boolean hasShortage, String warning) {
 
         FinishedGoodsIssueRequest fgir = requestRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu xuất thành phẩm #" + id));
@@ -218,15 +196,25 @@ public class FgIssueService {
         Map<Long, Product> productMap = productRepo.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
-        boolean shortageDetected = hasShortage;
+        boolean shortageDetected = false;
         List<FgIssueViews.FgIssueItemView> itemViews = new ArrayList<>();
 
         for (FinishedGoodsIssueRequestItem item : items) {
             Product p = productMap.get(item.getProductId());
             BigDecimal currentStock = stockLedger.productBalance(item.getProductId());
             if (currentStock == null) currentStock = BigDecimal.ZERO;
-            if (currentStock.compareTo(BigDecimal.valueOf(item.getQuantity())) < 0) {
-                shortageDetected = true;
+            if (fgir.getStatus() == FgIssueRequestStatus.PENDING) {
+                BigDecimal otherPending = jdbc.queryForObject("""
+                    SELECT COALESCE(SUM(i.quantity), 0)
+                      FROM finished_goods_issue_request_items i
+                      JOIN finished_goods_issue_requests r ON r.id = i.request_id
+                     WHERE r.status = 'PENDING' AND i.product_id = ? AND r.id <> ?
+                    """, BigDecimal.class, item.getProductId(), id);
+                if (otherPending == null) otherPending = BigDecimal.ZERO;
+                // Exclude this request, then add its demand exactly once. This is advisory, not allocation priority.
+                if (otherPending.add(BigDecimal.valueOf(item.getQuantity())).compareTo(currentStock) > 0) {
+                    shortageDetected = true;
+                }
             }
             itemViews.add(new FgIssueViews.FgIssueItemView(
                 item.getId(),
@@ -238,9 +226,10 @@ public class FgIssueService {
             ));
         }
 
-        if (shortageDetected && warning == null && fgir.getStatus() == FgIssueRequestStatus.PENDING) {
-            warning = "Kho hiện tại không đủ tồn cho một số sản phẩm trong phiếu";
-        }
+        String warning = shortageDetected
+                ? "Số lượng xuất yêu cầu vượt quá tồn kho khả dụng sau khi tính các phiếu đang chờ duyệt. "
+                    + "Cảnh báo không xác lập thứ tự ưu tiên duyệt phiếu."
+                : null;
 
         return new FgIssueViews.FgIssueRequestDetailView(
             fgir.getId(),
@@ -276,7 +265,8 @@ public class FgIssueService {
             BigDecimal needed = BigDecimal.valueOf(item.getQuantity());
             if (balance.compareTo(needed) < 0) {
                 throw new BusinessException("Tồn kho thành phẩm #" + item.getProductId()
-                        + " không đủ để xuất kho (hiện có: " + balance + ", yêu cầu: " + needed + ")");
+                        + " không đủ để xuất kho (hiện có: " + plain(balance)
+                        + ", yêu cầu: " + plain(needed) + ")");
             }
         }
 

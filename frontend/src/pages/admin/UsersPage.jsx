@@ -145,6 +145,7 @@ export default function UsersPage() {
       >
         <p className="muted" style={{ marginBottom: 12 }}>
           Hệ thống sẽ cập nhật quyền hạn tương ứng và chặn thao tác nếu tài khoản đã phát sinh dữ liệu liên quan.
+          Người dùng cần đăng nhập lại sau khi đổi vai trò để sử dụng quyền và giao diện mới.
         </p>
         <Select style={{ width: '100%' }} options={roleOptions} value={roleValue} onChange={setRoleValue} />
       </Modal>

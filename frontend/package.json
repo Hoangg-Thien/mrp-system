@@ -7,6 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test:refresh": "node scripts/planning-refresh-qa.mjs",
+    "test:fg-note": "node scripts/fg-note-validation-qa.mjs",
+    "test:stock-report": "node --test src/utils/stockReport.test.js && node scripts/stock-report-fixes-qa.mjs",
+    "test:selections": "node --test src/api/allPages.test.js && node scripts/selection-pagination-qa.mjs",
+    "test:mir-warning": "node scripts/mir-warning-qa.mjs",
     "gen:api": "openapi-typescript http://localhost:8080/v3/api-docs -o src/api/schema.d.ts",
     "preview": "vite preview"
   },

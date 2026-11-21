@@ -32,7 +32,7 @@ import ConfirmButton from '../../components/ConfirmButton'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import StatusTag from '../../components/StatusTag'
-import { dateTime, quantity } from '../../utils/format'
+import { dateTime, numberInputFormatter, quantity } from '../../utils/format'
 
 const PAGE_SIZE = 15
 
@@ -189,6 +189,7 @@ export default function BomsPage() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
+              form.resetFields()
               form.setFieldsValue({ items: [{ materialId: undefined, quantity: 1 }] })
               setCreateModalOpen(true)
             }}
@@ -324,7 +325,7 @@ export default function BomsPage() {
                           { type: 'number', min: 0.001, message: '> 0' },
                         ]}
                       >
-                        <InputNumber min={0.001} step={0.1} precision={3} style={{ width: 160 }} />
+                        <InputNumber min={0.001} step={0.1} precision={3} formatter={numberInputFormatter} style={{ width: 160 }} />
                       </Form.Item>
 
                       <Button

@@ -161,7 +161,7 @@ class FgIssueServiceTest {
         Product p = createProduct(1L, "Bàn trà", "cái", true);
 
         when(stockLedger.productBalance(1L)).thenReturn(new BigDecimal("10.000"));
-        when(jdbc.queryForObject(anyString(), eq(BigDecimal.class), eq(1L))).thenReturn(new BigDecimal("2.000"));
+        when(jdbc.queryForObject(anyString(), eq(BigDecimal.class), eq(1L), eq(1L))).thenReturn(new BigDecimal("2.000"));
 
         doAnswer(inv -> {
             FinishedGoodsIssueRequest req = inv.getArgument(0);
@@ -252,7 +252,7 @@ class FgIssueServiceTest {
 
         // Tồn hiện tại 10, các phiếu PENDING khác đã xin 8, phiếu này xin thêm 5 -> tổng 13 > 10
         when(stockLedger.productBalance(1L)).thenReturn(new BigDecimal("10.000"));
-        when(jdbc.queryForObject(anyString(), eq(BigDecimal.class), eq(1L))).thenReturn(new BigDecimal("8.000"));
+        when(jdbc.queryForObject(anyString(), eq(BigDecimal.class), eq(1L), eq(2L))).thenReturn(new BigDecimal("8.000"));
 
         doAnswer(inv -> {
             FinishedGoodsIssueRequest req = inv.getArgument(0);

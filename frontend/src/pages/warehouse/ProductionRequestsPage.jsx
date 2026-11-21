@@ -163,7 +163,7 @@ export default function ProductionRequestsPage() {
               danger
               size="small"
               title="Hủy yêu cầu sản xuất này?"
-              description="Chỉ có thể hủy khi chưa có phiếu xuất NVL nào được duyệt và chưa có đợt sản xuất đang chạy."
+              description="Các phiếu đề nghị xuất NVL đang chờ sẽ được hủy cùng yêu cầu. Không thể hủy nếu đã duyệt xuất NVL hoặc còn đợt sản xuất chưa hủy."
               loading={cancelMutation.isPending}
               onConfirm={() => cancelMutation.mutateAsync(r.id)}
             >
@@ -332,6 +332,7 @@ export default function ProductionRequestsPage() {
               key="cancel"
               danger
               title="Hủy yêu cầu sản xuất này?"
+              description="Các phiếu đề nghị xuất NVL đang chờ sẽ được hủy cùng yêu cầu. Không thể hủy nếu đã duyệt xuất NVL hoặc còn đợt sản xuất chưa hủy."
               loading={cancelMutation.isPending}
               onConfirm={() => cancelMutation.mutateAsync(detailId)}
             >

@@ -12,10 +12,15 @@ public class FgIssueRequests {
     public record CreateFgIssueRequest(
         @NotEmpty(message = "Danh sách sản phẩm không được để trống")
         @Valid
-        List<FgIssueItemRequest> items,
+        List<@NotNull(message = "Dòng sản phẩm không được để trống") FgIssueItemRequest> items,
 
+        @NotBlank(message = "Vui lòng nhập thông tin khách hàng hoặc đơn hàng")
         String note
-    ) { }
+    ) {
+        public CreateFgIssueRequest {
+            note = note == null ? null : note.trim();
+        }
+    }
 
     public record FgIssueItemRequest(
         @NotNull(message = "ID sản phẩm không được để trống")

@@ -19,6 +19,15 @@ public interface MaterialIssueRequestRepository extends JpaRepository<MaterialIs
     @Query("SELECT mir FROM MaterialIssueRequest mir WHERE mir.id = :id")
     Optional<MaterialIssueRequest> findByIdForUpdate(@Param("id") Long id);
 
+    @Query("SELECT mir.productionRequestId FROM MaterialIssueRequest mir WHERE mir.id = :id")
+    Optional<Long> findProductionRequestIdById(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT mir FROM MaterialIssueRequest mir WHERE mir.productionRequestId = :productionRequestId AND mir.status = :status ORDER BY mir.id")
+    List<MaterialIssueRequest> findByProductionRequestIdAndStatusForUpdate(
+            @Param("productionRequestId") Long productionRequestId,
+            @Param("status") MaterialIssueRequestStatus status);
+
     List<MaterialIssueRequest> findByProductionRequestId(Long productionRequestId);
 
     List<MaterialIssueRequest> findByProductionRequestIdAndStatusIn(Long productionRequestId, Collection<MaterialIssueRequestStatus> statuses);

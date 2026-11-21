@@ -17,7 +17,7 @@ public class BomRequests {
 
         @NotEmpty(message = "Danh sách nguyên vật liệu không được để trống")
         @Valid
-        List<BomItemRequest> items
+        List<@NotNull(message = "Dòng nguyên vật liệu không được để trống") BomItemRequest> items
     ) {}
 
     public record BomItemRequest(

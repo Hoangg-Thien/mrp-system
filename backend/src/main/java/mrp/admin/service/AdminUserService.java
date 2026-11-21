@@ -18,9 +18,7 @@ import mrp.user.repository.UserRepository;
 import mrp.user.repository.WarehouseManagerRepository;
 import mrp.user.service.UserReferenceChecker;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,8 +54,8 @@ public class AdminUserService {
     public Page<UserView> list(UserRole role, Boolean active, String keyword, int page, int size, String sortField, String direction) {
         if (size < 1 || size > 100) throw new BusinessException("Kích thước trang phải từ 1 đến 100");
         if (!sortField.matches("username|createdAt|role|active")) throw new BusinessException("Trường sắp xếp không hợp lệ");
-        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
+        Pageable pageable = mrp.catalog.dto.CatalogQuery.page(page, size, sortField, direction,
+                java.util.Set.of("username", "createdAt", "role", "active"));
         String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
         return users.search(role, active, normalizedKeyword, pageable).map(authService::view);
     }
@@ -67,6 +65,7 @@ public class AdminUserService {
 
     @Transactional
     public UserView lock(Long id, Authentication actor) {
+        users.findAdminsForUpdate();
         User user = findForUpdate(id);
         checkNotSelf(user, actor);
         if (user.getRole() == UserRole.ADMIN && user.isActive() && users.countByRoleAndActive(UserRole.ADMIN, true) <= 1) {
@@ -81,6 +80,7 @@ public class AdminUserService {
 
     @Transactional
     public UserView changeRole(Long id, ChangeRoleRequest request, Authentication actor) {
+        users.findAdminsForUpdate();
         User user = findForUpdate(id);
         checkNotSelf(user, actor);
         if (user.getRole() == request.role()) return authService.view(user);

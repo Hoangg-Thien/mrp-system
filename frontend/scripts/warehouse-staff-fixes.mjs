@@ -12,7 +12,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_PACKAGE || path.join(root, '
 const base = process.env.MRP_UI_URL || 'http://127.0.0.1:15173'
 const password = process.env.MRP_QA_PASSWORD
 assert.ok(password, 'Set MRP_QA_PASSWORD for the isolated QA accounts')
-const out = path.join(root, 'docs/warehouse-staff-ui-fix-evidence')
+const out = process.env.MRP_QA_OUTPUT || path.join(root, 'docs/warehouse-staff-ui-fix-evidence')
 await mkdir(out, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const checks = [], pageErrors = [], network = []
@@ -70,7 +70,7 @@ try {
 
   await go(warehouse, '/warehouse/inventory')
   for (const [kind, placeholder, fixture] of [
-    ['material', 'Tìm mã / tên NVL', 'UI QA Material'],
+    ['material', 'Tìm mã / tên NVL', process.env.MRP_QA_VISIBLE_MATERIAL || 'UI QA Material'],
     ['product', 'Tìm tên sản phẩm', 'UI QA Product'],
   ]) {
     if (kind === 'product') await warehouse.getByRole('tab', { name: 'Thành phẩm' }).click()
@@ -140,6 +140,10 @@ try {
   await go(inventory, '/warehouse/inventory')
   await inventory.getByRole('button', { name: /Điều chỉnh tồn kho/ }).click()
   const adjust = inventory.getByRole('dialog')
+  // Wait for Ant Design's afterOpenChange initialization before editing fields.
+  await inventory.locator('.ant-modal').evaluate(async node => {
+    await Promise.all(node.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})))
+  })
   await adjust.getByText('Thành phẩm', { exact: true }).click()
   await select(inventory, adjust.getByLabel('Chọn thành phẩm', { exact: true }), 'UI QA Product')
   await adjust.getByLabel('Số lượng điều chỉnh', { exact: true }).fill('1')

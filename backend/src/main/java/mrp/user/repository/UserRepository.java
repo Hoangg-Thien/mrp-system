@@ -24,6 +24,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.id = :id")
     Optional<User> findByIdForUpdate(@Param("id") Long id);
 
+    /** Serialize admin removal/demotion checks before locking an individual target. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.role = mrp.user.entity.UserRole.ADMIN order by u.id")
+    java.util.List<User> findAdminsForUpdate();
+
     @Query("""
         select u from User u
         where (:role is null or u.role = :role)

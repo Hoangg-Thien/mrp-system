@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Button, Space } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '../../api/client'
+import { useAllPages } from '../../api/useAllPages'
+import QueryError from '../../components/QueryError'
 import { usePagedQuery, useResourceActions } from '../../api/hooks'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
@@ -25,9 +25,10 @@ export default function CatalogPage({ type }) {
   const [editing, setEditing] = useState(null)
 
   const listQuery = usePagedQuery(type, resource.path, { ...filters, ...sort, page, size: PAGE_SIZE })
-  const categoriesQuery = useQuery({
+  const categoriesQuery = useAllPages({
     queryKey: ['category-options'],
-    queryFn: ({ signal }) => api.get('/api/categories', { size: 100, sort: 'name', direction: 'asc' }, signal),
+    path: '/api/categories',
+    params: { sort: 'name', direction: 'asc' },
     enabled: type === 'products',
   })
   const actions = useResourceActions({ key: type, path: resource.path, invalidateKeys: [type, 'category-options'] })
@@ -108,6 +109,7 @@ export default function CatalogPage({ type }) {
 
   return (
     <>
+      <QueryError query={categoriesQuery} />
       <PageHeader title={resource.title} subtitle={resource.subtitle}
         extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditing(null); setOpen(true) }}>Thêm mới</Button>} />
       <PagedTable query={listQuery}

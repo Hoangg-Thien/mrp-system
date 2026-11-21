@@ -1,5 +1,7 @@
 package mrp.production.service;
 
+import static mrp.common.QuantityFormat.plain;
+
 
 import mrp.bom.entity.Bom;
 import mrp.bom.entity.BomItem;
@@ -325,7 +327,7 @@ public class ProductionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + id));
 
         // STAFF chỉ được xem PR được giao cho mình (D11: 404 để không lộ tồn tại)
-        if (actor != null && !actor.profileId().equals(pr.getWarehouseManagerId()) && pr.getAssignedTo() != null && !pr.getAssignedTo().equals(actor.profileId())) {
+        if (actor != null && !actor.profileId().equals(pr.getAssignedTo())) {
             // Kiểm tra xem user có phải STAFF không
             User user = userRepo.findById(actor.userId()).orElse(null);
             if (user != null && user.getRole() == UserRole.STAFF) {
@@ -418,6 +420,16 @@ public class ProductionService {
             throw new BusinessException("Không thể hủy yêu cầu sản xuất đã phát sinh đợt sản xuất");
         }
 
+        // Lock in the same order as approval: production request, then its issue requests.
+        List<MaterialIssueRequest> pendingIssues = mirRepo.findByProductionRequestIdAndStatusForUpdate(
+                id, MaterialIssueRequestStatus.PENDING);
+        for (MaterialIssueRequest issue : pendingIssues) {
+            issue.setStatus(MaterialIssueRequestStatus.CANCELLED);
+            String originalNote = issue.getNote() == null || issue.getNote().isBlank() ? "" : issue.getNote().trim() + " ";
+            issue.setNote(originalNote + "[TỰ ĐỘNG HỦY] Yêu cầu sản xuất #" + id + " đã hủy");
+        }
+        mirRepo.saveAllAndFlush(pendingIssues);
+
         pr.setStatus(ProductionRequestStatus.CANCELLED);
         prRepo.saveAndFlush(pr);
 
@@ -429,7 +441,7 @@ public class ProductionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + id));
 
         // STAFF chỉ xem được nếu được giao (D11: 404)
-        if (actor != null && pr.getAssignedTo() != null && !pr.getAssignedTo().equals(actor.profileId())) {
+        if (actor != null && !actor.profileId().equals(pr.getAssignedTo())) {
             User user = userRepo.findById(actor.userId()).orElse(null);
             if (user != null && user.getRole() == UserRole.STAFF) {
                 throw new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + id);
@@ -551,8 +563,8 @@ public class ProductionService {
             if (existingPendingOrApproved == null) existingPendingOrApproved = BigDecimal.ZERO;
 
             if (existingPendingOrApproved.add(itemReq.quantity()).compareTo(maxQuota) > 0) {
-                throw new BusinessException("Tổng số lượng yêu cầu NVL (" + existingPendingOrApproved.add(itemReq.quantity())
-                        + ") vượt định mức BOM (" + maxQuota + ")");
+                throw new BusinessException("Tổng số lượng yêu cầu NVL (" + plain(existingPendingOrApproved.add(itemReq.quantity()))
+                        + ") vượt định mức BOM (" + plain(maxQuota) + ")");
             }
 
             // Kiểm tra tồn kho để cảnh báo (D3: cho phép tạo, kèm cảnh báo)
@@ -658,13 +670,15 @@ public class ProductionService {
         Map<Long, Material> matMap = materialRepo.findAllById(matIds).stream()
                 .collect(Collectors.toMap(Material::getId, m -> m));
 
-        boolean shortageDetected = hasShortage;
+        boolean isPending = mir.getStatus() == MaterialIssueRequestStatus.PENDING;
+        boolean shortageDetected = isPending && hasShortage;
+        if (!isPending) warning = null;
         List<ProductionViews.MaterialIssueItemView> itemViews = new ArrayList<>();
 
         for (MaterialIssueRequestItem item : items) {
             Material m = matMap.get(item.getMaterialId());
             BigDecimal currentStock = stockLedger.materialBalance(item.getMaterialId());
-            if (currentStock.compareTo(item.getQuantity()) < 0) {
+            if (isPending && currentStock.compareTo(item.getQuantity()) < 0) {
                 shortageDetected = true;
             }
             itemViews.add(new ProductionViews.MaterialIssueItemView(
@@ -678,7 +692,7 @@ public class ProductionService {
             ));
         }
 
-        if (shortageDetected && warning == null && mir.getStatus() == MaterialIssueRequestStatus.PENDING) {
+        if (shortageDetected && warning == null) {
             warning = "Kho hiện tại không đủ tồn cho một số nguyên vật liệu trong phiếu";
         }
 
@@ -701,6 +715,16 @@ public class ProductionService {
 
     @Transactional
     public ProductionViews.MaterialIssueRequestDetailView approveMaterialIssueRequest(Long id, CurrentUser actor) {
+        // Read only the parent ID first, so the issue entity is loaded fresh after acquiring the parent lock.
+        Long productionRequestId = mirRepo.findProductionRequestIdById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu xuất NVL #" + id));
+        ProductionRequest pr = prRepo.findByIdForUpdate(productionRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu sản xuất #" + productionRequestId));
+        if (pr.getStatus() != ProductionRequestStatus.PENDING && pr.getStatus() != ProductionRequestStatus.IN_PROGRESS) {
+            throw new BusinessException("Không thể duyệt xuất NVL: yêu cầu sản xuất #" + productionRequestId
+                    + " đã kết thúc (" + pr.getStatus() + ")");
+        }
+
         MaterialIssueRequest mir = mirRepo.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu xuất NVL #" + id));
 
@@ -715,7 +739,7 @@ public class ProductionService {
             BigDecimal balance = stockLedger.materialBalance(item.getMaterialId());
             if (balance.compareTo(item.getQuantity()) < 0) {
                 throw new BusinessException("Tồn kho nguyên vật liệu #" + item.getMaterialId()
-                        + " không đủ để xuất kho (hiện có: " + balance + ", yêu cầu: " + item.getQuantity() + ")");
+                        + " không đủ để xuất kho (hiện có: " + plain(balance) + ", yêu cầu: " + plain(item.getQuantity()) + ")");
             }
         }
 
@@ -932,7 +956,9 @@ public class ProductionService {
             BigDecimal approvedIssued = getApprovedIssuedQuantity(pr.getId(), bi.getMaterialId());
             if (approvedIssued.compareTo(needed) < 0) {
                 throw new BusinessException("NVL đã xuất kho chưa đủ theo BOM để hoàn thành số lượng này (NVL #"
-                        + bi.getMaterialId() + ": cần " + needed + ", đã xuất " + approvedIssued + ")");
+                        + bi.getMaterialId() + ": cần " + plain(needed)
+                        + ", đã xuất " + plain(approvedIssued)
+                        + ", còn thiếu " + plain(needed.subtract(approvedIssued)) + ")");
             }
         }
 

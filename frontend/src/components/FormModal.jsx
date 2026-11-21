@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Form, Input, InputNumber, Modal, Select } from 'antd'
+import { numberInputFormatter } from '../utils/format'
 
 function renderControl(field, options) {
   switch (field.type) {
@@ -8,7 +9,7 @@ function renderControl(field, options) {
     case 'password':
       return <Input.Password maxLength={field.max} autoComplete={field.autoComplete || 'new-password'} placeholder={field.placeholder || '••••••••'} />
     case 'money':
-      return <InputNumber className="full-width" min={0} precision={2} step={1000} placeholder={field.placeholder || '0'} style={{ width: '100%' }} />
+      return <InputNumber className="full-width" min={0} precision={2} formatter={numberInputFormatter} step={1000} placeholder={field.placeholder || '0'} style={{ width: '100%' }} />
     case 'number':
       return <InputNumber className="full-width" min={field.min ?? 0} placeholder={field.placeholder || '0'} style={{ width: '100%' }} />
     case 'select':
@@ -33,13 +34,16 @@ export default function FormModal({
   width,
 }) {
   const [form] = Form.useForm()
+  const wasOpen = useRef(false)
   const isMultiCol = fields.length >= 4
   const modalWidth = width || (isMultiCol ? 640 : 480)
 
   useEffect(() => {
-    if (!open) return
-    form.resetFields()
-    if (initialValues) form.setFieldsValue(initialValues)
+    if (open && !wasOpen.current) {
+      form.resetFields()
+      if (initialValues) form.setFieldsValue(initialValues)
+    }
+    wasOpen.current = open
   }, [open, initialValues, form])
 
   return (

@@ -36,8 +36,11 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         User user = users.findByUsername(request.username()).orElse(null);
-        if (user == null || !user.isActive() || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new InvalidCredentialsException("Username hoặc mật khẩu không đúng");
+        }
+        if (!user.isActive()) {
+            throw new InvalidCredentialsException("Tài khoản đã bị khóa");
         }
         return new LoginResponse(jwtService.createToken(user, profileId(user)), "Bearer", jwtService.getExpirationSeconds(), view(user));
     }

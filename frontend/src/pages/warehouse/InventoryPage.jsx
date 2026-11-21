@@ -17,13 +17,13 @@ import {
   App,
 } from 'antd'
 import { PlusCircleOutlined, ReloadOutlined } from '@ant-design/icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { usePagedQuery } from '../../api/hooks'
 import PageHeader from '../../components/PageHeader'
 import PagedTable from '../../components/PagedTable'
 import StatusTag from '../../components/StatusTag'
-import { dateTime, quantity } from '../../utils/format'
+import { dateTime, numberInputFormatter, quantity } from '../../utils/format'
 
 const PAGE_SIZE = 15
 
@@ -34,9 +34,10 @@ function StockTable({ kind, onAdjustItem }) {
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState({ sort: 'name', direction: 'asc' })
 
-  const categoriesQuery = useQuery({
+  const categoriesQuery = useAllPages({
     queryKey: ['categories-for-inventory-filter'],
-    queryFn: () => api.get('/api/categories', { size: 100 }),
+    path: '/api/categories',
+    params: { sort: 'name', direction: 'asc' },
     enabled: !isMaterial,
   })
 
@@ -115,41 +116,47 @@ function StockTable({ kind, onAdjustItem }) {
     <PagedTable query={query}
       rowKey={isMaterial ? 'materialId' : 'productId'}
       filters={(
-        <Space wrap>
-          <Input.Search
-            allowClear
-            style={{ width: 240 }}
-            placeholder={isMaterial ? 'Tìm mã / tên NVL' : 'Tìm tên sản phẩm'}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onSearch={(v) => { setPage(0); setFilters((f) => ({ ...f, keyword: v?.trim() || undefined })) }}
-          />
-          {!isMaterial && (
+        <>
+          <QueryError query={categoriesQuery} />
+          <Space wrap>
+            <Input.Search
+              allowClear
+              style={{ width: 240 }}
+              placeholder={isMaterial ? 'Tìm mã / tên NVL' : 'Tìm tên sản phẩm'}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onSearch={(v) => { setPage(0); setFilters((f) => ({ ...f, keyword: v?.trim() || undefined })) }}
+            />
+            {!isMaterial && (
+              <Select
+                allowClear
+                style={{ width: 180 }}
+                placeholder="Danh mục"
+                showSearch
+                optionFilterProp="label"
+                loading={categoriesQuery.isFetching}
+                options={categoriesQuery.data?.content?.map((c) => ({ value: c.id, label: c.name })) || []}
+                value={filters.categoryId}
+                onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, categoryId: v })) }}
+              />
+            )}
             <Select
               allowClear
-              style={{ width: 180 }}
-              placeholder="Danh mục"
-              options={categoriesQuery.data?.content?.map((c) => ({ value: c.id, label: c.name })) || []}
-              value={filters.categoryId}
-              onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, categoryId: v })) }}
+              style={{ width: 160 }}
+              placeholder="Trạng thái"
+              options={[{ value: true, label: 'Đang hoạt động' }, { value: false, label: 'Vô hiệu' }]}
+              value={filters.active}
+              onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, active: v })) }}
             />
-          )}
-          <Select
-            allowClear
-            style={{ width: 160 }}
-            placeholder="Trạng thái"
-            options={[{ value: true, label: 'Đang hoạt động' }, { value: false, label: 'Vô hiệu' }]}
-            value={filters.active}
-            onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, active: v })) }}
-          />
-          <Select
-            style={{ width: 160 }}
-            value={filters.positiveOnly ? 'yes' : 'no'}
-            options={[{ value: 'no', label: 'Tất cả tồn' }, { value: 'yes', label: 'Chỉ tồn > 0' }]}
-            onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, positiveOnly: v === 'yes' })) }}
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => { setSearchValue(''); setFilters({ positiveOnly: false }); setPage(0) }}>Đặt lại</Button>
-        </Space>
+            <Select
+              style={{ width: 160 }}
+              value={filters.positiveOnly ? 'yes' : 'no'}
+              options={[{ value: 'no', label: 'Tất cả tồn' }, { value: 'yes', label: 'Chỉ tồn > 0' }]}
+              onChange={(v) => { setPage(0); setFilters((f) => ({ ...f, positiveOnly: v === 'yes' })) }}
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => { setSearchValue(''); setFilters({ positiveOnly: false }); setPage(0) }}>Đặt lại</Button>
+          </Space>
+        </>
       )}
       columns={withSort}
       data={query.data?.content || []}
@@ -232,6 +239,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
   })
 
   const handleOpen = () => {
+    form.resetFields()
     if (defaultItem) {
       setTargetType(defaultItem.type)
       setSelectedItemId(defaultItem.id)
@@ -366,6 +374,7 @@ function StockAdjustmentModal({ open, onClose, defaultItem }) {
             min={targetType === 'product' ? 1 : 0.001}
             step={targetType === 'product' ? 1 : 0.001}
             precision={targetType === 'product' ? 0 : 3}
+            formatter={numberInputFormatter}
             placeholder="Nhập số lượng"
           />
         </Form.Item>
