@@ -1,10 +1,17 @@
 spring:
+  jackson:
+    deserialization:
+      accept-float-as-int: false
   application:
     name: mrp-system
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/mrp}
+    url: ${DB_URL}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     open-in-view: false
@@ -20,6 +27,10 @@ app:
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  bootstrap-admin:
+    username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:change_me_please}
+    full-name: ${BOOTSTRAP_ADMIN_FULL_NAME:System Administrator}
 
 springdoc:
   api-docs:

@@ -12,6 +12,7 @@ dist/
 .env
 .env*.local
 !.env.example
+README_TAI_KHOAN.local.md
 
 ### STS ###
 .apt_generated
@@ -44,3 +45,12 @@ build/
 ### OS files ###
 .DS_Store
 Thumbs.db
+*.log
+.agents/
+.gemini/
+
+# Local QA output
+/docs/warehouse-staff-ui-fix-evidence/
+/tmp/mir-warning-evidence/
+/tmp/selection-pagination-qa/
+/tmp/stock-report-fixes-qa/
