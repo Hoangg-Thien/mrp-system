@@ -1,82 +1,53 @@
-# Hệ thống quản lý kho và sản xuất tích hợp MRP
+# Quản lý kho và sản xuất nội thất
 
-Đồ án Hệ thống thông tin doanh nghiệp về quản lý kho và sản xuất nội thất.
-Nhóm 11, học phần 841065, học kỳ 1 năm học 2026–2027
+## Tổng quan
 
-## Thành viên theo biên bản SGU
+Ứng dụng lập kế hoạch nhu cầu nguyên vật liệu (MRP) cho xưởng nội thất. Quản lý kho xác định số lượng cần sản xuất và vật tư cần nhập thêm. Nhân viên nhận việc và bàn giao thành phẩm theo từng đợt.
 
-- Nguyễn Duy Khôi
-- Lưu Gia Huy
-- Lê Viết Hoàng Thiên
-- Châu Uy Vủ
+## Tính năng chính
 
-## Phạm vi phần mềm
+- **Lập kế hoạch vật tư.** MRP tính lượng cần sản xuất từ tồn thành phẩm, lượng chờ xuất và sản lượng dự kiến. Hệ thống đối chiếu nhu cầu theo định mức vật tư (BOM) với lượng tồn chưa cam kết để xác định vật tư thiếu.
+- **Cấp vật tư và sản xuất.** Mỗi yêu cầu sản xuất gắn với một phiên bản BOM. Quản lý kho duyệt cấp vật tư cho nhân viên. Khi ghi nhận thành phẩm, hệ thống kiểm tra lượng vật tư đã cấp theo định mức cho sản lượng hoàn thành lũy kế.
+- **Nhập xuất và kiểm kê.** Quản lý kho ghi nhận vật tư nhập từ nhà cung cấp, duyệt xuất thành phẩm và điều chỉnh chênh lệch kiểm kê. Báo cáo tháng, quý và năm thể hiện tồn đầu kỳ, phát sinh trong kỳ và tồn cuối kỳ.
 
-ADMIN quản lý tài khoản, vai trò, khóa/mở khóa và danh mục dùng chung.
-WAREHOUSE_MANAGER nhập NVL, quản lý BOM, tính MRP, giao sản xuất,
-duyệt xuất NVL/thành phẩm, kiểm kê và xem báo cáo kho.
-STAFF nhận việc được giao, đề nghị cấp NVL, thực hiện sản xuất,
-đề nghị xuất thành phẩm và cập nhật hồ sơ cá nhân.
+## Công nghệ
 
-## Cài đặt trên Windows
+- **Backend** dùng Java 21, Spring Boot 3.5, Spring Data JPA, JDBC và PostgreSQL 17.
+- **Giao diện** dùng React 19, Vite, Ant Design và TanStack Query.
+- **Kiểm thử** dùng JUnit 5 cho phép tính MRP, MockMvc cho phân quyền API và Testcontainers để kiểm tra báo cáo kho trên PostgreSQL.
 
-Chuẩn bị Java 21, Node.js tương thích Vite 8 và PostgreSQL 17.
-Cấu hình Docker Compose dùng postgres:17. Kiểm tra ngày 19/11/2026
-được thực hiện bằng Java 21, Node.js 24.21 và PostgreSQL 18.6.
+## Kiến trúc hệ thống
 
-1. Tại thư mục dự án, tạo .env từ .env.example và sửa thông tin
-   kết nối CSDL, JWT_SECRET và mật khẩu admin khởi tạo.
-   Nếu dùng Docker, chạy docker compose up -d.
-   Nếu dùng PostgreSQL cục bộ, tạo database trống và chạy
-   database/mrp.sql bằng psql hoặc pgAdmin. Script chỉ khởi tạo cấu trúc.
-   Khi khởi tạo thủ công, cập nhật DB_URL, DB_USERNAME và DB_PASSWORD.
+Giao diện React gọi REST API của backend Spring Boot. Các phân hệ nhập hàng, kho và sản xuất dùng chung `StockLedger` để ghi biến động kho. Spring Security xác thực bằng JWT, dùng BCrypt để băm mật khẩu và phân quyền cho quản trị viên, quản lý kho và nhân viên.
 
-2. Tại backend, chạy .\mvnw.cmd spring-boot:run.
-   Backend mặc định dùng cổng 8080. Admin khởi tạo được tạo khi bảng
-   users trống, theo thông tin BOOTSTRAP_ADMIN_* trong .env.
+Khi duyệt xuất, backend cập nhật trạng thái phiếu và ghi vào sổ `stock_movements` trong cùng giao dịch. Sổ chỉ cho phép ghi thêm. Trigger PostgreSQL cập nhật số dư trong `inventories`, còn các ràng buộc ngăn tồn âm và ghi trùng dòng chứng từ. [Lược đồ SQL](database/mrp.sql)
 
-3. Tại frontend, tạo .env từ .env.example.
-   VITE_API_BASE_URL mặc định là http://localhost:8080.
-   Chạy npm.cmd ci rồi npm.cmd run dev.
-   Truy cập http://localhost:5173.
+## Chạy dự án
 
-4. Admin tạo tài khoản quản lý kho và nhân viên, khai báo danh mục,
-   nhà cung cấp, nguyên vật liệu và sản phẩm trước khi demo.
+Cần JDK 21, Node.js 22.12 trở lên kèm npm và Docker có Compose. Từ thư mục gốc, tạo hai tệp cấu hình cục bộ.
 
-## Luồng demo
+```sh
+cp .env.example .env
+cp frontend/.env.example frontend/.env
+```
 
-Nhập NVL và hoàn tất phiếu nhập.
-Tạo BOM cho sản phẩm, tính MRP và giao yêu cầu sản xuất cho nhân viên.
-Nhân viên đề nghị xuất NVL, quản lý kho duyệt đủ lượng theo BOM.
-Nhân viên bắt đầu và hoàn tất đợt sản xuất để nhập thành phẩm.
-Nhân viên lập đề nghị xuất bán, quản lý kho duyệt để giảm thành phẩm.
-Đối chiếu tồn kho, sổ biến động và báo cáo tháng/quý/năm.
+Trong `.env` ở thư mục gốc, đặt `DB_PASSWORD`, `JWT_SECRET` (ít nhất 32 byte) và `BOOTSTRAP_ADMIN_PASSWORD` (ít nhất 8 ký tự). Lệnh sau khởi động PostgreSQL và nạp `database/mrp.sql` khi khởi tạo volume lần đầu.
 
-## Lưu ý nghiệp vụ
+```sh
+docker compose up -d postgres
+```
 
-Lượng sản xuất chưa hoàn thành chỉ được cộng vào khả dụng dự kiến.
-Khi hoàn tất sản xuất, hệ thống kiểm tra tổng NVL đã duyệt xuất cho
-yêu cầu theo BOM, bao gồm lượng dùng cho các đợt đã hoàn thành trước.
-Các giao dịch xuất thiếu tồn bị chặn. Phiếu kết thúc được giữ để truy vết.
-Tài khoản đã có lịch sử được quản lý bằng khóa/mở khóa.
+Khi PostgreSQL sẵn sàng, chạy hai khối lệnh trong hai terminal riêng, đều bắt đầu từ thư mục gốc. Với PowerShell trên Windows, dùng `.\mvnw.cmd` và `npm.cmd`.
 
-## Kiểm thử
+```sh
+cd backend
+sh mvnw spring-boot:run
+```
 
-Tại backend, chạy .\mvnw.cmd test.
-Các lớp Testcontainers cần Docker. Các lớp PostgreSQL dùng biến
-MRP_REGRESSION_DB_URL phải chạy trên CSDL thử dùng một lần, đã nạp
-database/mrp.sql, cùng MRP_REGRESSION_DB_USER và MRP_REGRESSION_DB_PASSWORD.
-Tại frontend, chạy npm.cmd run lint và npm.cmd run build.
-Các lệnh test:refresh, test:fg-note, test:stock-report,
-test:selections và test:mir-warning dùng Playwright.
-Các script hiện tại tìm Playwright tại backend/target/ui-test-tools/node_modules/playwright.
-Những script hỗ trợ PLAYWRIGHT_MODULE cũng nhận đường dẫn qua biến đó.
+```sh
+cd frontend
+npm ci
+npm run dev
+```
 
-## Sao lưu và phục hồi
-
-Dùng pg_dump -Fc để sao lưu CSDL PostgreSQL, ghi rõ máy chủ, cổng,
-tài khoản và tên CSDL trong tham số lệnh.
-Dùng pg_restore để phục hồi sang một CSDL trống riêng.
-Sau phục hồi, đối chiếu tài khoản, chứng từ, sổ kho và số dư tồn kho.
-
-Xem thêm [tài liệu frontend](frontend/README.md) và [sơ đồ cơ sở dữ liệu](database/mrp.png).
+Backend tạo tài khoản quản trị khi bảng `users` trống. Đăng nhập bằng `BOOTSTRAP_ADMIN_USERNAME` và `BOOTSTRAP_ADMIN_PASSWORD` trong `.env`. [Mở ứng dụng](http://localhost:5173) · [Swagger UI](http://localhost:8080/swagger-ui)
